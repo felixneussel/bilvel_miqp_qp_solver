@@ -16,3 +16,14 @@ H = np.array([[1,0],[0,1]])
 c = np.array([1,1])
 G = np.array([[1,2],[3,4]])
 d = np.array([2,0])
+
+
+
+def solveMaster():
+    return 0
+
+def solveSub():
+    return 0
+
+def solveFeasibility():
+    return 0
