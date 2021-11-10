@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-import matrix_operations as mo
+from utils import matrix_operations as mo
 import numpy as np
 
 def getIndexSet(N):
@@ -73,3 +73,4 @@ def getUpperBound():
     Returns an upper bound for the w_jr constraints.
     """
     return 100
+
