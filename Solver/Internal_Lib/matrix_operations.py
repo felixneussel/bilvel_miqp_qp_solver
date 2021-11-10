@@ -1,5 +1,7 @@
 import numpy as np
 
+
+
 def concatenateDiagonally(H,G):
     """
     Concatenates to matrices diagonally with zeros on the off-diagonals
