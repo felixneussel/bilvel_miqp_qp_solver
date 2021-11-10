@@ -4,7 +4,7 @@ from gurobipy import GRB
 import numpy as np
 from numpy.core.fromnumeric import shape
 from numpy.lib import RankWarning
-import Internal_Lib.utils.matrix_operations
+#import Internal_Lib.utils.matrix_operations as mo
 from Internal_Lib import optimization_modelling as opt
 
 def getNumOfBinaryDigits(x_plus):

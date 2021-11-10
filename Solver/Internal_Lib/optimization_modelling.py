@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-from utils import matrix_operations as mo
+import Internal_Lib.utils.matrix_operations as mo
 import numpy as np
 
 def getIndexSet(N):
