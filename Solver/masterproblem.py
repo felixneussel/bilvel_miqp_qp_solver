@@ -4,7 +4,7 @@ from gurobipy import GRB
 import numpy as np
 from numpy.core.fromnumeric import shape
 from numpy.lib import RankWarning
-from . Internal_Lib.matrix_operations import *
+from Internal_Lib import matrix_operations as mo
 
 def getNumOfBinaryDigits(x_plus):
     """
@@ -130,6 +130,8 @@ b = np.array([1,0])
 r_bar = getNumOfBinaryDigits(int_ub)
 
 
+
+
 #Create tuplelist all possible indices j \in I, r \in[\bar{r_j}]
 jr = gp.tuplelist([(a,b) for a in range(0,n_I) for b in range(0, r_bar[a])])#Caution, r_bar[a] was changed from r_bar[a-1]
 I = gp.tuplelist([a for a in range(0,n_I)])
@@ -212,4 +214,3 @@ rel_point = np.array([master.getVarByName(f'y[{i}]').x for i in range(n_y)])
 addCut(master,rel_point,G,d,b,y,dual,w,J,ll_constr,jr,bin_coeff)
 
 
-setupMaster(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b)
