@@ -20,10 +20,10 @@ d = np.array([2,0])
 
 
 def solveMaster():
-    return 0
+    pass
 
 def solveSub():
-    return 0
+    pass
 
 def solveFeasibility():
-    return 0
+    pass

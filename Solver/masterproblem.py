@@ -4,29 +4,23 @@ from gurobipy import GRB
 import numpy as np
 from numpy.core.fromnumeric import shape
 from numpy.lib import RankWarning
-#import Internal_Lib.utils.matrix_operations as mo
+import Internal_Lib.utils.matrix_operations as mo
 from Internal_Lib import optimization_modelling as opt
 
-def getNumOfBinaryDigits(x_plus):
-    """
-    Takes the numpy array of integer-variable upper bounds as an input and
-    returns an np array with the numbers of binary digits needed to represent
-    each upper bound
-    """
-    return (np.floor(np.log2(x_plus)) + np.ones(x_plus.shape)).astype(int)
+
 
 
 def getLowerBound():
     """
     Returns a lower bound for the w_jr constraints.
     """
-    return -100
+    return -1e5
 
 def getUpperBound():
     """
     Returns an upper bound for the w_jr constraints.
     """
-    return 100
+    return 1e5
 
 def addCut(model,point,G,d,b,y_var,dual_var,w_var,y_ind,dual_ind,w_ind, binary_coeff):
     """
@@ -67,7 +61,7 @@ def setupMaster(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b):
     b : Numpy-Vector with dim m_l
     """
     checkDimensions(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b)
-    r_bar = getNumOfBinaryDigits(int_ub)
+    r_bar = opt.getNumOfBinaryDigits(int_ub)
     
     I = opt.getIndexSet([n_I])
     R = opt.getIndexSet([n_R])
@@ -75,7 +69,7 @@ def setupMaster(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b):
     ll_constr = opt.getIndexSet([m_l])
     jr = opt.getIndexSet([n_I,r_bar])
     mp = gp.Model('Masterproblem')
-    x_I, x_R, y, dual, s, w = opt.addVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr)
+    x_I, x_R, y, dual, s, w = opt.addVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr,'master')
   
     
     opt.setObjective(mp,H,G,c,d,x_I,x_R,y)
@@ -155,21 +149,21 @@ if __name__ == '__main__':
     m_l = 2
 
     #Input data
-    H = np.array([[1,2],[3,4]])
-    G = np.array([[1,0,],[0,2]])
-    c = np.array([1,4])
-    d = np.array([1,2])
+    H = np.array([[1,0],[0,4]])
+    G = np.array([[1,0],[0,7]])
+    c = np.array([1,12])
+    d = np.array([-5,2])
 
-    A = np.array([[2,0,],[3,5]])
-    B = np.array([[1,3],[0,1]])
+    A = np.array([[2,2],[3,5]])
+    B = np.array([[1,3],[2,1]])
     a = np.array([1,0])
 
     int_lb = np.array([0])
     int_ub = np.array([5])
 
-    C = np.array([[5],[0]])
+    C = np.array([[5],[13]])
     D = np.array([[4,2],[7,2]])
-    b = np.array([1,0])
+    b = np.array([1,-4])
 
     r_bar = getNumOfBinaryDigits(int_ub)
 

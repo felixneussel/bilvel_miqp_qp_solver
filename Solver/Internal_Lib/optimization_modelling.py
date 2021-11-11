@@ -7,19 +7,26 @@ def getIndexSet(N):
     if len(N) == 1:
         return gp.tuplelist([a for a in range(N[0])])
     elif len(N) == 2:
-        return gp.tuplelist([(a,b) for a in range(N[0]) for b in range(N[1])])
+        return gp.tuplelist([(a,b) for a in range(N[0]) for b in range(N[1][a])])
     else:
         raise ValueError('Too many entries in list')
 
-def addVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr):
-    x_I = mp.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
+def addVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr,p_type):
+    if p_type == 'master':
+        x_I = mp.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
     x_R = mp.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
     y = mp.addVars(J, vtype=GRB.CONTINUOUS,name='y')
     dual = mp.addVars(ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
-    s = mp.addVars(jr,vtype= GRB.BINARY,name='s')
+    if p_type == 'master':
+        s = mp.addVars(jr,vtype= GRB.BINARY,name='s')
     w = mp.addVars(jr,name="w")
     mp.update()
-    return x_I, x_R,y,dual,s,w
+    if p_type == 'master':
+        return x_I, x_R,y,dual,s,w
+    elif p_type == 'sub':
+        return x_R,y,dual,w
+    else:
+        raise ValueError('p_type needs to be "master", "sub" or "feasibility".')
 
 def setObjective(mp,H,G,c,d,x_I,x_R,y):
     HG = mo.concatenateDiagonally(H,G)
@@ -66,11 +73,21 @@ def getLowerBound():
     """
     Returns a lower bound for the w_jr constraints.
     """
-    return -100
+    #Kleinert et al used 1e5 for all big-Ms
+    return -1e5
 
 def getUpperBound():
     """
     Returns an upper bound for the w_jr constraints.
     """
-    return 100
+    #Kleinert et al used 1e5 for all big-Ms
+    return 1e5
+
+def getNumOfBinaryDigits(x_plus):
+    """
+    Takes the numpy array of integer-variable upper bounds as an input and
+    returns an np array with the numbers of binary digits needed to represent
+    each upper bound
+    """
+    return (np.floor(np.log2(x_plus)) + np.ones(x_plus.shape)).astype(int)
 
