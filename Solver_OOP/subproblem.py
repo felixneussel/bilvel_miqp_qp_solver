@@ -4,18 +4,20 @@ from gurobipy import QuadExpr
 import numpy as np
 from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+import re
 
-class sub(OptimizationModel):
+class Sub(OptimizationModel):
     
     def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
         self.x_I_param = x_I_param
         self.s_param = s_param
         self.model = gp.Model('Subproblem')
+        self.model.Params.LogToConsole = 0
         self.addVariables()
         self.setObjective()
         self.setPConstraint()
-        super().setDualFeasiblityConstraint()
+        self.setDualFeasiblityConstraint()
         self.setStrongDualityLinearizationConstraint()
         self.setStrongDualityConstraint()
 
@@ -68,6 +70,14 @@ class sub(OptimizationModel):
         expr.addTerms(-self.b,self.dual.select())
         self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
 
+    def getPointForMasterCut(self):
+        name_exp = re.compile(r'^y')
+        x = []
+        for var in self.model.getVars():
+            if name_exp.match(var.varName) is not None:
+                x.append(var.x)
+        return np.array(x)
+
 if __name__ == '__main__':
     #Dimensions
     #Number of Integer upper-level variables
@@ -104,4 +114,5 @@ if __name__ == '__main__':
     s_param = {(0, 0): 0.0, (0, 1): 1.0, (0, 2): 0.0, (0, 3): 0.0, (0, 4): 0.0}
 
     s = sub(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param)
+    s.optimize()
     #s.setPConstraint()

@@ -2,6 +2,7 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 from matrix_operations import concatenateHorizontally
+import re
 
 class OptimizationModel:
 
@@ -96,5 +97,18 @@ class OptimizationModel:
         self.bin_coeff = {}
         for (j,r) in self.jr:
             self.bin_coeff[(j,r)] = 2**r
+
+    def optimize(self):
+        self.model.optimize()
+        print(self.model.ModelName)
+        print('func : ', self.model.ObjVal)
+        vars = self.model.getVars()
+        for v in vars:
+            if re.match(r'x_I|x_R|y', v.varName):
+                print(v.varName, v.x)
+        print('\n\n')
+
+        
+        return self.model.status,self.model.getVars(), self.model.ObjVal
         
         

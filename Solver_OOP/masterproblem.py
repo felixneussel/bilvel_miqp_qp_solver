@@ -5,11 +5,12 @@ from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 
-class master(OptimizationModel):
+class Master(OptimizationModel):
     
     def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
         self.model = gp.Model('Masterproblem')
+        self.model.Params.LogToConsole = 0
         self.addVariables()
         self.setObjective()
         self.setPConstraint()
@@ -65,10 +66,31 @@ class master(OptimizationModel):
                 if len(indices) != 2:
                     raise ValueError('Regex did not find exactly two indices')
                 s[indices[0],indices[1]] = var.x
-        print(s)
+        return s
 
-    def optimize(self):
-        self.model.optimize()
+    def getParamX_IForSub(self):
+        name_exp = re.compile(r'^x_I')
+        x = []
+        for var in self.model.getVars():
+            if name_exp.match(var.varName) is not None:
+                x.append(var.x)
+        return np.array(x)
+
+    def setCuttingPoint(self,p):
+        self.cut_point = p
+
+    def addCut(self):
+        """
+        Takes a point \bar{y}, linearizes strong duality constraint at this point and adds the constraint to the model.
+        """
+        twoyTG = 2*self.cut_point.T @ self.G_l
+        yTGy = self.cut_point.T @ self.G_l @ self.cut_point
+        term1 = sum([twoyTG[i]*self.y.select(i)[0] for i in self.J])
+        term2 = sum([self.d_l[i]*self.y.select(i)[0] for i in self.J])
+        term3 = -sum([self.b[j]*self.dual.select(j)[0] for j in self.ll_constr])
+        term4 = self.w.prod(self.bin_coeff)
+        
+        self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality relaxation')
 
 
 if __name__ == '__main__':
@@ -86,9 +108,11 @@ if __name__ == '__main__':
 
     #Input data
     H = np.array([[2]])
-    G = np.array([[8]])
+    G_u = np.array([[8]])
+    G_l = np.array([[1]])
     c = np.array([-10])
-    d = np.array([4])
+    d_u = np.array([4])
+    d_l = np.array([1])
 
     A = np.array([[1]])
     B = np.array([[0]])
@@ -100,7 +124,7 @@ if __name__ == '__main__':
     C = np.array([[3],[-2],[-1],[0]])
     D = np.array([[-1],[0.5],[-1],[1]])
     b = np.array([3,-4,-7,0])
-    m = master(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b)
+    m = Master(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+    m.setCuttingPoint(np.array([3]))
     m.optimize()
-    m.printSolution()
-    m.getParamSForSub()
+    m.addCut()
