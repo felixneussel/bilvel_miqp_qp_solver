@@ -3,6 +3,7 @@ from gurobipy import GRB
 import Internal_Lib.utils.matrix_operations as mo
 import numpy as np
 
+
 def getIndexSet(N):
     if len(N) == 1:
         return gp.tuplelist([a for a in range(N[0])])

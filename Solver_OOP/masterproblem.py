@@ -3,6 +3,7 @@ from gurobipy import GRB
 import numpy as np
 from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+import re
 
 class master(OptimizationModel):
     
@@ -12,7 +13,7 @@ class master(OptimizationModel):
         self.addVariables()
         self.setObjective()
         self.setPConstraint()
-        self.setDualFeasiblityConstraint()
+        super().setDualFeasiblityConstraint()
         self.setStrongDualityLinearizationConstraint()
 
     def addVariables(self):
@@ -21,8 +22,8 @@ class master(OptimizationModel):
         self.s = self.model.addVars(self.jr,vtype= GRB.BINARY,name='s')
 
     def setObjective(self):
-        HG = concatenateDiagonally(self.H,self.G)
-        cd = np.concatenate((self.c,self.d))
+        HG = concatenateDiagonally(self.H,self.G_u)
+        cd = np.concatenate((self.c,self.d_u))
         primalvars = self.x_I.select() + self.x_R.select() + self.y.select()
 
         self.model.setMObjective(Q=HG/2,c=cd,constant=0.0,xQ_L=primalvars,xQ_R=primalvars,xc=primalvars,sense=GRB.MINIMIZE)
@@ -38,19 +39,12 @@ class master(OptimizationModel):
         self.model.addMConstr(A=CD,x=lower_level_vars,sense='>=',b=self.b)
         self.model.update()
 
-    def setDualFeasiblityConstraint(self):
-        GD = concatenateHorizontally(self.D.T,-self.G)
-        y_lambda = self.dual.select() + self.y.select()
-        self.model.addMConstr(A=GD,x=y_lambda,sense='=',b=self.d)
 
     def setStrongDualityLinearizationConstraint(self):
-        #Note, since our r indices start at zero, we write 2**r instead of 2**(r-1)
-        bin_coeff = {}
-        for (j,r) in self.jr:
-            bin_coeff[(j,r)] = 2**r
+        
         #Note, since our r indices start at zero, we write 2**r instead of 2**(r-1)
         #master.addConstrs((sum(2**r*s[j,r] for r in jr[j,'*']) == x_I[j] for j in I),'binary')
-        self.model.addConstrs((self.s.prod(bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary')
+        self.model.addConstrs((self.s.prod(self.bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary')
 
         ub = getUpperBound()
         lb = getLowerBound()
@@ -60,6 +54,18 @@ class master(OptimizationModel):
 
         self.model.addConstrs((self.w[j,r] >= lb*self.s[j,r] for j,r in self.jr),'13c')
         self.model.addConstrs((self.w[j,r] >= sum([self.C[(i,j)]*self.dual[i] for i in self.ll_constr]) + ub*(self.s[j,r] - 1) for j,r in self.jr),'13d')
+
+    def getParamSForSub(self):
+        name_exp = re.compile(r'^s')
+        index_exp = re.compile(r'(?<=\[)\d+(?=,)|(?<=,)\d+(?=\])')
+        s = {}
+        for var in self.model.getVars():
+            if name_exp.match(var.varName) is not None:
+                indices = list(map(int,index_exp.findall(var.varName)))
+                if len(indices) != 2:
+                    raise ValueError('Regex did not find exactly two indices')
+                s[indices[0],indices[1]] = var.x
+        print(s)
 
     def optimize(self):
         self.model.optimize()
@@ -97,3 +103,4 @@ if __name__ == '__main__':
     m = master(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b)
     m.optimize()
     m.printSolution()
+    m.getParamSForSub()

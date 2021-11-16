@@ -40,3 +40,4 @@ if __name__ == '__main__':
     for var in Bard1988Ex1.getVars():
         print(f'{var.varName} = {var.x}')
 
+   

@@ -1,19 +1,22 @@
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
+from matrix_operations import concatenateHorizontally
 
 class OptimizationModel:
 
-    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b):
+    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b):
         self.n_I = n_I
         self.n_R = n_R
         self.n_y = n_y
         self.m_u = m_u
         self.m_l = m_l
         self.H = H
-        self.G = G
+        self.G_u = G_u
+        self.G_l = G_l
         self.c = c
-        self.d = d
+        self.d_u = d_u
+        self.d_l = d_l
         self.A = A
         self.B = B
         self.a = a
@@ -28,19 +31,23 @@ class OptimizationModel:
         self.J = self.getIndexSet([self.n_y])
         self.ll_constr = self.getIndexSet([self.m_l])
         self.jr = self.getIndexSet([n_I,self.r_bar])
-
+        self.setBinaryCoeffs()  
         self.checkDimensions()
 
     def checkDimensions(self):
 
         if self.H.shape != (self.n_I+self.n_R,self.n_I+self.n_R):
             raise ValueError('Dimension of H is not n_I+n_R x n_I+n_R.')
-        elif self.G.shape != (self.n_y, self.n_y):
-            raise ValueError('Dimension of G is not n_y x n_y.')
+        elif self.G_u.shape != (self.n_y, self.n_y):
+            raise ValueError('Dimension of G_u is not n_y x n_y.')
+        elif self.G_l.shape != (self.n_y, self.n_y):
+            raise ValueError('Dimension of G_l is not n_y x n_y.')
         elif self.c.shape != (self.n_I+self.n_R,):
             raise ValueError('Dimension of c is not n_I+n_R')
-        elif self.d.shape != (self.n_y,):
-            raise ValueError('Dimension of d is not n_y')
+        elif self.d_u.shape != (self.n_y,):
+            raise ValueError('Dimension of d_u is not n_y')
+        elif self.d_l.shape != (self.n_y,):
+            raise ValueError('Dimension of d_l is not n_y')
         elif self.A.shape != (self.m_u, self.n_I+self.n_R):
             raise ValueError('Dimension of A is not m_u x n_I+n_R')
         elif self.B.shape != (self.m_u, self.n_y):
@@ -75,9 +82,19 @@ class OptimizationModel:
         self.dual = self.model.addVars(self.ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
         self.w = self.model.addVars(self.jr,name="w")
 
+    def setDualFeasiblityConstraint(self):
+        GD = concatenateHorizontally(self.D.T,-self.G_l)
+        y_lambda = self.dual.select() + self.y.select()
+        self.model.addMConstr(A=GD,x=y_lambda,sense='=',b=self.d_l)
+
     def printSolution(self):
         m1vars = self.model.getVars()
         for i in range(len(m1vars)):
             print(m1vars[i].varName, m1vars[i].x)
+
+    def setBinaryCoeffs(self):
+        self.bin_coeff = {}
+        for (j,r) in self.jr:
+            self.bin_coeff[(j,r)] = 2**r
         
         
