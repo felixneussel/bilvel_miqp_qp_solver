@@ -1,6 +1,8 @@
 from Internal_Lib import optimization_modelling as opt
+from Internal_Lib.utils import matrix_operations as mo
 import gurobipy as gp
 from gurobipy import GRB
+import numpy as np
 def setupSub(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b,x_I_sol,s_sol):
     """
     This function takes all the Input data and the solution from the 
@@ -38,10 +40,10 @@ def setupSub(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b,x_I_sol,s_sol
     ll_constr = opt.getIndexSet([m_l])
     jr = opt.getIndexSet([n_I,r_bar])
 
-    mp = gp.Model('Subproblem')
-    x_I, x_R, y, dual, s, w = addSubVariables(mp,int_lb,int_ub,I,R,J,ll_constr)
+    sp = gp.Model('Subproblem')
+    x_I, x_R, y, dual, s, w = addSubVariables(sp,int_lb,int_ub,I,R,J,ll_constr)
 
-    setSubObjective(mp,H,G,c,d,x_I,x_R,y)
+    setSubObjective(sp,H,G,c,d,x_I,x_R,y)
 
 
 def addSubVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr):
@@ -53,5 +55,32 @@ def addSubVariables(mp,int_lb,int_ub,I,R,J,ll_constr,jr):
     mp.update()
     return x_R,y,dual,w
   
-def setSubObjective(mp,H,G,c,d,x_I,x_R,y):
-    pass
+def setSubObjective(sp,H,G,c,d,x_I_param,x_R,y,n_I,n_R):
+    H_II = H[:n_I,:n_I]
+    H_RR = H[n_I:,n_I:]
+    H_IR = H[:n_I,n_I:]
+
+    c_I = c[:n_I]
+    c_R = c[n_I:]
+
+    quad_matrix = mo.concatenateDiagonally(H_RR,G)
+    lin_vec = np.concatenate((c_R.T+x_I_param.T@H_IR,d.T)).T
+    constant_term = 0.5*x_I_param@H_II@x_I_param + c_I@x_I_param
+
+    vars = x_R.select() + y.select()
+
+    sp.setMObjective(Q=quad_matrix/2,c=lin_vec,constant=constant_term,xQ_L=vars,xQ_R=vars,xc=vars,sense=GRB.MINIMIZE)
+   
+    return sp
+
+H = np.array([[1,2,3],[2,1,2],[3,2,1]])
+G = np.array([[4,2,3],[2,4,2],[3,2,4]])
+c = np.array([9,8,7])
+x = np.array([2])
+d = np.array([5,5])
+sln = setSubObjective(1,H,G,c,d,x,1,1,1,2)
+print(sln)
+    
+
+
+
