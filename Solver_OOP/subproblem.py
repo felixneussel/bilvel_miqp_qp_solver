@@ -7,8 +7,8 @@ from matrix_operations import concatenateDiagonally, concatenateHorizontally, ge
 
 class sub(OptimizationModel):
     
-    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
-        super().__init__(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b)
+    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
+        super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
         self.x_I_param = x_I_param
         self.s_param = s_param
         self.model = gp.Model('Subproblem')
@@ -60,8 +60,13 @@ class sub(OptimizationModel):
         #term3 = QuadExpr(-self.b@self.dual)#-sum([self.b[i]*self.dual[i] for i in self.ll_constr])
         #term4 = self.w.prod(self.bin_coeff)
         #self.model.addQConstr((term2+term3+term4 <= 0),'Strong duality constraint')
+
+        #Doesn't produce an error but I'm suspicious if it really works
         expr = QuadExpr()
         expr.addTerms(self.G_l,self.y.select(),self.y.select())
+        expr.addTerms(self.d_l,self.y.select())
+        expr.addTerms(-self.b,self.dual.select())
+        self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
 
 if __name__ == '__main__':
     #Dimensions
@@ -78,10 +83,11 @@ if __name__ == '__main__':
 
     #Input data
     H = np.array([[2,0],[0,2]])
-    G = np.array([[8]])
+    G_u = np.array([[8]])
+    G_l = np.array([[1]])
     c = np.array([-10,0])
-    d = np.array([4])
-
+    d_u = np.array([4])
+    d_l = np.array([1])
     A = np.array([[1,2]])
     B = np.array([[0]])
     a = np.array([0])
@@ -97,5 +103,5 @@ if __name__ == '__main__':
 
     s_param = {(0, 0): 0.0, (0, 1): 1.0, (0, 2): 0.0, (0, 3): 0.0, (0, 4): 0.0}
 
-    s = sub(n_I,n_R,n_y,m_u,m_l,H,G,c,d,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param)
+    s = sub(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param)
     #s.setPConstraint()
