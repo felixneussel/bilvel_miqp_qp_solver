@@ -1,3 +1,4 @@
+from typing import OrderedDict
 import gurobipy as gp
 from gurobipy import GRB
 from gurobipy import QuadExpr
@@ -8,6 +9,7 @@ from subproblem import Sub
 from feasibility_problem import Feas
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
+from collections import OrderedDict
 
 
 class MIQP_QP():
@@ -17,34 +19,52 @@ class MIQP_QP():
         self.LB = -np.infty
         self.UB = np.infty
         self.master = Master(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+        self.tol = 1e-5
+        self.solution = {}
 
     def solve(self):
-        while self.LB < self.UB:
+        while self.LB + self.tol < self.UB:
             print('LB : ', self.LB, 'UB: ', self.UB)
             print('\n\n\n\n')
-            status,vars,val = self.master.optimize()
-            if status != GRB.OPTIMAL:
+            m_status,m_vars,m_val = self.master.optimize()
+            
+            if m_status != GRB.OPTIMAL:
                 return ('The bilevel problem is infeasible')
             else:
-                self.LB = val
+                self.LB = m_val
             x_I_p = self.master.getParamX_IForSub()
             s_p = self.master.getParamSForSub()
             self.feas = Feas(*self.problem_data,x_I_p,s_p)
-            status,vars,val = self.feas.optimize()
-            if val <= 0:#subproblem feasible
+            f_status,f_vars,f_val = self.feas.optimize()
+            next_cut = f_vars
+            if f_val <= 1e-6:#subproblem feasible
                 self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                status,vars,val = self.sub.optimize()
-                if val < self.UB:
-                    self.current_sln = vars
-                    self.UB = val
+                s_status,s_vars,s_val = self.sub.optimize()
+                next_cut = s_vars
+                if s_val < self.UB:
+                    for v in s_vars:
+                        self.solution[v.varName] = v.x
+                    for v in m_vars:
+                        if re.match(r'x|s',v.varName) is not None:
+                            self.solution[v.varName] = v.x
+                    self.UB = s_val
+
             name_exp = re.compile(r'^y')
             cp = []
-            for var in vars:
+            for var in next_cut:
                 if name_exp.match(var.varName) is not None:
                     cp.append(var.x)
             self.master.setCuttingPoint(np.array(cp))
             self.master.addCut()
-        return self.current_sln
+            self.master.model.update()
+        return self.solution
+
+    def getBilevelSolution(self):
+        self.bilevel_solution = {}
+        name_exp = re.compile(r'^x|^y')
+        for key in self.solution:
+            if name_exp.match(key) is not None:
+                self.bilevel_solution[key] = self.solution[key]
 
 
 
@@ -81,4 +101,9 @@ if __name__ == '__main__':
     b = np.array([3,-4,-7,0])
 
     m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-    print(m.solve())
+    sln = m.solve()
+    print(sln)
+
+
+
+    

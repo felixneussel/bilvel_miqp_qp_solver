@@ -82,6 +82,7 @@ class OptimizationModel:
         self.y = self.model.addVars(self.J, vtype=GRB.CONTINUOUS,name='y')
         self.dual = self.model.addVars(self.ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
         self.w = self.model.addVars(self.jr,name="w")
+        self.model.update()
 
     def setDualFeasiblityConstraint(self):
         GD = concatenateHorizontally(self.D.T,-self.G_l)
@@ -100,7 +101,10 @@ class OptimizationModel:
 
     def optimize(self):
         self.model.optimize()
+        
+        self.model.update()
         print(self.model.ModelName)
+        print('status : ', self.model.status)
         print('func : ', self.model.ObjVal)
         vars = self.model.getVars()
         for v in vars:
@@ -108,6 +112,9 @@ class OptimizationModel:
                 print(v.varName, v.x)
         print('\n\n')
 
+        self.solution = {}
+        for v in vars:
+            self.solution[v.varName] = v.x
         
         return self.model.status,self.model.getVars(), self.model.ObjVal
         

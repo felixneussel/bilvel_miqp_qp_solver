@@ -128,3 +128,4 @@ if __name__ == '__main__':
     m.setCuttingPoint(np.array([3]))
     m.optimize()
     m.addCut()
+    print(m.model.getVars())
