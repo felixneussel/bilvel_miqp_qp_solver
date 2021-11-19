@@ -1,15 +1,16 @@
-from typing import OrderedDict
+#from typing import OrderedDict
 import gurobipy as gp
 from gurobipy import GRB
-from gurobipy import QuadExpr
+#from gurobipy import QuadExpr
 import numpy as np
-from models import OptimizationModel
+#from models import OptimizationModel
 from masterproblem import Master
 from subproblem import Sub
 from feasibility_problem import Feas
-from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+#from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
-from collections import OrderedDict
+#from collections import OrderedDict
+import timeit
 
 
 class MIQP_QP():
@@ -18,29 +19,36 @@ class MIQP_QP():
         self.problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
         self.LB = -np.infty
         self.UB = np.infty
-        self.master = Master(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+        self.master = Master(*self.problem_data)
+        
         self.tol = 1e-5
         self.solution = {}
 
     def solve(self):
+        start = timeit.default_timer()
+        self.iteration_counter = 0
         while self.LB + self.tol < self.UB:
-            print('LB : ', self.LB, 'UB: ', self.UB)
-            print('\n\n\n\n')
+            #print('LB : ', self.LB, 'UB: ', self.UB)
+            #print('\n\n\n\n')
+
+            #Solve Masterproblem
             m_status,m_vars,m_val = self.master.optimize()
             
             if m_status != GRB.OPTIMAL:
                 return ('The bilevel problem is infeasible')
             else:
                 self.LB = m_val
+            #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
             x_I_p = self.master.getParamX_IForSub()
             s_p = self.master.getParamSForSub()
-            self.feas = Feas(*self.problem_data,x_I_p,s_p)
-            f_status,f_vars,f_val = self.feas.optimize()
-            next_cut = f_vars
-            if f_val <= 1e-6:#subproblem feasible
-                self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                s_status,s_vars,s_val = self.sub.optimize()
-                next_cut = s_vars
+            #Solve Subproblem
+            self.sub = Sub(*self.problem_data,x_I_p,s_p)
+            s_status,s_vars,s_val = self.sub.optimize()
+            next_cut = s_vars
+            if s_status == GRB.OPTIMAL:#subproblem feasible
+                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
+                #s_status,s_vars,s_val = self.sub.optimize()
+                #next_cut = s_vars
                 if s_val < self.UB:
                     for v in s_vars:
                         self.solution[v.varName] = v.x
@@ -48,15 +56,25 @@ class MIQP_QP():
                         if re.match(r'x|s',v.varName) is not None:
                             self.solution[v.varName] = v.x
                     self.UB = s_val
+            else:#Subproblem infeasible
+                self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                f_status,f_vars,f_val = self.feas.optimize()
+                next_cut = f_vars
 
+            #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
+            #problem as constraint to masterproblem
             name_exp = re.compile(r'^y')
             cp = []
             for var in next_cut:
                 if name_exp.match(var.varName) is not None:
                     cp.append(var.x)
-            self.master.setCuttingPoint(np.array(cp))
-            self.master.addCut()
+            
+            self.master.addCut(np.array(cp))
             self.master.model.update()
+            self.iteration_counter += 1
+        stop = timeit.default_timer()
+        self.runtime = stop - start
+        self.getBilevelSolution()
         return self.solution
 
     def getBilevelSolution(self):

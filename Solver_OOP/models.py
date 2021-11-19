@@ -103,14 +103,14 @@ class OptimizationModel:
         self.model.optimize()
         
         self.model.update()
-        print(self.model.ModelName)
-        print('status : ', self.model.status)
-        print('func : ', self.model.ObjVal)
+        #print(self.model.ModelName)
+        #print('status : ', self.model.status)
+        #print('func : ', self.model.ObjVal)
         vars = self.model.getVars()
-        for v in vars:
-            if re.match(r'x_I|x_R|y', v.varName):
-                print(v.varName, v.x)
-        print('\n\n')
+        #for v in vars:
+        #    if re.match(r'x_I|x_R|y', v.varName):
+        #        print(v.varName, v.x)
+        #print('\n\n')
 
         self.solution = {}
         for v in vars:

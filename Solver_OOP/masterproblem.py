@@ -76,13 +76,13 @@ class Master(OptimizationModel):
                 x.append(var.x)
         return np.array(x)
 
-    def setCuttingPoint(self,p):
-        self.cut_point = p
+    
 
-    def addCut(self):
+    def addCut(self,p):
         """
         Takes a point \bar{y}, linearizes strong duality constraint at this point and adds the constraint to the model.
         """
+        self.cut_point = p
         twoyTG = 2*self.cut_point.T @ self.G_l
         yTGy = self.cut_point.T @ self.G_l @ self.cut_point
         term1 = sum([twoyTG[i]*self.y.select(i)[0] for i in self.J])

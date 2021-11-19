@@ -78,6 +78,8 @@ class Sub(OptimizationModel):
                 x.append(var.x)
         return np.array(x)
 
+    
+
 if __name__ == '__main__':
     #Dimensions
     #Number of Integer upper-level variables
