@@ -32,7 +32,8 @@ class MIQP_QP():
             #print('\n\n\n\n')
 
             #Solve Masterproblem
-            m_status,m_vars,m_val = self.master.optimize()
+            self.master.optimize()
+            m_status,m_vars,m_val = self.master.status,self.master.solution,self.master.ObjVal
             
             if m_status != GRB.OPTIMAL:
                 return ('The bilevel problem is infeasible')
@@ -43,7 +44,8 @@ class MIQP_QP():
             s_p = self.master.getParamSForSub()
             #Solve Subproblem
             self.sub = Sub(*self.problem_data,x_I_p,s_p)
-            s_status,s_vars,s_val = self.sub.optimize()
+            self.sub.optimize()
+            s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
             if s_status == GRB.OPTIMAL:#subproblem feasible
                 #self.sub = Sub(*self.problem_data,x_I_p,s_p)
@@ -58,7 +60,8 @@ class MIQP_QP():
                     self.UB = s_val
             else:#Subproblem infeasible
                 self.feas = Feas(*self.problem_data,x_I_p,s_p)
-                f_status,f_vars,f_val = self.feas.optimize()
+                self.feas.optimize()
+                f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                 next_cut = f_vars
 
             #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
@@ -76,6 +79,19 @@ class MIQP_QP():
         self.runtime = stop - start
         self.getBilevelSolution()
         return self.solution
+
+    def solve_ST(self):
+        self.UB = np.infty
+        self.l = self.int_lb
+        self.u = self.int_ub
+        self.z_star = None
+        self.O = [Master(*self.problem_data)]
+        while self.O:
+            N_p = self.O.pop()
+            m_status,m_vars,m_val = N_p.optimize()
+            if m_status != GRB.OPTIMAL:
+                continue
+            #elif 
 
     def getBilevelSolution(self):
         self.bilevel_solution = {}

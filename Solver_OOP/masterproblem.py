@@ -92,6 +92,18 @@ class Master(OptimizationModel):
         
         self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality relaxation')
 
+    def addBounds(self,l,u):
+        """
+        Bounds for Single-Tree
+        """
+        A = np.zeros((self.n_I,self.n_I))
+        self.model.addMConstr(A=A,x=self.x_I.select(),sense = '>=',b=l)
+        self.model.addMConstr(A=A,x=self.x_I.select(),sense = '<=',b=u)
+
+    def is_int_feasible(self):
+        pass
+
+
 
 if __name__ == '__main__':
     #Dimensions

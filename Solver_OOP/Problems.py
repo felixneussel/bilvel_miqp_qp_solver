@@ -74,11 +74,7 @@ problems['GumusFloudas2001Ex4'] = GumusFloudas2001Ex4
 problems['ClarkWesterberg1990a'] = ClarkWesterberg1990a
 
 
-""" m = MIQP_QP(*ClarkWesterberg1990a)
-sln = m.solve()
-m.getBilevelSolution()
-for key in m.bilevel_solution:
-    print(key,'=', m.bilevel_solution[key]) """
+
 
 def loadProblem(name):
     return problems[name]

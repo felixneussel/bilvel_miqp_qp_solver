@@ -106,16 +106,22 @@ class OptimizationModel:
         #print(self.model.ModelName)
         #print('status : ', self.model.status)
         #print('func : ', self.model.ObjVal)
-        vars = self.model.getVars()
+
+        #vars = self.model.getVars()
+
         #for v in vars:
         #    if re.match(r'x_I|x_R|y', v.varName):
         #        print(v.varName, v.x)
         #print('\n\n')
 
-        self.solution = {}
+        """ self.solution = {}
         for v in vars:
-            self.solution[v.varName] = v.x
+            self.solution[v.varName] = v.x """
+
+        self.status = self.model.status
+        self.ObjVal = self.model.ObjVal
+        self.solution = self.model.getVars()
         
-        return self.model.status,self.model.getVars(), self.model.ObjVal
+        #return self.model.status,self.model.getVars(), self.model.ObjVal
         
         
