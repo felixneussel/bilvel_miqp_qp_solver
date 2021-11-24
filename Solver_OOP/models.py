@@ -102,25 +102,30 @@ class OptimizationModel:
     def optimize(self):
         self.model.optimize()
         
-        self.model.update()
-        #print(self.model.ModelName)
-        #print('status : ', self.model.status)
-        #print('func : ', self.model.ObjVal)
+        #self.model.update()
+        print(self.model.ModelName)
+        print('status : ', self.model.status)
+        if self.model.status == GRB.OPTIMAL:
+            print('func : ', self.model.ObjVal)
 
-        #vars = self.model.getVars()
+            vars = self.model.getVars()
 
-        #for v in vars:
-        #    if re.match(r'x_I|x_R|y', v.varName):
-        #        print(v.varName, v.x)
-        #print('\n\n')
+            for v in vars:
+                if re.match(r'x_I|x_R|y', v.varName):
+                    print(v.varName, v.x)
+            print('\n\n')
 
         """ self.solution = {}
         for v in vars:
             self.solution[v.varName] = v.x """
 
         self.status = self.model.status
-        self.ObjVal = self.model.ObjVal
-        self.solution = self.model.getVars()
+        if self.status == GRB.OPTIMAL:
+            self.ObjVal = self.model.ObjVal
+            self.solution = self.model.getVars().copy()
+        else:
+            self.ObjVal = None
+            self.solution = None
         
         #return self.model.status,self.model.getVars(), self.model.ObjVal
         

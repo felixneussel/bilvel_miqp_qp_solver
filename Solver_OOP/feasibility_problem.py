@@ -7,7 +7,7 @@ from matrix_operations import concatenateDiagonally, concatenateHorizontally, ge
 
 class Feas(OptimizationModel):
     
-    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_i_param,s_param):
+    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
         self.x_I_param = x_I_param
         self.s_param = s_param

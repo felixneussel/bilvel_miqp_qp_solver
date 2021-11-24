@@ -7,6 +7,7 @@ import numpy as np
 from masterproblem import Master
 from subproblem import Sub
 from feasibility_problem import Feas
+from st_master import SingleTree
 #from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 #from collections import OrderedDict
@@ -81,17 +82,78 @@ class MIQP_QP():
         return self.solution
 
     def solve_ST(self):
+        start = timeit.default_timer()
         self.UB = np.infty
-        self.l = self.int_lb
-        self.u = self.int_ub
+        self.iteration_counter = 0
+        #self.l = self.int_lb
+        #self.u = self.int_ub
         self.z_star = None
-        self.O = [Master(*self.problem_data)]
-        while self.O:
+        self.O = [SingleTree(*self.problem_data)]
+        while self.O and self.iteration_counter <8:
+            """ print(f'O = {self.O}')
+            print(f'upper bound = {self.UB}')
+            print() """
             N_p = self.O.pop()
-            m_status,m_vars,m_val = N_p.optimize()
-            if m_status != GRB.OPTIMAL:
+            N_p.optimize()
+            m_status,m_vars,m_val = N_p.status,N_p.solution,N_p.ObjVal
+            if m_status != GRB.OPTIMAL or m_val >= self.UB - self.tol:
                 continue
-            #elif 
+            elif N_p.is_int_feasible() and N_p.ObjVal < self.UB:
+                """ print(f'Int vars : {N_p.int_vars}')
+                print(f'Integer feasiblity: {N_p.is_int_feasible()}')
+                print(f'obj val = {N_p.ObjVal}')
+                print(f'UB = {self.UB}')
+                print() """
+
+                #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
+                x_I_p = N_p.getParamX_IForSub()
+                s_p = N_p.getParamSForSub()
+                #Solve Subproblem
+                
+                self.sub = Sub(*self.problem_data,x_I_p,s_p)
+                self.sub.optimize()
+                s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
+                next_cut = s_vars
+                if s_status == GRB.OPTIMAL:
+                    if s_val < self.UB:#subproblem feasible
+                        for v in s_vars:
+                            self.solution[v.varName] = v.x
+                        for v in m_vars:
+                            if re.match(r'x|s',v.varName) is not None:
+                                self.solution[v.varName] = v.x
+                        self.UB = s_val
+                else:#Subproblem infeasible
+                  
+                    self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                    self.feas.optimize()
+                    f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
+                    next_cut = f_vars
+                self.O.append(N_p)
+                name_exp = re.compile(r'^y')
+                cp = []
+                for var in next_cut:
+                    if name_exp.match(var.varName) is not None:
+                        cp.append(var.x)
+                
+                for pro in self.O:
+                    pro.addCut(np.array(cp))
+                    pro.model.update()
+
+            else:
+                first = SingleTree(*self.problem_data)
+                first.addBounds(l=None,u = np.floor(N_p.int_vars))
+                second = SingleTree(*self.problem_data)
+                second.addBounds(l = np.ceil(N_p.int_vars),u=None)
+                #print(f'O before : {self.O}')
+                self.O.append(first)
+                self.O.append(second)
+                """ print(f'O after : {self.O}')
+                print() """
+            
+            self.iteration_counter += 1
+        stop = timeit.default_timer()
+        self.runtime = stop-start
+        self.getBilevelSolution()
 
     def getBilevelSolution(self):
         self.bilevel_solution = {}

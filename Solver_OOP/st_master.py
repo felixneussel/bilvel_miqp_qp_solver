@@ -5,11 +5,11 @@ from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 
-class Master(OptimizationModel):
+class SingleTree(OptimizationModel):
     
     def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-        self.model = gp.Model('Masterproblem')
+        self.model = gp.Model('SingleTree')
         self.model.Params.LogToConsole = 0
         self.addVariables()
         self.setObjective()
@@ -19,7 +19,7 @@ class Master(OptimizationModel):
 
     def addVariables(self):
         super().addVariables()
-        self.x_I = self.model.addVars(self.I, vtype=GRB.INTEGER,lb=self.int_lb, ub=self.int_ub,name='x_I')
+        self.x_I = self.model.addVars(self.I, vtype=GRB.CONTINUOUS,lb=self.int_lb, ub=self.int_ub,name='x_I')
         self.s = self.model.addVars(self.jr,vtype= GRB.BINARY,name='s')
 
     def setObjective(self):
@@ -92,6 +92,30 @@ class Master(OptimizationModel):
         
         self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality relaxation')
 
+    def addBounds(self,l,u):
+        """
+        Bounds for Single-Tree
+        """
+        A = np.zeros((self.n_I,self.n_I))
+       
+        if l is not None:
+            self.model.addMConstr(A=A,x=self.x_I.select(),sense = '>=',b=l)
+        if u is not None:
+            self.model.addMConstr(A=A,x=self.x_I.select(),sense = '<=',b=u)
+
+    def is_int_feasible(self):
+        int_vars = []
+        for v in self.solution:
+            if re.match(r'^x_I',v.varName):
+                int_vars.append(v.x)
+        
+        int_vars_casted = list(map(int,int_vars))
+        self.int_vars = np.array(int_vars)
+        if self.int_vars - np.array(int_vars_casted) == np.zeros(self.n_I):
+            return True
+        else:
+            return False
+
 
 
 
@@ -126,8 +150,8 @@ if __name__ == '__main__':
     C = np.array([[3],[-2],[-1],[0]])
     D = np.array([[-1],[0.5],[-1],[1]])
     b = np.array([3,-4,-7,0])
-    m = Master(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+    """ m = Master(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
     m.setCuttingPoint(np.array([3]))
     m.optimize()
     m.addCut()
-    print(m.model.getVars())
+    print(m.model.getVars()) """
