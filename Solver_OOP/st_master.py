@@ -128,7 +128,8 @@ class SingleTree(OptimizationModel):
         
         int_vars_casted = list(map(int,int_vars))
         self.int_vars = np.array(int_vars)
-        if self.int_vars - np.array(int_vars_casted) == np.zeros(self.n_I):
+        #print('truth array',self.int_vars - np.array(int_vars_casted) == np.zeros(self.n_I))
+        if all(self.int_vars - np.array(int_vars_casted) == np.zeros(self.n_I)):
             return True
         else:
             return False

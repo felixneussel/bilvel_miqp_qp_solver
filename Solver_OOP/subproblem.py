@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-from gurobipy import QuadExpr
+from gurobipy import QuadExpr,MQuadExpr
 import numpy as np
 from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
@@ -64,11 +64,18 @@ class Sub(OptimizationModel):
         #self.model.addQConstr((term2+term3+term4 <= 0),'Strong duality constraint')
 
         #Doesn't produce an error but I'm suspicious if it really works
-        expr = QuadExpr()
+        #Indeed: Does only work if dim(y) = 1
+        """ expr = QuadExpr()
         expr.addTerms(self.G_l,self.y.select(),self.y.select())
         expr.addTerms(self.d_l,self.y.select())
-        expr.addTerms(-self.b,self.dual.select())
-        self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
+        expr.addTerms(-self.b,self.dual.select()) """
+        
+        #expr = self.y.select @ self.G_l @self.y.select() #+ self.d_l@self.y.select() - self.b@self.dual.select()
+        #self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
+
+        linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+        y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+        self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
 
     def getPointForMasterCut(self):
         name_exp = re.compile(r'^y')

@@ -89,7 +89,7 @@ class MIQP_QP():
         #self.u = self.int_ub
         self.z_star = None
         self.O = [SingleTree(*self.problem_data)]
-        while self.O and self.iteration_counter <8:
+        while self.O:# and self.iteration_counter: #<8:
             """ print(f'O = {self.O}')
             print(f'upper bound = {self.UB}')
             print() """

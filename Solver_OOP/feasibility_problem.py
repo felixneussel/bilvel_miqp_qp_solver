@@ -20,11 +20,16 @@ class Feas(OptimizationModel):
         self.setStrongDualityLinearizationConstraint()
 
     def setObjective(self):
-        expr = QuadExpr()
+        """ expr = QuadExpr()
         expr.addTerms(self.G_l,self.y.select(),self.y.select())
         expr.addTerms(self.d_l,self.y.select())
         expr.addTerms(-self.b,self.dual.select())
-        self.model.setObjective(expr + self.w.prod(self.bin_coeff),sense=GRB.MINIMIZE)
+        self.model.setObjective(expr + self.w.prod(self.bin_coeff),sense=GRB.MINIMIZE) """
+
+        linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+        y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+        #elf.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
+        self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=self.y.select(),xQ_R=self.y.select(),xc=y_lam_w,sense=GRB.MINIMIZE)
 
     def setPConstraint(self):
         A_I = self.A[:,:self.n_I]

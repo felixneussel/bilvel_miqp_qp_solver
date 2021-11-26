@@ -96,12 +96,15 @@ class OptimizationModel:
 
     def setBinaryCoeffs(self):
         self.bin_coeff = {}
+        bi_c_arr = []
         for (j,r) in self.jr:
             self.bin_coeff[(j,r)] = 2**r
+            bi_c_arr.append(2**r)
+        self.bin_coeff_vec = np.array(bi_c_arr)
 
     def optimize(self):
         self.model.optimize()
-        
+        """ 
         #self.model.update()
         print(self.model.ModelName)
         print('status : ', self.model.status)
@@ -114,7 +117,7 @@ class OptimizationModel:
                 if re.match(r'x_I|x_R|y', v.varName):
                     print(v.varName, v.x)
             print('\n\n')
-
+ """ 
         """ self.solution = {}
         for v in vars:
             self.solution[v.varName] = v.x """
