@@ -6,7 +6,7 @@ name = 'ClarkWesterberg1990a'
 #name = 'GumusFloudas2001Ex4'
 p = loadProblem(name)
 m = MIQP_QP(*p)
-m.solve_ST()
+m.solve()
 print()
 print()
 print(f'Results for {name}')

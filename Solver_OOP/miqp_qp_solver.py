@@ -140,10 +140,10 @@ class MIQP_QP():
                     pro.model.update()
 
             else:
-                first = SingleTree(*self.problem_data)
-                first.addBounds(l=None,u = np.floor(N_p.int_vars))
-                second = SingleTree(*self.problem_data)
-                second.addBounds(l = np.ceil(N_p.int_vars),u=None)
+                first = N_p
+                first.addUpperBoun()
+                second = N_p
+                second.addLowerBound()
                 #print(f'O before : {self.O}')
                 self.O.append(first)
                 self.O.append(second)

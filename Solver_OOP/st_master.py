@@ -103,6 +103,23 @@ class SingleTree(OptimizationModel):
         if u is not None:
             self.model.addMConstr(A=A,x=self.x_I.select(),sense = '<=',b=u)
 
+    def getBranchIndex(self):
+        #Branch on longest box axis whose upper bound is not integer
+        differences = self.int_ub - self.int_lb
+        max_index = 0
+        for i,dif in enumerate(differences):
+            if dif > differences[max_index] and self.int_ub[i] - int(self.int_ub) !=0:
+                max_index = i
+        return i
+
+    def addUpperBound(self,u):
+        self.int_ub[self.getBranchIndex]=np.floor(self.int_ub[self.getBranchIndex])
+        self.x_I.setAttr('ub',self.int_ub)
+
+    def addLowerBound(self,l):
+        self.int_lb[self.getBranchIndex]=np.ceil(self.int_lb[self.getBranchIndex])
+        self.x_I.setAttr('lb',self.int_lb)
+
     def is_int_feasible(self):
         int_vars = []
         for v in self.solution:
