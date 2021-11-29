@@ -44,7 +44,9 @@ class MIQP_QP():
             x_I_p = self.master.getParamX_IForSub()
             s_p = self.master.getParamSForSub()
             #Solve Subproblem
+            print(self.master.y)
             self.sub = Sub(*self.problem_data,x_I_p,s_p)
+            
             self.sub.optimize()
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
@@ -110,7 +112,8 @@ class MIQP_QP():
                 s_p = N_p.getParamSForSub()
                 #Solve Subproblem
                 
-                self.sub = Sub(*self.problem_data,x_I_p,s_p)
+                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
+                self.sub = self.master.model.FixedModel()
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
                 next_cut = s_vars

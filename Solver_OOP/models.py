@@ -81,7 +81,7 @@ class OptimizationModel:
         self.x_R = self.model.addVars(self.R, vtype=GRB.CONTINUOUS,name='x_R')
         self.y = self.model.addVars(self.J, vtype=GRB.CONTINUOUS,name='y')
         self.dual = self.model.addVars(self.ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
-        self.w = self.model.addVars(self.jr,name="w")
+        self.w = self.model.addVars(self.jr,vtype=GRB.CONTINUOUS, name="w")
         self.model.update()
 
     def setDualFeasiblityConstraint(self):

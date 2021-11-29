@@ -75,6 +75,9 @@ class Sub(OptimizationModel):
 
         linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
         y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+        #self.model.update()
+        print(self.y.select())
+        print(y_lam_w)
         self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
 
     def getPointForMasterCut(self):
