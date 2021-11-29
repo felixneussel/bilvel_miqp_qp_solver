@@ -46,7 +46,8 @@ class MIQP_QP():
             #Solve Subproblem
             print(self.master.y)
             self.sub = Sub(*self.problem_data,x_I_p,s_p)
-            
+            self.sub.model = self.master.model.fixed()
+            self.sub.setStrongDualityConstraint(self.master.y.select(),self.master.dual.select(),self.master.w.select())
             self.sub.optimize()
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars

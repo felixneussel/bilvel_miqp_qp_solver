@@ -19,7 +19,7 @@ class Sub(OptimizationModel):
         self.setPConstraint()
         self.setDualFeasiblityConstraint()
         self.setStrongDualityLinearizationConstraint()
-        self.setStrongDualityConstraint()
+        #self.setStrongDualityConstraint()
 
     def setObjective(self):
         #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
@@ -46,7 +46,7 @@ class Sub(OptimizationModel):
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')
 
-    def setStrongDualityConstraint(self):
+    def setStrongDualityConstraint(self,y_var,dual_var,w_var):
         """
         twoyTG = 2*point.T @ G
         yTGy = point.T @ G @ point
@@ -74,11 +74,11 @@ class Sub(OptimizationModel):
         #self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
 
         linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
-        y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+        y_lam_w = y_var + dual_var + w_var
         #self.model.update()
         print(self.y.select())
         print(y_lam_w)
-        self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
+        self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
 
     def getPointForMasterCut(self):
         name_exp = re.compile(r'^y')
