@@ -24,6 +24,7 @@ class Sub(OptimizationModel):
         self.model = mp.model.fixed()
         self.model.Params.LogToConsole = 0
         self.removeMasterLinearizations()
+        self.removeBinaryExpansion()
         self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
     """ 
     def setObjective(self):
@@ -47,10 +48,10 @@ class Sub(OptimizationModel):
         AB = concatenateHorizontally(A_R,self.B)
         primalvars = self.x_R.select() + self.y.select()
         self.model.addMConstr(A=AB,x=primalvars,sense='>=',b=self.a-A_I@self.x_I_param)
-
+    """
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')
-    """
+    
 
     def setStrongDualityConstraint(self,y_var,dual_var,w_var):
         """
@@ -89,6 +90,13 @@ class Sub(OptimizationModel):
         constraints = self.model.getConstrs()
         for i in range(self.cut_counter):
             self.model.remove(constraints.pop())
+
+    def removeBinaryExpansion(self):
+        constr = self.model.getConstrs()
+        filtered_cons = list(filter(lambda c: re.match(r'^binary expansion',c.ConstrName) is not None,constr))
+        for con in filtered_cons:
+            self.model.remove(con)
+
     """ 
     def removeMasterLinearizations(self):
         constraints = self.model.getConstrs()

@@ -40,9 +40,7 @@ class MIQP_QP():
                 return ('The bilevel problem is infeasible')
             else:
                 self.LB = m_val
-            #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
-            x_I_p = self.master.getParamX_IForSub()
-            s_p = self.master.getParamSForSub()
+            
             #Solve Subproblem
             #print(self.master.y)
             self.sub = Sub(self.master,*self.problem_data,self.iteration_counter)
@@ -52,9 +50,7 @@ class MIQP_QP():
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
             if s_status == GRB.OPTIMAL:#subproblem feasible
-                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                #s_status,s_vars,s_val = self.sub.optimize()
-                #next_cut = s_vars
+                
                 if s_val < self.UB:
                     for v in s_vars:
                         self.solution[v.varName] = v.x
@@ -63,7 +59,7 @@ class MIQP_QP():
                             self.solution[v.varName] = v.x
                     self.UB = s_val
             else:#Subproblem infeasible
-                self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                self.feas = Feas(self.master,*self.problem_data,self.iteration_counter)
                 self.feas.optimize()
                 f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                 next_cut = f_vars
@@ -89,8 +85,7 @@ class MIQP_QP():
         self.UB = np.infty
         self.iteration_counter = 0
         self.cut_counter = 0
-        #self.l = self.int_lb
-        #self.u = self.int_ub
+        
         self.z_star = None
         self.master = SingleTree(*self.problem_data)
         self.O = [self.master]
@@ -110,13 +105,11 @@ class MIQP_QP():
                 print(f'UB = {self.UB}')
                 print() """
 
-                #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
-                x_I_p = N_p.getParamX_IForSub()
-                s_p = N_p.getParamSForSub()
+                
                 #Solve Subproblem
                 
                 self.sub = Sub(self.master,*self.problem_data,self.cut_counter)
-                #self.sub = self.master.model.FixedModel()
+                
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
                 next_cut = s_vars
@@ -130,7 +123,7 @@ class MIQP_QP():
                         self.UB = s_val
                 else:#Subproblem infeasible
                   
-                    self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                    self.feas = Feas(self.master,*self.problem_data,self.cut_counter)
                     self.feas.optimize()
                     f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                     next_cut = f_vars

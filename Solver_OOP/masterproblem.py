@@ -45,7 +45,7 @@ class Master(OptimizationModel):
         
         #Note, since our r indices start at zero, we write 2**r instead of 2**(r-1)
         #master.addConstrs((sum(2**r*s[j,r] for r in jr[j,'*']) == x_I[j] for j in I),'binary')
-        self.model.addConstrs((self.s.prod(self.bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary')
+        self.model.addConstrs((self.s.prod(self.bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary expansion')
 
         ub = getUpperBound()
         lb = getLowerBound()

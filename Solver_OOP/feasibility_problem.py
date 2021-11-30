@@ -4,11 +4,13 @@ from gurobipy import QuadExpr
 import numpy as np
 from models import OptimizationModel
 from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+import re
 
 class Feas(OptimizationModel):
     
-    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
+    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,cut_counter):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+        """ 
         self.x_I_param = x_I_param
         self.s_param = s_param
         self.model = gp.Model('Feasiblity-Problem')
@@ -17,9 +19,14 @@ class Feas(OptimizationModel):
         self.setObjective()
         self.setPConstraint()
         self.setDualFeasiblityConstraint()
-        self.setStrongDualityLinearizationConstraint()
+        self.setStrongDualityLinearizationConstraint() """
+        self.cut_counter = cut_counter
+        self.model = mp.fixed()
+        self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
+        self.removeMasterLinearizations()
+        self.removeBinaryExpansion()
 
-    def setObjective(self):
+    def setObjective(self,y_var,dual_var,w_var):
         """ expr = QuadExpr()
         expr.addTerms(self.G_l,self.y.select(),self.y.select())
         expr.addTerms(self.d_l,self.y.select())
@@ -27,9 +34,21 @@ class Feas(OptimizationModel):
         self.model.setObjective(expr + self.w.prod(self.bin_coeff),sense=GRB.MINIMIZE) """
 
         linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
-        y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+        y_lam_w = y_var + dual_var + w_var
         #elf.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
-        self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=self.y.select(),xQ_R=self.y.select(),xc=y_lam_w,sense=GRB.MINIMIZE)
+        self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
+
+    def removeMasterLinearizations(self):
+        
+        constraints = self.model.getConstrs()
+        for i in range(self.cut_counter):
+            self.model.remove(constraints.pop())
+
+    def removeBinaryExpansion(self):
+        constr = self.model.getConstrs()
+        filtered_cons = list(filter(lambda c: re.match(r'^binary expansion',c.ConstrName) is not None,constr))
+        for con in filtered_cons:
+            self.model.remove(con)
 
     def setPConstraint(self):
         A_I = self.A[:,:self.n_I]
