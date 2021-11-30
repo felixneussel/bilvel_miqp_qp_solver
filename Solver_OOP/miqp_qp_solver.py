@@ -44,10 +44,10 @@ class MIQP_QP():
             x_I_p = self.master.getParamX_IForSub()
             s_p = self.master.getParamSForSub()
             #Solve Subproblem
-            print(self.master.y)
-            self.sub = Sub(*self.problem_data,x_I_p,s_p)
-            self.sub.model = self.master.model.fixed()
-            self.sub.setStrongDualityConstraint(self.master.y.select(),self.master.dual.select(),self.master.w.select())
+            #print(self.master.y)
+            self.sub = Sub(self.master,*self.problem_data,self.iteration_counter)
+            #self.sub.model = self.master.model.fixed()
+            #self.sub.setStrongDualityConstraint(self.master.y.select(),self.master.dual.select(),self.master.w.select())
             self.sub.optimize()
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
@@ -88,10 +88,12 @@ class MIQP_QP():
         start = timeit.default_timer()
         self.UB = np.infty
         self.iteration_counter = 0
+        self.cut_counter = 0
         #self.l = self.int_lb
         #self.u = self.int_ub
         self.z_star = None
-        self.O = [SingleTree(*self.problem_data)]
+        self.master = SingleTree(*self.problem_data)
+        self.O = [self.master]
         while self.O:# and self.iteration_counter: #<8:
             """ print(f'O = {self.O}')
             print(f'upper bound = {self.UB}')
@@ -113,8 +115,8 @@ class MIQP_QP():
                 s_p = N_p.getParamSForSub()
                 #Solve Subproblem
                 
-                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                self.sub = self.master.model.FixedModel()
+                self.sub = Sub(self.master,*self.problem_data,self.cut_counter)
+                #self.sub = self.master.model.FixedModel()
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
                 next_cut = s_vars
@@ -142,6 +144,7 @@ class MIQP_QP():
                 for pro in self.O:
                     pro.addCut(np.array(cp))
                     pro.model.update()
+                    self.cut_counter += 1
 
             else:
                 first = N_p

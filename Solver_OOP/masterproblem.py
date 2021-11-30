@@ -90,7 +90,7 @@ class Master(OptimizationModel):
         term3 = -sum([self.b[j]*self.dual.select(j)[0] for j in self.ll_constr])
         term4 = self.w.prod(self.bin_coeff)
         
-        self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality relaxation')
+        self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality linearization')
 
 
 

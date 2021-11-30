@@ -8,19 +8,24 @@ import re
 
 class Sub(OptimizationModel):
     
-    def __init__(self,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param):
+    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,cut_counter):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-        self.x_I_param = x_I_param
-        self.s_param = s_param
-        self.model = gp.Model('Subproblem')
-        self.model.Params.LogToConsole = 0
-        self.addVariables()
-        self.setObjective()
-        self.setPConstraint()
-        self.setDualFeasiblityConstraint()
-        self.setStrongDualityLinearizationConstraint()
+        self.cut_counter = cut_counter
+        #self.x_I_param = x_I_param
+        #self.s_param = s_param
+        #self.model = gp.Model('Subproblem')
+        
+        #self.addVariables()
+        #self.setObjective()
+        #self.setPConstraint()
+        #self.setDualFeasiblityConstraint()
+        #self.setStrongDualityLinearizationConstraint()
         #self.setStrongDualityConstraint()
-
+        self.model = mp.model.fixed()
+        self.model.Params.LogToConsole = 0
+        self.removeMasterLinearizations()
+        self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
+    """ 
     def setObjective(self):
         #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
         H_II = self.H[:self.n_I,:self.n_I]
@@ -45,6 +50,7 @@ class Sub(OptimizationModel):
 
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')
+    """
 
     def setStrongDualityConstraint(self,y_var,dual_var,w_var):
         """
@@ -75,18 +81,34 @@ class Sub(OptimizationModel):
 
         linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
         y_lam_w = y_var + dual_var + w_var
-        #self.model.update()
-        print(self.y.select())
-        print(y_lam_w)
+        
         self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
 
+    def removeMasterLinearizations(self):
+        
+        constraints = self.model.getConstrs()
+        for i in range(self.cut_counter):
+            self.model.remove(constraints.pop())
+    """ 
+    def removeMasterLinearizations(self):
+        constraints = self.model.getConstrs()
+        #filter(lambda c: True if c.ConstrName == 'Strong Duality Linearization' else False, constraints)
+        constr_remover = lambda c: self.model.remove(c) if c.ConstrName == 'Strong duality linearization' else 0
+        print('Before removal')
+        print(constraints)
+        map(constr_remover,constraints)
+        print('After removal')
+        print(self.model.getConstrs())
+         """    
+        
+    """ 
     def getPointForMasterCut(self):
         name_exp = re.compile(r'^y')
         x = []
         for var in self.model.getVars():
             if name_exp.match(var.varName) is not None:
                 x.append(var.x)
-        return np.array(x)
+        return np.array(x) """
 
     
 
