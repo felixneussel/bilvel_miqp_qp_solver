@@ -21,7 +21,7 @@ class Feas(OptimizationModel):
         self.setDualFeasiblityConstraint()
         self.setStrongDualityLinearizationConstraint() """
         self.cut_counter = cut_counter
-        self.model = mp.fixed()
+        self.model = mp.model.fixed()
         self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
         self.removeMasterLinearizations()
         self.removeBinaryExpansion()

@@ -5,6 +5,7 @@ import re
 import os
 import threading as th
 import multiprocessing as mp
+import time
 """ 
 from Solver_OOP.masterproblem import Master
 from Solver_OOP.subproblem import Sub
@@ -393,9 +394,11 @@ if __name__ == '__main__':
    
     for mps_file in os.listdir('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'):
         if re.match(r'.*\.mps$', mps_file) is not None:  
-            s = mp.Process(target=run, args = (mps_file))
-            t = th.Timer(5,lambda:s.terminate())
-            t.start()
+            print(len(mps_file))
+            s = mp.Process(target=run, args = (mps_file,))
             s.start()
+            time.sleep(5)
+            s.terminate()
+            print(f'{mps_file} terminated')
             
                   
