@@ -1,6 +1,12 @@
 from pysmps import smps_loader as smps
 import numpy as np
-
+from Solver_OOP.miqp_qp_solver import MIQP_QP
+import re
+""" 
+from Solver_OOP.masterproblem import Master
+from Solver_OOP.subproblem import Sub
+from Solver_OOP.feasibility_problem import Feasibility
+ """
 def mps_aux_reader(mps_path,aux_path):
     name,objective_name,row_names,col_names,var_types,constr_types,c,A_in,rhs_names,rhs,bnd_names,bnd = smps.load_mps(mps_path)
 
@@ -168,7 +174,7 @@ def mps_aux_reader(mps_path,aux_path):
     x_const_ub = []
 
     for i,entry in enumerate(zero_cols):
-        if entry:
+        if not entry:
             x_int_lb.append(int_lb[i])
             x_int_ub.append(int_ub[i])
         else:
@@ -233,7 +239,18 @@ def mps_aux_reader(mps_path,aux_path):
 
     a = np.concatenate((a,np.array(x_const_lb),-np.array(x_const_ub)))
 
-    return c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b
+    #Number of Integer upper-level variables
+    n_I = int_lb.shape[0]
+    #Number of Continuous upper-level variables
+    n_R = len(x_const_ub)
+    #Number of lower-level variables
+    n_y = d_u.shape[0]
+    #Number of upper level constraints
+    m_u = A.shape[0]
+    #Number of lower level constaints
+    m_l = C.shape[0]
+
+    return n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b
 
 if __name__ == '__main__':
 
@@ -241,9 +258,52 @@ if __name__ == '__main__':
     aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein27-0.900000.aux'
 
     model = list(mps_aux_reader(mps_pa,aux_pa))
+    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
+    """ 
     for var in model:
-        print(var.shape)
+        if not isinstance(var,int):
+            print(var.shape)
         print(var)
         print()
+ """
+    
+
+    #Input data
+    np.random.seed(3)
+    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
+    H = H.T@H
+    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_u = G_u.T@G_u
+    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_l = G_l.T@G_l  
+
+    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+
+    m.solve()
+    print()
+    print()
+    #print(f'Results for {name}')
+    print()
+    print()
+    print('All variables')
+    print()
+    for key in m.solution:
+        print(key,'=', m.solution[key])
+    print()
+    print('Variables of the Bilevel problem')
+    print()
+    for key in m.bilevel_solution:
+        if re.match(r'^x',key):
+            print(key,'=', m.solution[key])
+    for key in m.bilevel_solution:
+        if re.match(r'^y',key):
+            print(key,'=', m.solution[key])
+    print()
+
+    print('Objective Function : ', m.UB)
+    print()
+    print('Runtime : ',m.runtime, 's')
+    print()
+    print('Iterations : ', m.iteration_counter)
 
     

@@ -1,5 +1,5 @@
-from Problems import loadProblem, randomProblem
-from miqp_qp_solver import MIQP_QP
+from Solver_OOP.Problems import loadProblem, randomProblem
+from Solver_OOP.miqp_qp_solver import MIQP_QP
 import re
 import numpy as np
 

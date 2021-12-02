@@ -2,8 +2,8 @@ import gurobipy as gp
 from gurobipy import GRB
 from gurobipy import QuadExpr,MQuadExpr
 import numpy as np
-from models import OptimizationModel
-from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+from Solver_OOP.models import OptimizationModel
+from Solver_OOP.matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 
 class Sub(OptimizationModel):

@@ -4,10 +4,10 @@ from gurobipy import GRB
 #from gurobipy import QuadExpr
 import numpy as np
 #from models import OptimizationModel
-from masterproblem import Master
-from subproblem import Sub
-from feasibility_problem import Feas
-from st_master import SingleTree
+from Solver_OOP.masterproblem import Master
+from Solver_OOP.subproblem import Sub
+from Solver_OOP.feasibility_problem import Feas
+from Solver_OOP.st_master import SingleTree
 #from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 #from collections import OrderedDict

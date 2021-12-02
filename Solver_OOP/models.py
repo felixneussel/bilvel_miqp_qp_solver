@@ -1,7 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
-from matrix_operations import concatenateHorizontally
+from Solver_OOP.matrix_operations import concatenateHorizontally
 import re
 
 class OptimizationModel:
