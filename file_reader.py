@@ -2,6 +2,9 @@ from pysmps import smps_loader as smps
 import numpy as np
 from Solver_OOP.miqp_qp_solver import MIQP_QP
 import re
+import os
+import threading as th
+import multiprocessing as mp
 """ 
 from Solver_OOP.masterproblem import Master
 from Solver_OOP.subproblem import Sub
@@ -34,9 +37,24 @@ def mps_aux_reader(mps_path,aux_path):
             else:
                 raise ValueError(f'Auxilary file contains unexpected keyword: {name}')
 
+    #Change less than constraints to greater than constraints
+    if len(rhs_names) != 1:
+        raise ValueError('More than one RHS - vector')
+    rhs = rhs[rhs_names[0]]
 
+    for i,sign in enumerate(constr_types):
+        if sign == 'L':
+            A_in[i,:] = - A_in[i,:]
+            rhs[i] = -rhs[i]
+        if sign == 'E':
+            A_in = np.concatenate((A_in,np.array([-A_in[i,:]])))
+            rhs = np.append(rhs,-rhs[i])
+            #If i is index of lower level constraint, the index of the new constraint needs to be added to LR
+            if i in LR:
+                LR.append(rhs.shape[0]-1)
 
     #We need c_u, d_u, A, B, a, x-, x+, d_l, C, D, b
+
 
     upper_constr = []
     lower_constr = []
@@ -49,7 +67,8 @@ def mps_aux_reader(mps_path,aux_path):
 
     upper_constr = np.array(upper_constr)
     lower_constr = np.array(lower_constr)
-
+    
+    
 
 
     A = []
@@ -78,6 +97,8 @@ def mps_aux_reader(mps_path,aux_path):
     C = np.array(C).T
     D = np.array(D).T
 
+ 
+
 
 
     c_u = []
@@ -97,10 +118,7 @@ def mps_aux_reader(mps_path,aux_path):
         d_l = -np.array(LO)
 
 
-    if len(rhs_names) != 1:
-        raise ValueError('More than one RHS - vector')
-
-    rhs = rhs[rhs_names[0]]
+    
     a = []
     b = []
     for i,entry in enumerate(rhs):
@@ -111,7 +129,6 @@ def mps_aux_reader(mps_path,aux_path):
 
     a = np.array(a)
     b = np.array(b)
-
 
     int_lb = []
     int_ub = []
@@ -196,14 +213,13 @@ def mps_aux_reader(mps_path,aux_path):
             A_int.append(col)
 
     if A_int == [] and A_cont != []:
-        A = np.concatenate((np.zeros((A_cont.shape[0],int_lb.shape[0])),np.array(A_cont)))
+        A = np.concatenate((np.zeros((np.array(A_cont).T.shape[0],int_lb.shape[0])),np.array(A_cont).T),axis=1)
     elif A_int != [] and A_cont == []:
-        A = np.concatenate((np.array(A_int),np.zeros((A_int.shape[0],len(x_const_lb)))))
+        A = np.concatenate((np.array(A_int).T,np.zeros((np.array(A_int).T.shape[0],len(x_const_lb)))),axis=1)
     elif A_int != [] and A_cont != []:
-        A = np.concatenate((np.array(A_int),np.array(A_cont)))
+        A = np.concatenate((np.array(A_int).T,np.array(A_cont)).T,axis=1)
     else:
         A = None
-
 
 
 
@@ -223,7 +239,10 @@ def mps_aux_reader(mps_path,aux_path):
 
     bound_matrix = np.concatenate((np.diag(np.ones(len(x_const_lb))),np.diag(-np.ones(len(x_const_ub)))))
 
-    if not A:
+
+
+
+    if A is None:
         A_left_bottom = np.zeros((bound_matrix.shape[0],len(x_int_lb)))
         bottom = np.concatenate((A_left_bottom,bound_matrix),axis=1)
         A = bottom
@@ -232,12 +251,13 @@ def mps_aux_reader(mps_path,aux_path):
         bottom = np.concatenate((A_left_bottom,bound_matrix),axis=1)
         A = np.concatenate((A,bottom))
 
-    if not B:
+    if B is None:
         B = np.zeros((bound_matrix.shape[0],N))
     else:
-        B = np.concatenate((B,np.zeros((bound_matrix.shape[0]),B.shape[1])))
+        B = np.concatenate((B,np.zeros((bound_matrix.shape[0],B.shape[1]))))
 
     a = np.concatenate((a,np.array(x_const_lb),-np.array(x_const_ub)))
+
 
     #Number of Integer upper-level variables
     n_I = int_lb.shape[0]
@@ -252,20 +272,81 @@ def mps_aux_reader(mps_path,aux_path):
 
     return n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b
 
-if __name__ == '__main__':
 
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein27-0.900000.mps'
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein27-0.900000.aux'
-
-    model = list(mps_aux_reader(mps_pa,aux_pa))
+def test(mps_filename):
+    aux_file = re.sub(r'mps','aux',mps_filename)
+    name = re.sub(r'mps','',mps_filename)
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+mps_file
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+aux_file
+    
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-    """ 
-    for var in model:
-        if not isinstance(var,int):
-            print(var.shape)
-        print(var)
-        print()
- """
+    #Input data
+    np.random.seed(3)
+    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
+    H = H.T@H
+    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_u = G_u.T@G_u
+    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_l = G_l.T@G_l  
+
+    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+
+    
+    m.solve()
+    
+    with open('test_run1.txt','w') as out:
+        out.write(f'{name} solution ')
+        for key in m.solution:
+            out.write(f'{key} {m.solution[key]} ')
+
+        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
+
+    print(f'{name} solved!')
+
+
+def run(mps_file):
+    aux_file = re.sub(r'mps','aux',mps_file)
+    name = re.sub(r'mps','',mps_file)
+    print(f'Trying to solve {name}')
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+mps_file
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+aux_file
+    
+    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
+    #Input data
+    np.random.seed(3)
+    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
+    H = H.T@H
+    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_u = G_u.T@G_u
+    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_l = G_l.T@G_l  
+
+    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
+    m.solve()
+    
+    with open('test_run1.txt','w') as out:
+        out.write(f'{name} solution ')
+        for key in m.solution:
+            out.write(f'{key} {m.solution[key]} ')
+
+        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
+
+    print(f'{name} solved!')
+
+if __name__ == '__main__':
+    """  
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/harp2-0.100000.mps'
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/harp2-0.100000.aux'
+
+    #model = list(mps_aux_reader(mps_pa,aux_pa))
+    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
+   
+    #for var in model:
+    #    if not isinstance(var,int):
+     #       print(var.shape)
+     #   print(var)
+      #  print()
+   
     
 
     #Input data
@@ -305,5 +386,16 @@ if __name__ == '__main__':
     print('Runtime : ',m.runtime, 's')
     print()
     print('Iterations : ', m.iteration_counter)
+       """
+
 
     
+   
+    for mps_file in os.listdir('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'):
+        if re.match(r'.*\.mps$', mps_file) is not None:  
+            s = mp.Process(target=run, args = (mps_file))
+            t = th.Timer(5,lambda:s.terminate())
+            t.start()
+            s.start()
+            
+                  
