@@ -6,6 +6,7 @@ import os
 import threading as th
 import multiprocessing as mp
 import time
+from concurrent import futures
 """ 
 from Solver_OOP.masterproblem import Master
 from Solver_OOP.subproblem import Sub
@@ -274,35 +275,6 @@ def mps_aux_reader(mps_path,aux_path):
     return n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b
 
 
-def test(mps_filename):
-    aux_file = re.sub(r'mps','aux',mps_filename)
-    name = re.sub(r'mps','',mps_filename)
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+mps_file
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+aux_file
-    
-    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-    #Input data
-    np.random.seed(3)
-    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
-    H = H.T@H
-    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_u = G_u.T@G_u
-    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_l = G_l.T@G_l  
-
-    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-
-    
-    m.solve()
-    
-    with open('test_run1.txt','w') as out:
-        out.write(f'{name} solution ')
-        for key in m.solution:
-            out.write(f'{key} {m.solution[key]} ')
-
-        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
-
-    print(f'{name} solved!')
 
 
 def run(mps_file):
@@ -325,80 +297,40 @@ def run(mps_file):
     m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
     m.solve()
     
-    with open('test_run1.txt','w') as out:
-        out.write(f'{name} solution ')
-        for key in m.solution:
+    with open('test_run2.txt','a') as out:
+        out.write(f'{name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} solution ')
+        for key in m.bilevel_solution:
             out.write(f'{key} {m.solution[key]} ')
 
-        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
+        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n\n') 
 
     print(f'{name} solved!')
 
+
+
+def stop_process_pool(executor):
+    for pid, process in executor._processes.items():
+        process.terminate()
+    executor.shutdown()
+
 if __name__ == '__main__':
-    """  
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/harp2-0.100000.mps'
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/harp2-0.100000.aux'
-
-    #model = list(mps_aux_reader(mps_pa,aux_pa))
-    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-   
-    #for var in model:
-    #    if not isinstance(var,int):
-     #       print(var.shape)
-     #   print(var)
-      #  print()
-   
-    
-
-    #Input data
-    np.random.seed(3)
-    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
-    H = H.T@H
-    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_u = G_u.T@G_u
-    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_l = G_l.T@G_l  
-
-    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-
-    m.solve()
-    print()
-    print()
-    #print(f'Results for {name}')
-    print()
-    print()
-    print('All variables')
-    print()
-    for key in m.solution:
-        print(key,'=', m.solution[key])
-    print()
-    print('Variables of the Bilevel problem')
-    print()
-    for key in m.bilevel_solution:
-        if re.match(r'^x',key):
-            print(key,'=', m.solution[key])
-    for key in m.bilevel_solution:
-        if re.match(r'^y',key):
-            print(key,'=', m.solution[key])
-    print()
-
-    print('Objective Function : ', m.UB)
-    print()
-    print('Runtime : ',m.runtime, 's')
-    print()
-    print('Iterations : ', m.iteration_counter)
-       """
-
 
     
    
     for mps_file in os.listdir('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'):
         if re.match(r'.*\.mps$', mps_file) is not None:  
-            print(len(mps_file))
-            s = mp.Process(target=run, args = (mps_file,))
-            s.start()
-            time.sleep(5)
-            s.terminate()
-            print(f'{mps_file} terminated')
-            
+            with futures.ProcessPoolExecutor() as e:
+                f = e.submit(run,mps_file)
+                try:
+                    a = f.result(timeout=10)
+                except futures._base.TimeoutError:
+                    stop_process_pool(e)
+                    print(f'problem {mps_file} exceeded time limit')
+                    with open('test_run2.txt','a') as out:
+                        out.write(f'{mps_file} timeout\n\n')
+                    
+                
+
+                
+
                   
