@@ -64,4 +64,4 @@ if __name__ == '__main__':
                     stop_process_pool(e)
                     print(f'problem {mps_file} exceeded time limit')
                     with open('Results/test_run3.txt','a') as out:
-                        out.write(f'{mps_file} timeout\n\n')
+                        out.write(f'{mps_file} timeout\n')
