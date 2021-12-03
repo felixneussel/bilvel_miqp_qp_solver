@@ -107,9 +107,9 @@ class MIQP_QP():
 
                 
                 #Solve Subproblem
-                x_I_p = self.master.getParamX_IForSub()
-                s_p = self.master.getParamSForSub()
-                self.sub = Sub(self.master,*self.problem_data,x_I_p,s_p,self.iteration_counter,mode)
+                x_I_p = N_p.getParamX_IForSub()
+                s_p = N_p.getParamSForSub()
+                self.sub = Sub(self.master,*self.problem_data,x_I_p,s_p,self.cut_counter,mode)
                 
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
@@ -124,7 +124,7 @@ class MIQP_QP():
                         self.UB = s_val
                 else:#Subproblem infeasible
                   
-                    self.feas = Feas(self.master,*self.problem_data,x_I_p,s_p,self.iteration_counter,mode)
+                    self.feas = Feas(self.master,*self.problem_data,x_I_p,s_p,self.cut_counter,mode)
                     self.feas.optimize()
                     f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                     next_cut = f_vars
@@ -138,11 +138,12 @@ class MIQP_QP():
                 for pro in self.O:
                     pro.addCut(np.array(cp))
                     pro.model.update()
-                    self.cut_counter += 1
+
+                self.cut_counter += 1
 
             else:
                 first = N_p
-                first.addUpperBoun()
+                first.addUpperBound()
                 second = N_p
                 second.addLowerBound()
                 #print(f'O before : {self.O}')

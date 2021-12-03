@@ -52,6 +52,8 @@ class Sub(OptimizationModel):
         AB = concatenateHorizontally(A_R,self.B)
         primalvars = self.x_R.select() + self.y.select()
         self.model.addMConstr(A=AB,x=primalvars,sense='>=',b=self.a-A_I@self.x_I_param)
+        self.model.addMConstr(A=self.D,x=self.y.select(),sense='>=',b=self.b - self.C@self.x_I_param)
+        self.model.update()
    
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')
@@ -104,16 +106,12 @@ class Sub(OptimizationModel):
         for con in filtered_cons:
             self.model.remove(con)
 
-    """ 
-    def removeMasterLinearizations(self):
+     
+    """ def removeMasterLinearizations(self):
         constraints = self.model.getConstrs()
         #filter(lambda c: True if c.ConstrName == 'Strong Duality Linearization' else False, constraints)
         constr_remover = lambda c: self.model.remove(c) if c.ConstrName == 'Strong duality linearization' else 0
-        print('Before removal')
-        print(constraints)
-        map(constr_remover,constraints)
-        print('After removal')
-        print(self.model.getConstrs()) """
+        map(constr_remover,constraints) """
             
         
     

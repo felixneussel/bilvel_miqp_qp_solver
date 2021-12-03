@@ -63,6 +63,8 @@ class Feas(OptimizationModel):
         AB = concatenateHorizontally(A_R,self.B)
         primalvars = self.x_R.select() + self.y.select()
         self.model.addMConstr(A=AB,x=primalvars,sense='>=',b=self.a-A_I@self.x_I_param)
+        self.model.addMConstr(A=self.D,x=self.y.select(),sense='>=',b=self.b - self.C@self.x_I_param)
+        self.model.update()
 
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')

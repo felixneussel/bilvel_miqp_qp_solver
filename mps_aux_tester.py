@@ -30,11 +30,14 @@ def run(mps_file):
     m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
     with open('Results/test_run3.txt','a') as out:
         out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
-    for f in [m.solve,m.solve_ST]:
+    for f in ['MT','ST']:
         for mode in ['fixed_master','new']:
-            f(mode)
+            if f == 'MT':
+                m.solve(mode)
+            else:
+                m.solve_ST(mode)
             with open('Results/test_run3.txt','a') as out:
-                out.write(f'method {f} sub_feas_creation_mode {mode} solution')
+                out.write(f'method {f} sub_feas_creation_mode {mode} solution ')
                 for key in m.bilevel_solution:
                     out.write(f'{key} {m.solution[key]} ')
                 out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
@@ -56,7 +59,7 @@ if __name__ == '__main__':
             with futures.ProcessPoolExecutor() as e:
                 f = e.submit(run,mps_file)
                 try:
-                    a = f.result(timeout=40)
+                    a = f.result(timeout=60)
                 except futures._base.TimeoutError:
                     stop_process_pool(e)
                     print(f'problem {mps_file} exceeded time limit')
