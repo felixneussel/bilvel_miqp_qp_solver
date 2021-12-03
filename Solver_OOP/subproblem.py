@@ -8,25 +8,29 @@ import re
 
 class Sub(OptimizationModel):
     
-    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,cut_counter):
+    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param,cut_counter,mode):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
         self.cut_counter = cut_counter
-        #self.x_I_param = x_I_param
-        #self.s_param = s_param
-        #self.model = gp.Model('Subproblem')
-        
-        #self.addVariables()
-        #self.setObjective()
-        #self.setPConstraint()
-        #self.setDualFeasiblityConstraint()
-        #self.setStrongDualityLinearizationConstraint()
-        #self.setStrongDualityConstraint()
-        self.model = mp.model.fixed()
-        self.model.Params.LogToConsole = 0
-        self.removeMasterLinearizations()
-        self.removeBinaryExpansion()
-        self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
-    """ 
+        self.mode = mode
+        if self.mode == 'new':
+            self.x_I_param = x_I_param
+            self.s_param = s_param
+            self.model = gp.Model('Subproblem')
+            self.addVariables()
+            self.setObjective()
+            self.setPConstraint()
+            self.setDualFeasiblityConstraint()
+            self.setStrongDualityLinearizationConstraint()
+            self.setStrongDualityConstraint()
+        elif self.mode == 'fixed_master':
+            self.model = mp.model.fixed()
+            self.model.Params.LogToConsole = 0
+            self.removeMasterLinearizations()
+            self.removeBinaryExpansion()
+            self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
+        else:
+            raise ValueError('Subproblem creation mode is not new or fixe_master')
+     
     def setObjective(self):
         #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
         H_II = self.H[:self.n_I,:self.n_I]
@@ -48,7 +52,7 @@ class Sub(OptimizationModel):
         AB = concatenateHorizontally(A_R,self.B)
         primalvars = self.x_R.select() + self.y.select()
         self.model.addMConstr(A=AB,x=primalvars,sense='>=',b=self.a-A_I@self.x_I_param)
-    """
+   
     def setStrongDualityLinearizationConstraint(self):
         self.model.addConstrs((self.w[j,r] == self.s_param[j,r]*sum([self.C[i,j]*self.dual[i] for i in self.ll_constr]) for j,r in self.jr), 'binary_expansion')
     
@@ -97,7 +101,7 @@ class Sub(OptimizationModel):
         for con in filtered_cons:
             self.model.remove(con)
 
-    """ 
+    
     def removeMasterLinearizations(self):
         constraints = self.model.getConstrs()
         #filter(lambda c: True if c.ConstrName == 'Strong Duality Linearization' else False, constraints)
@@ -107,16 +111,16 @@ class Sub(OptimizationModel):
         map(constr_remover,constraints)
         print('After removal')
         print(self.model.getConstrs())
-         """    
+            
         
-    """ 
+    
     def getPointForMasterCut(self):
         name_exp = re.compile(r'^y')
         x = []
         for var in self.model.getVars():
             if name_exp.match(var.varName) is not None:
                 x.append(var.x)
-        return np.array(x) """
+        return np.array(x) 
 
     
 
