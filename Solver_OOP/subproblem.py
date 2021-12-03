@@ -16,20 +16,20 @@ class Sub(OptimizationModel):
             self.x_I_param = x_I_param
             self.s_param = s_param
             self.model = gp.Model('Subproblem')
+            self.model.Params.LogToConsole = 0
             self.addVariables()
             self.setObjective()
             self.setPConstraint()
             self.setDualFeasiblityConstraint()
             self.setStrongDualityLinearizationConstraint()
-            self.setStrongDualityConstraint()
+            self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
         elif self.mode == 'fixed_master':
             self.model = mp.model.fixed()
-            self.model.Params.LogToConsole = 0
             self.removeMasterLinearizations()
             self.removeBinaryExpansion()
             self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
         else:
-            raise ValueError('Subproblem creation mode is not new or fixe_master')
+            raise ValueError('Subproblem creation mode is not new or fixed_master')
      
     def setObjective(self):
         #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
@@ -83,11 +83,14 @@ class Sub(OptimizationModel):
         
         #expr = self.y.select @ self.G_l @self.y.select() #+ self.d_l@self.y.select() - self.b@self.dual.select()
         #self.model.addQConstr((expr + self.w.prod(self.bin_coeff) <= 0),'Strong Duality Constraint')
-
-        linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
-        y_lam_w = y_var + dual_var + w_var
-        
-        self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
+        if self.mode == 'new':
+            linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+            y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+            self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
+        else:
+            linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+            y_lam_w = y_var + dual_var + w_var
+            self.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
 
     def removeMasterLinearizations(self):
         
@@ -101,7 +104,7 @@ class Sub(OptimizationModel):
         for con in filtered_cons:
             self.model.remove(con)
 
-    
+    """ 
     def removeMasterLinearizations(self):
         constraints = self.model.getConstrs()
         #filter(lambda c: True if c.ConstrName == 'Strong Duality Linearization' else False, constraints)
@@ -110,7 +113,7 @@ class Sub(OptimizationModel):
         print(constraints)
         map(constr_remover,constraints)
         print('After removal')
-        print(self.model.getConstrs())
+        print(self.model.getConstrs()) """
             
         
     

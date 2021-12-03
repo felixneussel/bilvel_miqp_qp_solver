@@ -8,23 +8,27 @@ import re
 
 class Feas(OptimizationModel):
     
-    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,cut_counter):
+    def __init__(self,mp,n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param,cut_counter,mode):
         super().__init__(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-        """ 
-        self.x_I_param = x_I_param
-        self.s_param = s_param
-        self.model = gp.Model('Feasiblity-Problem')
-        self.model.Params.LogToConsole = 0
-        self.addVariables()
-        self.setObjective()
-        self.setPConstraint()
-        self.setDualFeasiblityConstraint()
-        self.setStrongDualityLinearizationConstraint() """
-        self.cut_counter = cut_counter
-        self.model = mp.model.fixed()
-        self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
-        self.removeMasterLinearizations()
-        self.removeBinaryExpansion()
+        self.mode = mode
+        if self.mode == 'new':
+            self.x_I_param = x_I_param
+            self.s_param = s_param
+            self.model = gp.Model('Feasiblity-Problem')
+            self.model.Params.LogToConsole = 0
+            self.addVariables()
+            self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
+            self.setPConstraint()
+            self.setDualFeasiblityConstraint()
+            self.setStrongDualityLinearizationConstraint()
+        elif self.mode == 'fixed_master':
+            self.cut_counter = cut_counter
+            self.model = mp.model.fixed()
+            self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
+            self.removeMasterLinearizations()
+            self.removeBinaryExpansion()
+        else:
+            raise ValueError('Subproblem creation mode is not new or fixed_master')
 
     def setObjective(self,y_var,dual_var,w_var):
         """ expr = QuadExpr()
@@ -32,11 +36,14 @@ class Feas(OptimizationModel):
         expr.addTerms(self.d_l,self.y.select())
         expr.addTerms(-self.b,self.dual.select())
         self.model.setObjective(expr + self.w.prod(self.bin_coeff),sense=GRB.MINIMIZE) """
-
-        linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
-        y_lam_w = y_var + dual_var + w_var
-        #elf.model.addMQConstr(Q = self.G_l, c = linear_vector, sense="<", rhs=0, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
-        self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
+        if self.mode == 'new':
+            linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+            y_lam_w = self.y.select() + self.dual.select() + self.w.select()
+            self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=self.y.select(),xQ_R=self.y.select(),xc=y_lam_w,sense=GRB.MINIMIZE)
+        else:
+            linear_vector = np.concatenate((self.d_l, - self.b, self.bin_coeff_vec))
+            y_lam_w = y_var + dual_var + w_var
+            self.model.setMObjective(Q=self.G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
 
     def removeMasterLinearizations(self):
         
