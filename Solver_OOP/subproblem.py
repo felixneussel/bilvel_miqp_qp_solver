@@ -4,6 +4,7 @@ from gurobipy import QuadExpr,MQuadExpr
 import numpy as np
 from Solver_OOP.models import OptimizationModel
 from Solver_OOP.matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+from Solver_OOP.lower_level import Lower_Level
 import re
 
 class Sub(OptimizationModel):
@@ -28,8 +29,21 @@ class Sub(OptimizationModel):
             self.removeMasterLinearizations()
             self.removeBinaryExpansion()
             self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
+        elif self.mode == 'remark_1':
+            self.lower = Lower_Level(self.n_y,self.m_l,self.G_l,self.d_l,self.C,self.D,self.b,self.x_I_param)
+            self.lower.optimize()
+            self.ll_obj,self.ll_vars = self.lower.ObjVal, self.lower.solution
+            self.model = gp.Model('Subproblem')
+            self.model.Params.LogToConsole = 0
+            self.addVariables()
+            self.setObjective()
+            self.setPConstraint()
+            self.setLowerLevelOptimalityConstraint()
         else:
-            raise ValueError('Subproblem creation mode is not new or fixed_master')
+            raise ValueError('Subproblem creation mode is not new or fixed_master or remark_1')
+
+    def setLowerLevelOptimalityConstraint(self):
+        self.model.addMQConstr(Q = self.G_l/2, c = self.d_l, sense="<", rhs=self.ll_obj, xQ_L=self.y.select(), xQ_R=self.y.select(), xc=self.y.select(), name="Lower Level Optimality" )
      
     def setObjective(self):
         #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term

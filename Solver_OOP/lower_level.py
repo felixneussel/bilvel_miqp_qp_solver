@@ -15,6 +15,7 @@ class Lower_Level():
         self.b = b
         self.x_I_param = x_I_param
         self.model = gp.Model('Lower_Level')
+        self.model.Params.LogToConsole = 0
         self.y = self.model.addMVar(shape=n_y,vtype = GRB.CONTINUOUS,name = 'y')
         self.model.setMObjective(Q=self.G_l/2, c = self.d_l, constant=None, xQ_L=self.y, xQ_R=self.y, xc=self.y, sense=GRB.MINIMIZE )
         self.model.addMConstr(A=self.D, x=self.y, sense='>', b=self.b - self.C@self.x_I_param, name="Lower Level Constraints" )
