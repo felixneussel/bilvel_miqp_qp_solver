@@ -113,12 +113,14 @@ class SingleTree(OptimizationModel):
         return i
 
     def addUpperBound(self):
-        self.int_ub[self.getBranchIndex]=np.floor(self.int_ub[self.getBranchIndex])
-        self.x_I.setAttr('ub',self.int_ub)
+        self.int_ub[self.getBranchIndex()]=np.floor(self.int_ub[self.getBranchIndex()])
+        for i,var in enumerate(self.x_I.select()):
+            var.setAttr('ub',self.int_ub[i])
 
     def addLowerBound(self):
-        self.int_lb[self.getBranchIndex]=np.ceil(self.int_lb[self.getBranchIndex])
-        self.x_I.setAttr('lb',self.int_lb)
+        self.int_lb[self.getBranchIndex()]=np.ceil(self.int_lb[self.getBranchIndex()])
+        for i,var in enumerate(self.x_I.select()):
+            var.setAttr('lb',self.int_lb[i])
 
     def is_int_feasible(self):
         int_vars = []
