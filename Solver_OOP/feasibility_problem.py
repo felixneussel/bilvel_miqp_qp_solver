@@ -21,7 +21,7 @@ class Feas(OptimizationModel):
             self.setPConstraint()
             self.setDualFeasiblityConstraint()
             self.setStrongDualityLinearizationConstraint()
-        elif self.mode == 'fixed_master':
+        elif self.mode == 'fixed_master' or self.mode == 'remark_1':
             self.cut_counter = cut_counter
             self.model = mp.model.fixed()
             self.setObjective(mp.y.select(),mp.dual.select(),mp.w.select())
@@ -106,5 +106,5 @@ if __name__ == '__main__':
 
     s_param = {(0, 0): 0.0, (0, 1): 1.0, (0, 2): 0.0, (0, 3): 0.0, (0, 4): 0.0}
 
-    s = feas(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param)
+    s = Feas(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b,x_I_param,s_param)
     s.optimize()
