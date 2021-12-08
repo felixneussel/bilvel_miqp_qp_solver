@@ -18,7 +18,7 @@ print('Test completed')
 
  """
 
-
+#Paths of mps and aux file
 mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein27-0.500000.mps'
 aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein27-0.500000.aux'
 
