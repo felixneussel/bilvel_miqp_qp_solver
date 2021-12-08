@@ -30,6 +30,7 @@ class Sub(OptimizationModel):
             self.removeBinaryExpansion()
             self.setStrongDualityConstraint(mp.y.select(),mp.dual.select(),mp.w.select())
         elif self.mode == 'remark_1':
+            self.x_I_param = x_I_param
             self.lower = Lower_Level(self.n_y,self.m_l,self.G_l,self.d_l,self.C,self.D,self.b,self.x_I_param)
             self.lower.optimize()
             self.ll_obj,self.ll_vars = self.lower.ObjVal, self.lower.solution

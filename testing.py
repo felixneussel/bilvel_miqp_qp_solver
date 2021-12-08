@@ -43,7 +43,7 @@ print()
 print(f'Results for {name}')
 m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
 for f in ['MT','ST']:
-    for mode in ['fixed_master','new']:
+    for mode in ['remark_1','fixed_master','new']:
         if f == 'MT':
             m.solve(mode)
         elif f == 'ST':
