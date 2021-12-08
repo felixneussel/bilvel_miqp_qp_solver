@@ -1,8 +1,8 @@
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
-from models import OptimizationModel
-from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
+from Solver_OOP.models import OptimizationModel
+from Solver_OOP.matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 
 class Master(OptimizationModel):
@@ -45,7 +45,7 @@ class Master(OptimizationModel):
         
         #Note, since our r indices start at zero, we write 2**r instead of 2**(r-1)
         #master.addConstrs((sum(2**r*s[j,r] for r in jr[j,'*']) == x_I[j] for j in I),'binary')
-        self.model.addConstrs((self.s.prod(self.bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary')
+        self.model.addConstrs((self.s.prod(self.bin_coeff,j,'*') == self.x_I[j] for j,r in self.jr),'binary expansion')
 
         ub = getUpperBound()
         lb = getLowerBound()
@@ -90,7 +90,7 @@ class Master(OptimizationModel):
         term3 = -sum([self.b[j]*self.dual.select(j)[0] for j in self.ll_constr])
         term4 = self.w.prod(self.bin_coeff)
         
-        self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality relaxation')
+        self.model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality linearization')
 
 
 

@@ -1,5 +1,5 @@
 import numpy as np
-from miqp_qp_solver import MIQP_QP
+from Solver_OOP.miqp_qp_solver import MIQP_QP
 
 
 #Number of Integer upper-level variables

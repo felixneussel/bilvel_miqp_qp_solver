@@ -4,10 +4,10 @@ from gurobipy import GRB
 #from gurobipy import QuadExpr
 import numpy as np
 #from models import OptimizationModel
-from masterproblem import Master
-from subproblem import Sub
-from feasibility_problem import Feas
-from st_master import SingleTree
+from Solver_OOP.masterproblem import Master
+from Solver_OOP.subproblem import Sub
+from Solver_OOP.feasibility_problem import Feas
+from Solver_OOP.st_master import SingleTree
 #from matrix_operations import concatenateDiagonally, concatenateHorizontally, getUpperBound, getLowerBound
 import re
 #from collections import OrderedDict
@@ -21,11 +21,10 @@ class MIQP_QP():
         self.LB = -np.infty
         self.UB = np.infty
         self.master = Master(*self.problem_data)
-        
         self.tol = 1e-5
         self.solution = {}
 
-    def solve(self):
+    def solve(self,mode):
         start = timeit.default_timer()
         self.iteration_counter = 0
         while self.LB + self.tol < self.UB:
@@ -40,20 +39,18 @@ class MIQP_QP():
                 return ('The bilevel problem is infeasible')
             else:
                 self.LB = m_val
-            #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
+            
+            #Solve Subproblem
             x_I_p = self.master.getParamX_IForSub()
             s_p = self.master.getParamSForSub()
-            #Solve Subproblem
-            print(self.master.y)
-            self.sub = Sub(*self.problem_data,x_I_p,s_p)
-            
+            self.sub = Sub(self.master,*self.problem_data,x_I_p,s_p,self.iteration_counter,mode)
+            #self.sub.model = self.master.model.fixed()
+            #self.sub.setStrongDualityConstraint(self.master.y.select(),self.master.dual.select(),self.master.w.select())
             self.sub.optimize()
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
             if s_status == GRB.OPTIMAL:#subproblem feasible
-                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                #s_status,s_vars,s_val = self.sub.optimize()
-                #next_cut = s_vars
+                
                 if s_val < self.UB:
                     for v in s_vars:
                         self.solution[v.varName] = v.x
@@ -62,7 +59,7 @@ class MIQP_QP():
                             self.solution[v.varName] = v.x
                     self.UB = s_val
             else:#Subproblem infeasible
-                self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                self.feas = Feas(self.master,*self.problem_data,x_I_p,s_p,self.iteration_counter,mode)
                 self.feas.optimize()
                 f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                 next_cut = f_vars
@@ -83,14 +80,15 @@ class MIQP_QP():
         self.getBilevelSolution()
         return self.solution
 
-    def solve_ST(self):
+    def solve_ST(self,mode):
         start = timeit.default_timer()
         self.UB = np.infty
         self.iteration_counter = 0
-        #self.l = self.int_lb
-        #self.u = self.int_ub
+        self.cut_counter = 0
+        
         self.z_star = None
-        self.O = [SingleTree(*self.problem_data)]
+        self.master = SingleTree(*self.problem_data)
+        self.O = [self.master]
         while self.O:# and self.iteration_counter: #<8:
             """ print(f'O = {self.O}')
             print(f'upper bound = {self.UB}')
@@ -107,13 +105,12 @@ class MIQP_QP():
                 print(f'UB = {self.UB}')
                 print() """
 
-                #Retrieve parameters for Sub or Feasiblity Problem from Masterproblem
+                
+                #Solve Subproblem
                 x_I_p = N_p.getParamX_IForSub()
                 s_p = N_p.getParamSForSub()
-                #Solve Subproblem
+                self.sub = Sub(self.master,*self.problem_data,x_I_p,s_p,self.cut_counter,mode)
                 
-                #self.sub = Sub(*self.problem_data,x_I_p,s_p)
-                self.sub = self.master.model.FixedModel()
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
                 next_cut = s_vars
@@ -127,7 +124,7 @@ class MIQP_QP():
                         self.UB = s_val
                 else:#Subproblem infeasible
                   
-                    self.feas = Feas(*self.problem_data,x_I_p,s_p)
+                    self.feas = Feas(self.master,*self.problem_data,x_I_p,s_p,self.cut_counter,mode)
                     self.feas.optimize()
                     f_status,f_vars,f_val = self.feas.status,self.feas.solution,self.feas.ObjVal
                     next_cut = f_vars
@@ -142,9 +139,11 @@ class MIQP_QP():
                     pro.addCut(np.array(cp))
                     pro.model.update()
 
+                self.cut_counter += 1
+
             else:
                 first = N_p
-                first.addUpperBoun()
+                first.addUpperBound()
                 second = N_p
                 second.addLowerBound()
                 #print(f'O before : {self.O}')
