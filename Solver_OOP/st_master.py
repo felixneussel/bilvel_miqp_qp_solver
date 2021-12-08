@@ -112,11 +112,11 @@ class SingleTree(OptimizationModel):
                 max_index = i
         return i
 
-    def addUpperBound(self,u):
+    def addUpperBound(self):
         self.int_ub[self.getBranchIndex]=np.floor(self.int_ub[self.getBranchIndex])
         self.x_I.setAttr('ub',self.int_ub)
 
-    def addLowerBound(self,l):
+    def addLowerBound(self):
         self.int_lb[self.getBranchIndex]=np.ceil(self.int_lb[self.getBranchIndex])
         self.x_I.setAttr('lb',self.int_lb)
 
