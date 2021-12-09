@@ -123,7 +123,7 @@ class OptimizationModel:
             self.solution[v.varName] = v.x """
 
         self.status = self.model.status
-        if self.status == GRB.OPTIMAL:
+        if self.status == GRB.OPTIMAL or self.status == GRB.SUBOPTIMAL:
             self.ObjVal = self.model.ObjVal
             self.solution = self.model.getVars().copy()
         else:

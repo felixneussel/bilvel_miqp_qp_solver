@@ -21,12 +21,13 @@ def readData(filepath):
                 unsolved = all - solved
                 for m,sf in unsolved:
                     d = {'name':name,'method':m,'sub_feas_mode':sf,'status':'unsolved'}
+                    data[-1].append(d)
     return data
 
 def evaluateData(data):
     for d in data:
         for pr in d:
-            print(pr['obj'],end =' ')
+            print(pr)
         print('\n')
 
 def run_test():

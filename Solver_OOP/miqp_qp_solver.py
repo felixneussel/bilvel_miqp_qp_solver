@@ -49,7 +49,7 @@ class MIQP_QP():
             self.sub.optimize()
             s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
             next_cut = s_vars
-            if s_status == GRB.OPTIMAL:#subproblem feasible
+            if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible
                 
                 if s_val < self.UB:
                     for v in s_vars:
@@ -114,7 +114,7 @@ class MIQP_QP():
                 self.sub.optimize()
                 s_status,s_vars,s_val = self.sub.status,self.sub.solution,self.sub.ObjVal
                 next_cut = s_vars
-                if s_status == GRB.OPTIMAL:
+                if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:
                     if s_val < self.UB:#subproblem feasible
                         for v in s_vars:
                             self.solution[v.varName] = v.x

@@ -5,12 +5,18 @@ import numpy as np
 import os
 import concurrent.futures as futures
 
+def FileName():
+    files = os.listdir('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results')
+    i = len(files)+1
+    return f'Results/test_run{i}.txt'
+
+
 def stop_process_pool(executor):
     for pid, process in executor._processes.items():
         process.terminate()
     executor.shutdown()
 
-def run(mps_file):
+def run(mps_file,writeTo):
     aux_file = re.sub(r'mps','aux',mps_file)
     name = re.sub(r'mps','',mps_file)
     print(f'Trying to solve {name}')
@@ -28,7 +34,7 @@ def run(mps_file):
     G_l = G_l.T@G_l  
 
     m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-    with open('Results/test_run4.txt','a') as out:
+    with open(writeTo,'a') as out:
         out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
     for f in ['MT','ST']:
         for mode in ['remark_1','fixed_master','new']:
@@ -36,7 +42,7 @@ def run(mps_file):
                 m.solve(mode)
             else:
                 m.solve_ST(mode)
-            with open('Results/test_run4.txt','a') as out:
+            with open(writeTo,'a') as out:
                 out.write(f'method {f} sub_feas_creation_mode {mode} solution ')
                 for key in m.bilevel_solution:
                     out.write(f'{key} {m.solution[key]} ')
@@ -53,15 +59,15 @@ if __name__ == '__main__':
                 if line[1] != 'timeout':
                     data.append(line[0]+'mps')
 
-   
-    for mps_file in data[4:]:
+    filename = FileName()
+    for mps_file in data:
         if re.match(r'.*\.mps$', mps_file) is not None:  
             with futures.ProcessPoolExecutor() as e:
-                f = e.submit(run,mps_file)
+                f = e.submit(run,mps_file,filename)
                 try:
                     a = f.result(timeout=180)
                 except futures._base.TimeoutError:
                     stop_process_pool(e)
                     print(f'problem {mps_file} exceeded time limit')
-                    with open('Results/test_run4.txt','a') as out:
+                    with open(filename,'a') as out:
                         out.write(f'{mps_file} timeout\n')
