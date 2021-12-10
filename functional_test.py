@@ -1,12 +1,12 @@
-from Functional.multitree import MT
+from Functional.multitree import MT,ST
 from Parsers.file_reader import mps_aux_reader
 import numpy as np
 import re
 
 if __name__ == '__main__':
     #Paths of mps and aux file
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.mps'
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.aux'
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/lseu-0.100000.mps'
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/lseu-0.100000.aux'
 
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
     #Input data
@@ -20,24 +20,27 @@ if __name__ == '__main__':
 
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
 
-    solution,obj,runtime = MT(problem_data,1e-5)
+    solution,obj,runtime, status = ST(problem_data,1e-5)
    
-    print('All variables')
-    print()
-    for key in solution:
-        print(key,'=', solution[key])
-    print()
-    print('Variables of the Bilevel problem')
-    print()
-    for key in solution:
-        if re.match(r'^x',key):
+    if status == 2:
+        """ print('All variables')
+        print()
+        for key in solution:
             print(key,'=', solution[key])
-    for key in solution:
-        if re.match(r'^y',key):
-            print(key,'=', solution[key])
-    print()
+        print() """
+        print('Variables of the Bilevel problem')
+        print()
+        for key in solution:
+            if re.match(r'^x',key):
+                print(key,'=', solution[key])
+        for key in solution:
+            if re.match(r'^y',key):
+                print(key,'=', solution[key])
+        print()
 
-    print('Objective Function : ', obj)
-    print()
-    print('Runtime : ',runtime, 's')
+        print('Objective Function : ', obj)
+        print()
+        print('Runtime : ',runtime, 's')
+    else:
+        print('Problem infeasible')
     

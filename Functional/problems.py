@@ -1,7 +1,8 @@
 from gurobipy import Model,GRB, tuplelist
-from numpy import ones,log2,floor, concatenate, array
+from numpy import ones,log2,floor,ceil, concatenate, array, infty
 from scipy.linalg import block_diag
 from re import match
+from operator import itemgetter
 
 def setup_meta_data(problem_data):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
@@ -15,17 +16,14 @@ def setup_meta_data(problem_data):
     bin_coeff_arr = getBinaryCoeffsArray(jr)
     return jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr
 
-def setup_master(problem_data,meta_data):
+def mp_common(problem_data,meta_data,model,x_I):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    model = Model('Masterproblem')
-    model.Params.LogToConsole = 0
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
 
     x_R = model.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
     y = model.addVars(J, vtype=GRB.CONTINUOUS,name='y')
     dual = model.addVars(ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
     w = model.addVars(jr,vtype=GRB.CONTINUOUS, name="w")
-    x_I = model.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
     s = model.addVars(jr,vtype= GRB.BINARY,name='s')
     #setObjective(model)
     HG = block_diag(H,G_u)
@@ -34,7 +32,6 @@ def setup_master(problem_data,meta_data):
     model.setMObjective(Q=HG/2,c=cd,constant=0.0,xQ_L=primalvars,xQ_R=primalvars,xc=primalvars,sense=GRB.MINIMIZE)
     #setPConstraint(model)
     AB = concatenate((A,B),1)
-    #primalvars = x_I.select() + x_R.select() + y.select()
     model.addMConstr(A=AB,x=primalvars,sense='>=',b=a)
 
     CD = concatenate((C,D),1)
@@ -45,22 +42,36 @@ def setup_master(problem_data,meta_data):
     y_lambda = dual.select() + y.select()
     model.addMConstr(A=GD,x=y_lambda,sense='=',b=d_l)
     #setStrongDualityLinearizationConstraint(model)
-    bin_coeff = getBinaryCoeffsDict(jr)
-    model.addConstrs((s.prod(bin_coeff,j,'*') == x_I[j] for j,r in jr),'binary expansion')
+    model.addConstrs((s.prod(bin_coeff_dict,j,'*') == x_I[j] for j,r in jr),'binary expansion')
     ub = 1e5
-    lb = 1e5
+    lb = -1e5
     model.addConstrs((w[j,r] <= ub*s[j,r] for j,r in jr),'13a')
     model.addConstrs((w[j,r] <= sum([C[i,j]*dual[i] for i in ll_constr]) + lb*(s[j,r] - 1) for j,r in jr),'13b')
-    #Possible refactor: replace lam_coeff with C and get rid of lam_coeff
     model.addConstrs((w[j,r] >= lb*s[j,r] for j,r in jr),'13c')
     model.addConstrs((w[j,r] >= sum([C[(i,j)]*dual[i] for i in ll_constr]) + ub*(s[j,r] - 1) for j,r in jr),'13d')
     return model,y.select(),dual.select(),w.select()
+
+def setup_st_master(problem_data,meta_data):
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    model = Model('Masterproblem')
+    model.Params.LogToConsole = 0
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
+    return mp_common(problem_data,meta_data,model,x_I)
+
+def setup_master(problem_data,meta_data):
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    model = Model('Masterproblem')
+    model.Params.LogToConsole = 0
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    x_I = model.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
+    return mp_common(problem_data,meta_data,model,x_I)
 
 def setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     model = master.fixed()
-    removeMasterUnnecessaryMasterConstraints(model,cut_counter)
+    removeUnnecessaryMasterConstraints(model,cut_counter)
     #Add non linear Strong Duality Constraint
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
     y_lam_w = y_var + dual_var + w_var
@@ -75,8 +86,31 @@ def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
     y_lam_w = y_var + dual_var + w_var
     model.setMObjective(Q=G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
-    removeMasterUnnecessaryMasterConstraints(model,cut_counter)
+    removeUnnecessaryMasterConstraints(model,cut_counter)
     return model
+
+def branch(model,int_vars,problem_data):
+    m1 = model
+    m2 = model
+    x_I_m1 = list(filter(lambda v: match(r'^x_I',v.varName),m1.getVars()))
+    x_I_m2 = list(filter(lambda v: match(r'^x_I',v.varName),m2.getVars()))
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    candidates = []
+    for i,var in enumerate(int_vars):
+        candidates.append((i,var,int_ub[i]-int_lb[i]))
+    candidates = sorted(candidates,key=itemgetter(2),reverse=True)
+    branch_index = 0
+    for c in candidates:
+        if not c[1].is_integer():
+            branch_index = c[0]
+            break
+    int_ub[branch_index] = floor(int_vars[branch_index])
+    int_lb[branch_index] = ceil(int_vars[branch_index])
+    for i,var in enumerate(x_I_m1):
+            var.setAttr('ub',int_ub[i])
+    for i,var in enumerate(x_I_m2):
+            var.setAttr('lb',int_lb[i])
+    return m1,m2
 
 def check_dimensions(problem_data):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
@@ -113,7 +147,11 @@ def check_dimensions(problem_data):
 
 def optimize(model):
     model.optimize()
-    return model.status, model.getVars(),model.ObjVal
+    status = model.status
+    if status == GRB.OPTIMAL or status == GRB.SUBOPTIMAL:
+        return model.status, model.getVars(),model.ObjVal
+    else:
+        return model.status, None, infty
 
 def getBinaryCoeffsArray(index_set):
     bi_c_arr = []
@@ -127,7 +165,7 @@ def getBinaryCoeffsDict(index_set):
         bin_coeff[(j,r)] = 2**r
     return bin_coeff
 
-def removeMasterUnnecessaryMasterConstraints(model,cut_counter):
+def removeUnnecessaryMasterConstraints(model,cut_counter):
         constr = model.getConstrs()
         for i in range(cut_counter):
             model.remove(constr.pop())
@@ -136,19 +174,34 @@ def removeMasterUnnecessaryMasterConstraints(model,cut_counter):
             model.remove(con)
 
 def add_cut(problem_data,model,meta_data,y_var,dual_var,w_var,p):
-        """
-        Takes a point \bar{y}, linearizes strong duality constraint at this point and adds the constraint to the model.
-        """
-        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-        jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
-        cut_point = p
-        #twoyTG = 2*cut_point.T @ G_l
-        yTGy = cut_point.T @ G_l @ cut_point
-        term1 = 2*cut_point.T @ G_l @ y_var #sum([twoyTG[i]*y_var(i)[0] for i in J])
-        term2 = d_l.T @ y_var #sum([d_l[i]*y_var(i)[0] for i in J])
-        term3 = -b.T @ dual_var #-sum([b[j]*dual_var(j)[0] for j in ll_constr])
-        term4 = bin_coeff_arr@w_var #w_var.prod(bin_coeff_dict)
-        
-        model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality linearization')
+    """
+    Takes a point \bar{y}, linearizes strong duality constraint at this point and adds the constraint to the model.
+    """
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    cut_point = p
+    #twoyTG = 2*cut_point.T @ G_l
+    yTGy = cut_point.T @ G_l @ cut_point
+    term1 = 2*cut_point.T @ G_l @ y_var #sum([twoyTG[i]*y_var(i)[0] for i in J])
+    term2 = d_l.T @ y_var #sum([d_l[i]*y_var(i)[0] for i in J])
+    term3 = -b.T @ dual_var #-sum([b[j]*dual_var(j)[0] for j in ll_constr])
+    term4 = bin_coeff_arr@w_var #w_var.prod(bin_coeff_dict)
+    
+    model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality linearization')
+
+def get_int_vars(vars):
+    if not vars:
+        return
+    int_vars = []
+    for v in vars:
+        if match(r'^x_I',v.varName):
+            int_vars.append(v.x)
+    return int_vars
+
+def is_int_feasible(vars):
+    is_int = list(map(lambda x: x.is_integer(),vars))
+    return all(is_int)
+
+
 
 
