@@ -71,11 +71,20 @@ def setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     model = master.fixed()
-    removeUnnecessaryMasterConstraints(model,cut_counter)
-    #Add non linear Strong Duality Constraint
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
     y_lam_w = y_var + dual_var + w_var
     model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
+    return model
+
+def setup_sub_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    model = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+    model = removeMasterLinearizations(model,cut_counter)
+    return model
+
+def setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    model = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+    model = removeBinaryExpansion(model)
+    model = removeMasterLinearizations(model,cut_counter)
     return model
 
 def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
@@ -86,7 +95,17 @@ def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
     y_lam_w = y_var + dual_var + w_var
     model.setMObjective(Q=G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
-    removeUnnecessaryMasterConstraints(model,cut_counter)
+    return model
+
+def setup_feas_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    model = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+    model = removeMasterLinearizations(model,cut_counter)
+    return model
+
+def setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    model = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+    model = removeMasterLinearizations(model,cut_counter)
+    model = removeBinaryExpansion(model)
     return model
 
 def branch(model,int_vars,problem_data):
@@ -165,13 +184,18 @@ def getBinaryCoeffsDict(index_set):
         bin_coeff[(j,r)] = 2**r
     return bin_coeff
 
-def removeUnnecessaryMasterConstraints(model,cut_counter):
+def removeBinaryExpansion(model):
         constr = model.getConstrs()
-        for i in range(cut_counter):
-            model.remove(constr.pop())
         filtered_cons = list(filter(lambda c: match(r'^binary expansion',c.ConstrName) is not None,constr))
         for con in filtered_cons:
             model.remove(con)
+        return model
+
+def removeMasterLinearizations(model,cut_counter):
+    constr = model.getConstrs()
+    for i in range(cut_counter):
+        model.remove(constr.pop())
+    return model
 
 def add_cut(problem_data,model,meta_data,y_var,dual_var,w_var,p):
     """

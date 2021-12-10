@@ -3,7 +3,7 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub,optimize, setup_feas, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars
+from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_st,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars
 
 def MT(problem_data,tol):
     check_dimensions(problem_data)
@@ -24,7 +24,7 @@ def MT(problem_data,tol):
             LB = m_val
         
         #Solve Subproblem
-        sub = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        sub = setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         s_status,s_vars,s_val = optimize(sub)
         next_cut = s_vars
         if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
@@ -36,7 +36,7 @@ def MT(problem_data,tol):
                         solution[v.varName] = v.x
                 UB = s_val
         else:#Subproblem infeasible
-            feas = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+            feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
             f_vars = optimize(feas)[1]
             next_cut = f_vars
 
@@ -71,7 +71,7 @@ def ST(problem_data,tol):
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
             #Solve Subproblem
-            sub = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+            sub = setup_sub_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
             s_status,s_vars,s_val = optimize(sub)
             next_cut = s_vars
             if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:
@@ -83,7 +83,7 @@ def ST(problem_data,tol):
                             solution[v.varName] = v.x
                     UB = s_val
             else:#Subproblem infeasible
-                feas = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+                feas = setup_feas_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
                 f_vars = optimize(feas)[1]
                 next_cut = f_vars
             O.append(N_p)

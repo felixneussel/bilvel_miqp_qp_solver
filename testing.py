@@ -5,11 +5,11 @@ import numpy as np
 from Parsers.file_reader import mps_aux_reader
 from Data_Analysis.method_comparison import run_test
 
-#run_test()
+run_test()
 
 
 
-#Paths of mps and aux file
+""" #Paths of mps and aux file
 mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.mps'
 aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.aux'
 
@@ -61,4 +61,4 @@ for f in ['MT','ST']:
         print()
         print('Runtime : ',m.runtime, 's')
         print()
-        print('Iterations : ', m.iteration_counter)
+        print('Iterations : ', m.iteration_counter) """

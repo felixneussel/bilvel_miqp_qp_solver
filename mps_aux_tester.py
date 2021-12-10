@@ -4,6 +4,7 @@ import re
 import numpy as np
 import os
 import concurrent.futures as futures
+from Functional.multitree import MT,ST
 
 def FileName():
     files = os.listdir('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results')
@@ -49,6 +50,43 @@ def run(mps_file,writeTo):
                 out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n') 
             print(f'{name} solved with algo {f} and sub/feas-creation mode {mode}!')
 
+def run_functional(mps_file,writeTo):   
+    aux_file = re.sub(r'mps','aux',mps_file)
+    name = re.sub(r'mps','',mps_file)
+    print(f'Trying to solve {name}')
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+mps_file
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+aux_file
+    
+    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
+    #Input data
+    np.random.seed(3)
+    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
+    H = H.T@H
+    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_u = G_u.T@G_u
+    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
+    G_l = G_l.T@G_l  
+
+    p_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+
+    with open(writeTo,'a') as out:
+        out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
+    for f in ['MT','ST']:
+        if f == 'MT':
+            solution,obj,runtime, status= MT(p_data,1e-5)
+        else:
+            solution,obj,runtime, status=ST(p_data,1e-5)
+        with open(writeTo,'a') as out:
+            if status == 2:
+                out.write(f'method {f} solution ')
+                for key in solution:
+                    if re.match(r'x|y',key):
+                        out.write(f'{key} {solution[key]} ')
+                out.write(f'obj {obj} time {runtime}\n') 
+            else:
+                out.write(f'method {f} infeasible\n')
+        print(f'{name} solved with algo {f}!')         
+
 if __name__ == '__main__':
     #get all test instances that are solvalble under 10secs
     data = []
@@ -63,7 +101,7 @@ if __name__ == '__main__':
     for mps_file in data:
         if re.match(r'.*\.mps$', mps_file) is not None:  
             with futures.ProcessPoolExecutor() as e:
-                f = e.submit(run,mps_file,filename)
+                f = e.submit(run_functional,mps_file,filename)
                 try:
                     a = f.result(timeout=180)
                 except futures._base.TimeoutError:
