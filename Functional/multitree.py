@@ -4,6 +4,8 @@ from numpy import infty, array
 from re import match
 from timeit import default_timer
 from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam
+from bisect import bisect
+from operator import itemgetter
 
 def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
     sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
@@ -255,7 +257,7 @@ def ST(problem_data,tol,subproblem_mode):
     z_star = None
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_st_master(problem_data,meta_data)
-    O = [master]
+    O = [(master,UB)]
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular
         SETUP_SUB_FUNCTION = setup_sub_st
@@ -268,7 +270,7 @@ def ST(problem_data,tol,subproblem_mode):
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     while O:# and iteration_counter: #<8:
-        N_p = O.pop()
+        N_p,N_p_ub = O.pop()
         m_status,m_vars,m_val = optimize(N_p)
         int_vars = get_int_vars(m_vars)
         if m_status != GRB.OPTIMAL or m_val >= UB - tol:
@@ -296,16 +298,19 @@ def ST(problem_data,tol,subproblem_mode):
                 if match(r'^y',var.varName) is not None:
                     cp.append(var.x) """
             cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-            O.append(N_p)
+            O.append((N_p,UB))
             
             for pro in O:
-                add_cut(problem_data,pro,meta_data,y_var,dual_var,w_var,cut_point)
+                add_cut(problem_data,pro[0],meta_data,y_var,dual_var,w_var,cut_point)
             cut_counter += 1
 
         else:
             first,second = branch(N_p,int_vars,problem_data)
-            O.append(first)
-            O.append(second)
+            O.append((first,UB))
+            O.append((second,UB))
+            O = sorted(O,key=itemgetter(1))
+            #bisect(O,first,key=itemgetter(1))
+            #bisect(O,second,key=itemgetter(1))
         iteration_counter += 1
     stop = default_timer()
     runtime = stop-start

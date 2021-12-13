@@ -5,8 +5,8 @@ import re
 
 if __name__ == '__main__':
     #Paths of mps and aux file
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.mps'
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.aux'
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/lseu-0.100000.mps'
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/lseu-0.100000.aux'
 
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
     #Input data
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
 
-    solution,obj,runtime, status = ST(problem_data,1e-5,'remark_1')
+    solution,obj,runtime, status = ST(problem_data,1e-5,'regular')
    
     if status == 2:
         """ print('All variables')
