@@ -3,10 +3,10 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_mt_rem_2, setup_sub_st,setup_sub_mt_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam
+from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam
 
-def solve_subproblem_regular(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
-    sub = setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
     s_status,s_vars,s_val = optimize(sub)
     next_cut = s_vars
     if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
@@ -30,8 +30,8 @@ def solve_subproblem_regular(UB,solution,m_vars,problem_data,master,meta_data,y_
             cp.append(var.x)
     return array(cp),solution, UB
 
-def solve_subproblem_remark_1(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
-    sub = setup_sub_mt_rem_1(problem_data,meta_data,getX_IParam(master))
+def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     s_status,s_vars,s_val = optimize(sub)
     next_cut = s_vars
     if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
@@ -55,8 +55,8 @@ def solve_subproblem_remark_1(UB,solution,m_vars,problem_data,master,meta_data,y
             cp.append(var.x)
     return array(cp),solution, UB
 
-def solve_subproblem_remark_2(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
-    sub,y_solution = setup_sub_mt_rem_2(problem_data,meta_data,getX_IParam(master))
+def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     s_status,s_vars,s_val = optimize(sub)
     cp = y_solution
     if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
@@ -92,16 +92,16 @@ def MT(problem_data,tol,subproblem_mode):
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_master(problem_data,meta_data)
     solution = {}
-    #Doesn't work because functons are called. Fix: Introduce lists with problem parameters
+  
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular
-        #SETUP_SUB_PARAMS = lambda: [problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter]
+        SETUP_SUB_FUNCTION = setup_sub_mt
     elif subproblem_mode == 'remark_1':
         SOLVE_SUB_FUNCTION = solve_subproblem_remark_1
-        #SETUP_SUB_PARAMS = lambda: [problem_data,meta_data,getX_IParam(master)]
+        SETUP_SUB_FUNCTION = setup_sub_rem_1
     elif subproblem_mode == 'remark_2':
         SOLVE_SUB_FUNCTION = solve_subproblem_remark_2
-        #SETUP_SUB_PARAMS = lambda: [problem_data,meta_data,getX_IParam(master)]
+        SETUP_SUB_FUNCTION = setup_sub_rem_2
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     while LB + tol < UB:
@@ -138,14 +138,14 @@ def MT(problem_data,tol,subproblem_mode):
             if match(r'^y',var.varName) is not None:
                 cp.append(var.x) """
 
-        cut_point,solution,UB = SOLVE_SUB_FUNCTION(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         
         add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
         iteration_counter += 1
     stop = default_timer()
     runtime = stop - start
     return solution,UB,runtime, 2
-
+""" 
 def MT_rem_1(problem_data,tol):
     check_dimensions(problem_data)
     start = default_timer()
@@ -244,8 +244,9 @@ def MT_rem_2(problem_data,tol):
     stop = default_timer()
     runtime = stop - start
     return solution,UB,runtime, 2
+ """
 
-def ST(problem_data,tol):
+def ST(problem_data,tol,subproblem_mode):
     start = default_timer()
     UB = infty
     iteration_counter = 0
@@ -255,6 +256,17 @@ def ST(problem_data,tol):
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_st_master(problem_data,meta_data)
     O = [master]
+    if subproblem_mode == 'regular':
+        SOLVE_SUB_FUNCTION = solve_subproblem_regular
+        SETUP_SUB_FUNCTION = setup_sub_st
+    elif subproblem_mode == 'remark_1':
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_1
+        SETUP_SUB_FUNCTION = setup_sub_rem_1
+    elif subproblem_mode == 'remark_2':
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_2
+        SETUP_SUB_FUNCTION = setup_sub_rem_2
+    else:
+        raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     while O:# and iteration_counter: #<8:
         N_p = O.pop()
         m_status,m_vars,m_val = optimize(N_p)
@@ -262,7 +274,7 @@ def ST(problem_data,tol):
         if m_status != GRB.OPTIMAL or m_val >= UB - tol:
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
-            #Solve Subproblem
+            """ #Solve Subproblem
             sub = setup_sub_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
             s_status,s_vars,s_val = optimize(sub)
             next_cut = s_vars
@@ -278,14 +290,16 @@ def ST(problem_data,tol):
                 feas = setup_feas_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
                 f_vars = optimize(feas)[1]
                 next_cut = f_vars
-            O.append(N_p)
+            
             cp = []
             for var in next_cut:
                 if match(r'^y',var.varName) is not None:
-                    cp.append(var.x)
+                    cp.append(var.x) """
+            cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+            O.append(N_p)
             
             for pro in O:
-                add_cut(problem_data,pro,meta_data,y_var,dual_var,w_var,array(cp))
+                add_cut(problem_data,pro,meta_data,y_var,dual_var,w_var,cut_point)
             cut_counter += 1
 
         else:
@@ -299,7 +313,7 @@ def ST(problem_data,tol):
         return solution, UB, runtime,2
     else:
         return None,None,runtime,4
-
+""" 
 def ST_rem_1(problem_data,tol):
     start = default_timer()
     UB = infty
@@ -318,7 +332,7 @@ def ST_rem_1(problem_data,tol):
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
             #Solve Subproblem
-            sub = setup_sub_mt_rem_1(problem_data,meta_data,getX_IParam(master))
+            sub = setup_sub_rem_1(problem_data,meta_data,getX_IParam(master))
             s_status,s_vars,s_val = optimize(sub)
             next_cut = s_vars
             if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:
@@ -373,7 +387,7 @@ def ST_rem_2(problem_data,tol):
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
             #Solve Subproblem
-            sub,y_solution = setup_sub_mt_rem_2(problem_data,meta_data,getX_IParam(master))
+            sub,y_solution = setup_sub_rem_2(problem_data,meta_data,getX_IParam(master))
             s_status,s_vars,s_val = optimize(sub)
             cp = y_solution
             if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:
@@ -412,3 +426,4 @@ def ST_rem_2(problem_data,tol):
         return solution, UB, runtime,2
     else:
         return None,None,runtime,4
+"""  

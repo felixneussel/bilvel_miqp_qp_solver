@@ -94,7 +94,7 @@ def setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
     model = removeMasterLinearizations(model,cut_counter)
     return model
 
-def setup_sub_mt_rem_1(problem_data,meta_data,x_I_param):
+def setup_sub_rem_1(problem_data,meta_data,x_I_param):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     lower = setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param)
@@ -128,7 +128,7 @@ def setup_sub_mt_rem_1(problem_data,meta_data,x_I_param):
     model.addMQConstr(Q = G_l/2, c = d_l, sense="<", rhs=lower_obj, xQ_L=y.select(), xQ_R=y.select(), xc=y.select(), name="Lower Level Optimality" )
     return model
 
-def setup_sub_mt_rem_2(problem_data,meta_data,x_I_param):
+def setup_sub_rem_2(problem_data,meta_data,x_I_param):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     model = Model('Subproblem')
