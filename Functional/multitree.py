@@ -5,7 +5,85 @@ from re import match
 from timeit import default_timer
 from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_mt_rem_2, setup_sub_st,setup_sub_mt_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam
 
-def MT(problem_data,tol):
+def solve_subproblem_regular(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub = setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+    s_status,s_vars,s_val = optimize(sub)
+    next_cut = s_vars
+    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
+        if s_val < UB:
+            for v in s_vars:
+                solution[v.varName] = v.x
+            for v in m_vars:
+                if match(r'x|s',v.varName) is not None:
+                    solution[v.varName] = v.x
+            UB = s_val
+    else:#Subproblem infeasible
+        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        f_vars = optimize(feas)[1]
+        next_cut = f_vars
+
+    #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
+    #problem as constraint to masterproblem
+    cp = []
+    for var in next_cut:
+        if match(r'^y',var.varName) is not None:
+            cp.append(var.x)
+    return array(cp),solution, UB
+
+def solve_subproblem_remark_1(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub = setup_sub_mt_rem_1(problem_data,meta_data,getX_IParam(master))
+    s_status,s_vars,s_val = optimize(sub)
+    next_cut = s_vars
+    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
+        if s_val < UB:
+            for v in s_vars:
+                solution[v.varName] = v.x
+            for v in m_vars:
+                if match(r'x|s',v.varName) is not None:
+                    solution[v.varName] = v.x
+            UB = s_val
+    else:#Subproblem infeasible
+        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        f_vars = optimize(feas)[1]
+        next_cut = f_vars
+
+    #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
+    #problem as constraint to masterproblem
+    cp = []
+    for var in next_cut:
+        if match(r'^y',var.varName) is not None:
+            cp.append(var.x)
+    return array(cp),solution, UB
+
+def solve_subproblem_remark_2(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+    sub,y_solution = setup_sub_mt_rem_2(problem_data,meta_data,getX_IParam(master))
+    s_status,s_vars,s_val = optimize(sub)
+    cp = y_solution
+    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
+        if s_val < UB:
+            for v in s_vars:
+                solution[v.varName] = v.x
+            for v in m_vars:
+                if match(r'x|s',v.varName) is not None:
+                    solution[v.varName] = v.x
+            for i,v in enumerate(y_solution):
+                solution[f"y[{i}]"] = v
+            UB = s_val
+    else:#Subproblem infeasible
+        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        f_vars = optimize(feas)[1]
+        next_cut = f_vars
+
+        #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
+        #problem as constraint to masterproblem
+        cp = []
+        for var in next_cut:
+            if match(r'^y',var.varName) is not None:
+                cp.append(var.x)
+        cp = array(cp)
+    return array(cp),solution, UB
+
+def MT(problem_data,tol,subproblem_mode):
     check_dimensions(problem_data)
     start = default_timer()
     iteration_counter = 0
@@ -14,6 +92,18 @@ def MT(problem_data,tol):
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_master(problem_data,meta_data)
     solution = {}
+    #Doesn't work because functons are called. Fix: Introduce lists with problem parameters
+    if subproblem_mode == 'regular':
+        SOLVE_SUB_FUNCTION = solve_subproblem_regular
+        #SETUP_SUB_PARAMS = lambda: [problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter]
+    elif subproblem_mode == 'remark_1':
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_1
+        #SETUP_SUB_PARAMS = lambda: [problem_data,meta_data,getX_IParam(master)]
+    elif subproblem_mode == 'remark_2':
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_2
+        #SETUP_SUB_PARAMS = lambda: [problem_data,meta_data,getX_IParam(master)]
+    else:
+        raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     while LB + tol < UB:
         #Solve Masterproblem
         m_status,m_vars,m_val = optimize(master)
@@ -22,9 +112,10 @@ def MT(problem_data,tol):
             return None,'None',default_timer() - start, 4
         else:
             LB = m_val
-        
+        """ 
         #Solve Subproblem
-        sub = setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        #sub = setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        sub = SETUP_SUB_FUNCTION(*SETUP_SUB_PARAMS())
         s_status,s_vars,s_val = optimize(sub)
         next_cut = s_vars
         if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
@@ -45,9 +136,11 @@ def MT(problem_data,tol):
         cp = []
         for var in next_cut:
             if match(r'^y',var.varName) is not None:
-                cp.append(var.x)
+                cp.append(var.x) """
+
+        cut_point,solution,UB = SOLVE_SUB_FUNCTION(UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         
-        add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,array(cp))
+        add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
         iteration_counter += 1
     stop = default_timer()
     runtime = stop - start
