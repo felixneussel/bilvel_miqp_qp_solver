@@ -4,7 +4,7 @@ import re
 import numpy as np
 import os
 import concurrent.futures as futures
-from Functional.multitree import MT,ST, MT_rem_1, MT_rem_2,ST_rem_1,ST_rem_2
+from Functional.multitree import MT,ST
 
 def FileName():
     files = os.listdir('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results')
@@ -71,22 +71,19 @@ def run_functional(mps_file,writeTo):
 
     with open(writeTo,'a') as out:
         out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
-    for f in [ST_rem_1,ST_rem_2]:
-        #if f == 'MT_rem_2':
-         #   solution,obj,runtime, status= MT_rem_2(p_data,1e-5)
-        #else:
-        #    solution,obj,runtime, status=ST(p_data,1e-5)
-        solution,obj,runtime, status= f(p_data,1e-5)
-        with open(writeTo,'a') as out:
-            if status == 2:
-                out.write(f'method {f.__name__} solution ')
-                for key in solution:
-                    if re.match(r'x|y',key):
-                        out.write(f'{key} {solution[key]} ')
-                out.write(f'obj {obj} time {runtime}\n') 
-            else:
-                out.write(f'method {f} infeasible\n')
-        print(f'{name} solved with algo {f}!')         
+    for f in [MT,ST]:
+        for method in ['regular','remark_1','remark_2']:
+            solution,obj,runtime, status= f(p_data,1e-5,method)
+            with open(writeTo,'a') as out:
+                if status == 2:
+                    out.write(f'method {f.__name__} submode {method} solution ')
+                    for key in solution:
+                        if re.match(r'x|y',key):
+                            out.write(f'{key} {solution[key]} ')
+                    out.write(f'obj {obj} time {runtime}\n') 
+                else:
+                    out.write(f'method {f.__name__} infeasible\n')
+            print(f'{name} solved with algo {f.__name__}!')         
 
 if __name__ == '__main__':
     #get all test instances that are solvalble under 10secs
@@ -104,7 +101,7 @@ if __name__ == '__main__':
             with futures.ProcessPoolExecutor() as e:
                 f = e.submit(run_functional,mps_file,filename)
                 try:
-                    a = f.result(timeout=10)
+                    a = f.result(timeout=300)
                 except futures._base.TimeoutError:
                     stop_process_pool(e)
                     print(f'problem {mps_file} exceeded time limit')
