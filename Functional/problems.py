@@ -59,6 +59,13 @@ def setup_st_master(problem_data,meta_data):
     x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
     return mp_common(problem_data,meta_data,model,x_I)
 
+def getX_IParam(model):
+    res = []
+    for v in model.getVars():
+        if match(r'^x_I',v.varName):
+            res.append(v.x)
+    return array(res)
+
 def setup_master(problem_data,meta_data):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = Model('Masterproblem')
@@ -85,6 +92,49 @@ def setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
     model = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
     model = removeBinaryExpansion(model)
     model = removeMasterLinearizations(model,cut_counter)
+    return model
+
+def setup_sub_mt_rem_1(problem_data,meta_data,x_I_param):
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    model = Model('Subproblem')
+    lower = setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param)
+    lower_status,lower_vars,lower_obj = optimize(lower)
+    model = Model('Subproblem')
+    model.Params.LogToConsole = 0
+    x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
+    x_R = model.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
+    y = model.addVars(J, vtype=GRB.CONTINUOUS,name='y')
+    #Objective
+    #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
+    H_II = H[:n_I,:n_I]
+    H_RR = H[n_I:,n_I:]
+    H_IR = H[:n_I,n_I:]
+    #slice c into vectors corresponding to x_I and x_R
+    c_I = c[:n_I]
+    c_R = c[n_I:]
+    quad_matrix = block_diag(H_RR,G_u)
+    lin_vec = concatenate((c_R.T+x_I_param.T@H_IR,d_u.T)).T
+    constant_term = 0.5*x_I_param@H_II@x_I_param + c_I@x_I_param
+    vars = x_R.select() + y.select()
+    model.setMObjective(Q=quad_matrix/2,c=lin_vec,constant=constant_term,xQ_L=vars,xQ_R=vars,xc=vars,sense=GRB.MINIMIZE)
+    #P Constraint
+    A_I = A[:,:n_I]
+    A_R = A[:,n_I:]
+    AB = concatenate((A_R,B),1)
+    primalvars = x_R.select() + y.select()
+    model.addMConstr(A=AB,x=primalvars,sense='>=',b=a-A_I@x_I_param)
+    model.addMConstr(A=D,x=y.select(),sense='>=',b=b - C@x_I_param)
+    #Lower Level Optimality constraint
+    model.addMQConstr(Q = G_l/2, c = d_l, sense="<", rhs=lower_obj, xQ_L=y.select(), xQ_R=y.select(), xc=y.select(), name="Lower Level Optimality" )
+    return model
+
+def setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param):
+    model = Model('Lower_Level')
+    model.Params.LogToConsole = 0
+    y = model.addMVar(shape=n_y,vtype = GRB.CONTINUOUS,name = 'y')
+    model.setMObjective(Q=G_l/2, c = d_l, constant=0, xQ_L=y, xQ_R=y, xc=y, sense=GRB.MINIMIZE )
+    model.addMConstr(A=D, x=y, sense='>', b=b - C@x_I_param, name="Lower Level Constraints" )
     return model
 
 def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):

@@ -4,7 +4,7 @@ import re
 import numpy as np
 import os
 import concurrent.futures as futures
-from Functional.multitree import MT,ST
+from Functional.multitree import MT,ST, MT_rem_1
 
 def FileName():
     files = os.listdir('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results')
@@ -71,9 +71,9 @@ def run_functional(mps_file,writeTo):
 
     with open(writeTo,'a') as out:
         out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
-    for f in ['MT','ST']:
-        if f == 'MT':
-            solution,obj,runtime, status= MT(p_data,1e-5)
+    for f in ['MT_rem_1']:
+        if f == 'MT_rem_1':
+            solution,obj,runtime, status= MT_rem_1(p_data,1e-5)
         else:
             solution,obj,runtime, status=ST(p_data,1e-5)
         with open(writeTo,'a') as out:

@@ -27,7 +27,7 @@ def readDataOld(filepath):
                     data[-1].append(d) """
     return data
 
-def evaluateData(oop,fun):
+def evaluateData(oop,data):
     res = {}
     for d in oop:
         name = d['name']
@@ -35,22 +35,24 @@ def evaluateData(oop,fun):
         try:
             res[name][key] = d['obj']
         except KeyError:
-            res[name] = {}
-    for d in fun:
-        name = d['name']
-        key = f"Func-{d['method']}"
-        try:
-            res[name][key] = d['obj']
-        except KeyError:
-            res[name] = {}
+          res[name] = {}
+    for fun in data:
+        for d in fun:
+            name = d['name']
+            key = f"Func-{d['method']}"
+            try:
+                res[name][key] = d['obj']
+            except KeyError:
+                res[name] = {}
     return res
         
     
 
 def run_test():
-    pa ='/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run7.txt'
+    pa ='/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run8.txt'
     pa2 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run5.txt'
-    data = evaluateData(readDataOld(pa2),readData(pa))
+    pa3 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run9.txt'
+    data = evaluateData(readDataOld(pa2),[readData(pa),readData(pa3)])
     for d in data:
         print(d)
         for m in data[d]:
