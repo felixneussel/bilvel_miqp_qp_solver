@@ -97,7 +97,6 @@ def setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
 def setup_sub_mt_rem_1(problem_data,meta_data,x_I_param):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
-    model = Model('Subproblem')
     lower = setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param)
     lower_status,lower_vars,lower_obj = optimize(lower)
     model = Model('Subproblem')
@@ -128,6 +127,37 @@ def setup_sub_mt_rem_1(problem_data,meta_data,x_I_param):
     #Lower Level Optimality constraint
     model.addMQConstr(Q = G_l/2, c = d_l, sense="<", rhs=lower_obj, xQ_L=y.select(), xQ_R=y.select(), xc=y.select(), name="Lower Level Optimality" )
     return model
+
+def setup_sub_mt_rem_2(problem_data,meta_data,x_I_param):
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    model = Model('Subproblem')
+    lower = setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param)
+    lower_status,lower_vars,lower_obj = optimize(lower)
+    y_param = []
+    for v in lower_vars:
+        y_param.append(v.x)
+    y_param = array(y_param)
+    model.Params.LogToConsole = 0
+    x_R = model.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
+    #Objective
+    #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
+    H_II = H[:n_I,:n_I]
+    H_RR = H[n_I:,n_I:]
+    H_IR = H[:n_I,n_I:]
+    #slice c into vectors corresponding to x_I and x_R
+    c_I = c[:n_I]
+    c_R = c[n_I:]
+    lin_vec = (c_R.T+x_I_param.T@H_IR).T
+    constant_term = 0.5*x_I_param@H_II@x_I_param + c_I@x_I_param + 0.5 * y_param.T @ G_u @ y_param + d_u @ y_param 
+    vars = x_R.select()
+    model.setMObjective(Q=H_RR/2,c=lin_vec,constant=constant_term,xQ_L=vars,xQ_R=vars,xc=vars,sense=GRB.MINIMIZE)
+    A_I = A[:,:n_I]
+    A_R = A[:,n_I:]
+    primalvars = x_R.select()
+    model.addMConstr(A=A_R,x=primalvars,sense='>=',b=a-A_I@x_I_param-B@y_param)
+    return model, y_param
+
 
 def setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param):
     model = Model('Lower_Level')
