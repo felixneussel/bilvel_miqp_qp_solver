@@ -230,13 +230,12 @@ def MT_rem_2(problem_data,tol):
     return solution,UB,runtime, 2
  """
 
-def ST(problem_data,tol,subproblem_mode):
+def ST(problem_data,tol,subproblem_mode,kelley_cuts):
     start = default_timer()
     UB = infty
     iteration_counter = 0
     cut_counter = 0
     solution = {}
-    z_star = None
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_st_master(problem_data,meta_data)
     O = [(master,UB)]
@@ -251,10 +250,18 @@ def ST(problem_data,tol,subproblem_mode):
         SETUP_SUB_FUNCTION = setup_sub_rem_2
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
+    if kelley_cuts:
+        non_improving_ints = []
     while O:# and iteration_counter: #<8:
         N_p,N_p_ub = O.pop()
         m_status,m_vars,m_val = optimize(N_p)
         int_vars = get_int_vars(m_vars)
+        if kelley_cuts and is_int_feasible(int_vars) and m_val >= UB:
+            y_p = []
+            for v in m_vars:
+                if match(r'^y',v.varName):
+                    y_p.append(v.x)
+            non_improving_ints.append(array(y_p))
         if m_status != GRB.OPTIMAL or m_val >= UB - tol:
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
@@ -264,6 +271,11 @@ def ST(problem_data,tol,subproblem_mode):
             for pro in O:
                 pro = (add_cut(problem_data,pro[0],meta_data,y_var,dual_var,w_var,cut_point),pro[1])
             cut_counter += 1
+            if kelley_cuts:
+                while non_improving_ints:
+                    for pro in O:
+                        pro = (add_cut(problem_data,pro[0],meta_data,y_var,dual_var,w_var,non_improving_ints.pop()),pro[1])
+                    cut_counter += 1
 
         else:
             first,second = branch(N_p,int_vars,problem_data)
