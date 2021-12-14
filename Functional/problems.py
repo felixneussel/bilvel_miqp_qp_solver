@@ -247,7 +247,7 @@ def check_dimensions(problem_data):
 def optimize(model):
     model.optimize()
     status = model.status
-    if status == GRB.OPTIMAL or status == GRB.SUBOPTIMAL:
+    if status == GRB.OPTIMAL or status == GRB.SUBOPTIMAL or status == 15:
         return model.status, model.getVars(),model.ObjVal
     else:
         return model.status, None, infty
@@ -307,6 +307,14 @@ def is_int_feasible(vars):
     is_int = list(map(lambda x: x.is_integer(),vars))
     return all(is_int)
 
-
+def warmstart(model,solution):
+    if solution == {}:
+        return model
+    for v in model.getVars():
+        try:
+            v.setAttr(GRB.Attr.Start, solution[v.varName])
+        except KeyError:
+            continue
+    return model
 
 

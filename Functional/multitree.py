@@ -3,7 +3,7 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam
+from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, warmstart
 from bisect import bisect
 from operator import itemgetter
 
@@ -85,10 +85,11 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
         cp = array(cp)
     return array(cp),solution, UB
 
-def MT(problem_data,tol,subproblem_mode,kelley_cuts):
+def MT(problem_data,tol,iteration_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart):
     check_dimensions(problem_data)
     start = default_timer()
     iteration_counter = 0
+    cut_counter = 0
     LB = -infty
     UB = infty
     meta_data = setup_meta_data(problem_data)
@@ -106,18 +107,23 @@ def MT(problem_data,tol,subproblem_mode,kelley_cuts):
         SETUP_SUB_FUNCTION = setup_sub_rem_2
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
-    while LB + tol < UB:
+    while LB + tol < UB and iteration_counter < iteration_limit:
         #Solve Masterproblem
+        if early_termination and iteration_counter > 0:
+            master.setParam(GRB.Param.BestObjStop, UB - 2*tol)
+        if use_warmstart:
+            master = warmstart(master,solution)
         m_status,m_vars,m_val = optimize(master)
         
-        if m_status != GRB.OPTIMAL:
-            return None,'None',default_timer() - start, 4
+        if m_status not in [GRB.OPTIMAL,15]:
+            return None,None,default_timer() - start, 4
         else:
             LB = m_val
         
-        cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
         
         master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
+        cut_counter += 1
         if kelley_cuts:
             y_p = []
             for v in m_vars:
@@ -125,6 +131,7 @@ def MT(problem_data,tol,subproblem_mode,kelley_cuts):
                     y_p.append(v.x)
             y_p = array(y_p)
             master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,y_p)
+            cut_counter += 1
         iteration_counter += 1
     stop = default_timer()
     runtime = stop - start
@@ -230,7 +237,7 @@ def MT_rem_2(problem_data,tol):
     return solution,UB,runtime, 2
  """
 
-def ST(problem_data,tol,subproblem_mode,kelley_cuts):
+def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
     start = default_timer()
     UB = infty
     iteration_counter = 0
@@ -252,6 +259,17 @@ def ST(problem_data,tol,subproblem_mode,kelley_cuts):
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     if kelley_cuts:
         non_improving_ints = []
+    if initial_cut or initial_ub:
+        initial_solution, initial_incumbent, initial_time, inital_status = MT(problem_data,tol,1,subproblem_mode,False,False,False)
+    if initial_cut:
+        y_p = []
+        for v in initial_solution:
+            if match(r'^y',v):
+                y_p.append(initial_solution[v])
+        O[0] = (add_cut(problem_data,O[0][0],meta_data,y_var,dual_var,w_var,array(y_p)),O[0][1])
+        cut_counter += 1
+    if initial_ub:
+        UB = initial_incumbent + 2*tol
     while O:# and iteration_counter: #<8:
         N_p,N_p_ub = O.pop()
         m_status,m_vars,m_val = optimize(N_p)

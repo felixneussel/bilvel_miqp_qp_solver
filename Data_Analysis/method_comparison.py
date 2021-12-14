@@ -59,7 +59,8 @@ def run_test():
     pa4 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run10.txt'
     pa5 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run11.txt'
     pa6 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run14.txt'
-    data = evaluateData([readDataOld(pa6)],[])
+    pa7 = '/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run15.txt'
+    data = evaluateData([readDataOld(pa6),readDataOld(pa7)],[])
     for d in data:
         print(d)
         for m in data[d]:

@@ -71,9 +71,9 @@ def run_functional(mps_file,writeTo):
 
     with open(writeTo,'a') as out:
         out.write(f'newproblem {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n')
-    for f in [MT,ST]:
+    for f in [MT]:
         for method in ['regular','remark_1','remark_2']:
-            solution,obj,runtime, status= f(p_data,1e-5,method)
+            solution,obj,runtime, status= f(p_data,1e-5,method,True,True)
             with open(writeTo,'a') as out:
                 if status == 2:
                     out.write(f'method {f.__name__} submode {method} solution ')
