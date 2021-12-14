@@ -7,11 +7,34 @@ from Functional.problems import check_dimensions, setup_master, setup_meta_data,
 from bisect import bisect
 from operator import itemgetter
 
-def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm):
+    if algorithm == 'MT':
+        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,False,False,False)
+    elif algorithm == 'MT-K':
+        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,False,False)
+    elif algorithm == 'MT-K-F':
+        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,True,False)
+    elif algorithm == 'MT-K-F-W':
+        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,True,True)
+    elif algorithm == 'ST':
+        return ST(problem_data,tol,time_limit,subproblem_mode,False,False,False)
+    elif algorithm == 'ST-K':
+        return ST(problem_data,tol,time_limit,subproblem_mode,True,False,False)
+    elif algorithm == 'ST-K-C':
+        return ST(problem_data,tol,time_limit,subproblem_mode,True,True,False)
+    elif algorithm == 'ST-K-C-S':
+        return ST(problem_data,tol,time_limit,subproblem_mode,True,True,True)
+    else:
+        raise ValueError(f"Algorithm {algorithm} is not a valid argument")
+
+def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+    sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
+    time_in_sub = default_timer() - sub_start
     next_cut = s_vars
-    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
+    if s_status in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem feasible           
         if s_val < UB:
             for v in s_vars:
                 solution[v.varName] = v.x
@@ -19,22 +42,31 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
                 if match(r'x|s',v.varName) is not None:
                     solution[v.varName] = v.x
             UB = s_val
+        if s_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True, time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-        f_vars = optimize(feas)[1]
+        feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+        sub_start = default_timer()
+        f_status,f_vars,f_obj = optimize(feas)
+        time_in_sub = default_timer() - sub_start
         next_cut = f_vars
-
+        if f_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True, time_in_sub
     #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
     #problem as constraint to masterproblem
     cp = []
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
             cp.append(var.x)
-    return array(cp),solution, UB
+    return array(cp),solution, UB, False, time_in_sub
 
-def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
+    sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
+    time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
         if s_val < UB:
@@ -44,22 +76,31 @@ def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
                 if match(r'x|s',v.varName) is not None:
                     solution[v.varName] = v.x
             UB = s_val
+        if s_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True, time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-        f_vars = optimize(feas)[1]
+        feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+        sub_start = default_timer()
+        f_status,f_vars,f_obj = optimize(feas)
+        time_in_sub = default_timer()- sub_start
         next_cut = f_vars
-
+        if f_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True,time_in_sub
     #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
     #problem as constraint to masterproblem
     cp = []
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
             cp.append(var.x)
-    return array(cp),solution, UB
+    return array(cp),solution, UB, False,time_in_sub
 
-def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter):
+def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
+    sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
+    time_in_sub = default_timer() - sub_start
     cp = y_solution
     if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
         if s_val < UB:
@@ -71,11 +112,17 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             for i,v in enumerate(y_solution):
                 solution[f"y[{i}]"] = v
             UB = s_val
+        if s_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True,time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-        f_vars = optimize(feas)[1]
+        feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+        sub_start = default_timer() 
+        f_status,f_vars,f_obj = optimize(feas)
+        time_in_sub = default_timer() - sub_start
         next_cut = f_vars
-
+        if f_status == GRB.TIME_LIMIT:
+            return array([]),solution,UB,True, time_in_sub
         #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
         #problem as constraint to masterproblem
         cp = []
@@ -83,9 +130,9 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             if match(r'^y',var.varName) is not None:
                 cp.append(var.x)
         cp = array(cp)
-    return array(cp),solution, UB
+    return array(cp),solution, UB, False, time_in_sub
 
-def MT(problem_data,tol,iteration_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart):
+def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart):
     check_dimensions(problem_data)
     start = default_timer()
     iteration_counter = 0
@@ -95,7 +142,8 @@ def MT(problem_data,tol,iteration_limit,subproblem_mode,kelley_cuts,early_termin
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_master(problem_data,meta_data)
     solution = {}
-  
+    TIME_LIMIT_EXCEEDED = False
+    time_in_subs = []
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular
         SETUP_SUB_FUNCTION = setup_sub_mt
@@ -107,20 +155,26 @@ def MT(problem_data,tol,iteration_limit,subproblem_mode,kelley_cuts,early_termin
         SETUP_SUB_FUNCTION = setup_sub_rem_2
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
-    while LB + tol < UB and iteration_counter < iteration_limit:
+    while LB + tol < UB and iteration_counter < iteration_limit and not TIME_LIMIT_EXCEEDED:
         #Solve Masterproblem
         if early_termination and iteration_counter > 0:
             master.setParam(GRB.Param.BestObjStop, UB - 2*tol)
         if use_warmstart:
             master = warmstart(master,solution)
+        master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         m_status,m_vars,m_val = optimize(master)
         
-        if m_status not in [GRB.OPTIMAL,15]:
-            return None,None,default_timer() - start, 4
+        if m_status not in [GRB.OPTIMAL,15,GRB.TIME_LIMIT]:
+            return None,None,default_timer() - start,time_in_subs, 4
         else:
             LB = m_val
-        
-        cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
+        if m_status == GRB.TIME_LIMIT:
+            TIME_LIMIT_EXCEEDED = True
+            continue
+        cut_point,solution,UB, TIME_LIMIT_EXCEEDED,time_in_sub = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter,start,time_limit)
+        time_in_subs.append(time_in_sub)
+        if TIME_LIMIT_EXCEEDED:
+            continue
         
         master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
         cut_counter += 1
@@ -135,7 +189,9 @@ def MT(problem_data,tol,iteration_limit,subproblem_mode,kelley_cuts,early_termin
         iteration_counter += 1
     stop = default_timer()
     runtime = stop - start
-    return solution,UB,runtime, 2
+    if TIME_LIMIT_EXCEEDED:
+        return solution, UB, runtime,time_in_subs, GRB.TIME_LIMIT
+    return solution,UB,runtime,time_in_subs, 2
 """ 
 def MT_rem_1(problem_data,tol):
     check_dimensions(problem_data)
@@ -237,12 +293,14 @@ def MT_rem_2(problem_data,tol):
     return solution,UB,runtime, 2
  """
 
-def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
+def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
     start = default_timer()
     UB = infty
     iteration_counter = 0
     cut_counter = 0
     solution = {}
+    time_in_subs = []
+    TIME_LIMIT_EXCEEDED = False
     meta_data = setup_meta_data(problem_data)
     master,y_var,dual_var,w_var = setup_st_master(problem_data,meta_data)
     O = [(master,UB)]
@@ -260,7 +318,7 @@ def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
     if kelley_cuts:
         non_improving_ints = []
     if initial_cut or initial_ub:
-        initial_solution, initial_incumbent, initial_time, inital_status = MT(problem_data,tol,1,subproblem_mode,False,False,False)
+        initial_solution, initial_incumbent, initial_time,intial_time_in_sub, inital_status = MT(problem_data,tol,1,subproblem_mode,False,False,False)
     if initial_cut:
         y_p = []
         for v in initial_solution:
@@ -270,9 +328,13 @@ def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
         cut_counter += 1
     if initial_ub:
         UB = initial_incumbent + 2*tol
-    while O:# and iteration_counter: #<8:
+    while O and not TIME_LIMIT_EXCEEDED:
         N_p,N_p_ub = O.pop()
+        N_p.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         m_status,m_vars,m_val = optimize(N_p)
+        if m_status == GRB.TIME_LIMIT:
+            TIME_LIMIT_EXCEEDED = True
+            continue
         int_vars = get_int_vars(m_vars)
         if kelley_cuts and is_int_feasible(int_vars) and m_val >= UB:
             y_p = []
@@ -283,7 +345,10 @@ def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
         if m_status != GRB.OPTIMAL or m_val >= UB - tol:
             continue
         elif is_int_feasible(int_vars) and m_val < UB:
-            cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+            cut_point,solution,UB, TIME_LIMIT_EXCEEDED,time_in_sub = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit)
+            time_in_subs.append(time_in_sub)
+            if TIME_LIMIT_EXCEEDED:
+                continue
             O.append((N_p,UB))
             O = sorted(O,key=itemgetter(1),reverse=True)
             for pro in O:
@@ -305,10 +370,12 @@ def ST(problem_data,tol,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
         iteration_counter += 1
     stop = default_timer()
     runtime = stop-start
-    if solution != {}:
-        return solution, UB, runtime,2
+    if solution != {} and not TIME_LIMIT_EXCEEDED:
+        return solution, UB, runtime,time_in_subs,2
+    elif TIME_LIMIT_EXCEEDED:
+        return solution, UB, runtime,time_in_subs, GRB.TIME_LIMIT
     else:
-        return None,None,runtime,4
+        return None,None,runtime,time_in_subs, 4
 """ 
 def ST_rem_1(problem_data,tol):
     start = default_timer()
