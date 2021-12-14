@@ -142,7 +142,7 @@ def MT(problem_data,tol,subproblem_mode):
 
         cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         
-        add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
+        master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point)
         iteration_counter += 1
     stop = default_timer()
     runtime = stop - start
@@ -299,16 +299,16 @@ def ST(problem_data,tol,subproblem_mode):
                     cp.append(var.x) """
             cut_point,solution,UB = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
             O.append((N_p,UB))
-            
+            O = sorted(O,key=itemgetter(1),reverse=True)
             for pro in O:
-                add_cut(problem_data,pro[0],meta_data,y_var,dual_var,w_var,cut_point)
+                pro = (add_cut(problem_data,pro[0],meta_data,y_var,dual_var,w_var,cut_point),pro[1])
             cut_counter += 1
 
         else:
             first,second = branch(N_p,int_vars,problem_data)
             O.append((first,UB))
             O.append((second,UB))
-            O = sorted(O,key=itemgetter(1))
+            O = sorted(O,key=itemgetter(1),reverse=True)
             #bisect(O,first,key=itemgetter(1))
             #bisect(O,second,key=itemgetter(1))
         iteration_counter += 1

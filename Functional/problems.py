@@ -292,6 +292,7 @@ def add_cut(problem_data,model,meta_data,y_var,dual_var,w_var,p):
     term4 = bin_coeff_arr@w_var #w_var.prod(bin_coeff_dict)
     
     model.addConstr((term1+term2+term3+term4-yTGy <= 0),'Strong duality linearization')
+    return model
 
 def get_int_vars(vars):
     if not vars:
