@@ -1,3 +1,4 @@
+import enum
 from gurobipy import Model,GRB, tuplelist
 from numpy import ones,log2,floor,ceil, concatenate, array, infty
 from scipy.linalg import block_diag
@@ -25,6 +26,8 @@ def mp_common(problem_data,meta_data,model,x_I):
     dual = model.addVars(ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
     w = model.addVars(jr,vtype=GRB.CONTINUOUS, name="w")
     s = model.addVars(jr,vtype= GRB.BINARY,name='s')
+    model.update()
+    model._x_I = x_I
     #setObjective(model)
     HG = block_diag(H,G_u)
     cd = concatenate((c,d_u))
@@ -61,9 +64,9 @@ def setup_st_master(problem_data,meta_data):
 
 def getX_IParam(model):
     res = []
-    for v in model.getVars():
-        if match(r'^x_I',v.varName):
-            res.append(v.x)
+    sol = model.cbGetSolution(model._x_I)
+    for v in sol:
+        res.append(sol[v])
     return array(res)
 
 def setup_master(problem_data,meta_data):

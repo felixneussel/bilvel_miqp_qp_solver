@@ -30,7 +30,7 @@ def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm)
         raise ValueError(f"Algorithm {algorithm} is not a valid argument")
 
 def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
-    sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+    sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var)
     sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
@@ -134,27 +134,6 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
         cp = array(cp)
     return array(cp),solution, UB, False, time_in_sub
 
-def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm):
-    if algorithm == 'MT':
-        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,False,False,False)
-    elif algorithm == 'MT-K':
-        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,False,False)
-    elif algorithm == 'MT-K-F':
-        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,True,False)
-    elif algorithm == 'MT-K-F-W':
-        return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,True,True)
-    elif algorithm == 'ST':
-        return ST(problem_data,tol,time_limit,subproblem_mode,False,False,False)
-    elif algorithm == 'ST-K':
-        return ST(problem_data,tol,time_limit,subproblem_mode,True,False,False)
-    elif algorithm == 'ST-K-C':
-        return ST(problem_data,tol,time_limit,subproblem_mode,True,True,False)
-    elif algorithm == 'ST-K-C-S':
-        return ST(problem_data,tol,time_limit,subproblem_mode,True,True,True)
-    elif algorithm == 'ST-lazy':
-        return ST_lazy(problem_data,tol,time_limit,subproblem_mode,False,False,False)
-    else:
-        raise ValueError(f"Algorithm {algorithm} is not a valid argument")
 
 def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,y_var,dual_var,w_var):
     sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var)
@@ -208,34 +187,18 @@ def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             cp.append(var.x)
     return array(cp),solution, UB, False,time_in_sub
 
-def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
+def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,y_var,dual_var,w_var):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
-    sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
-    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
-        if s_val < UB:
-            for v in s_vars:
-                solution[v.varName] = v.x
-            for v in m_vars:
-                if match(r'x|s',v.varName) is not None:
-                    solution[v.varName] = v.x
-            for i,v in enumerate(y_solution):
-                solution[f"y[{i}]"] = v
-            UB = s_val
-        if s_status == GRB.TIME_LIMIT:
-            return array([]),solution,UB,True,time_in_sub
-    else:#Subproblem infeasible
-        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-        feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:#subproblem infeasible           
+        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var)
         sub_start = default_timer() 
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
-        if f_status == GRB.TIME_LIMIT:
-            return array([]),solution,UB,True, time_in_sub
         #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
         #problem as constraint to masterproblem
         cp = []
@@ -243,7 +206,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             if match(r'^y',var.varName) is not None:
                 cp.append(var.x)
         cp = array(cp)
-    return array(cp),solution, UB, False, time_in_sub
+    return array(cp),time_in_sub
 
 def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart):
     check_dimensions(problem_data)
@@ -510,7 +473,7 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
         SOLVE_SUB_FUNCTION = solve_subproblem_remark_1
         SETUP_SUB_FUNCTION = setup_sub_rem_1
     elif subproblem_mode == 'remark_2':
-        SOLVE_SUB_FUNCTION = solve_subproblem_remark_2
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_2_lazy
         SETUP_SUB_FUNCTION = setup_sub_rem_2
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
@@ -530,6 +493,7 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     
         
     master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    master.setParam(GRB.Param.LazyConstraints,1)
     master._G_l = G_l
     master._d_l = d_l
     master._b = b
@@ -541,7 +505,16 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     master._SETUP_SUB_FUNCTION = SETUP_SUB_FUNCTION
     master._problem_data = problem_data
     master._meta_data = meta_data
+    #master._vars = master.getVars()
     master.optimize(newCut)
+
+    solution = {}
+    for v in master.getVars():
+        solution[v.varName] = v.x
+    obj = master.ObjVal
+    runtime = default_timer() - start
+    status = master.status
+    return solution,obj,runtime,status
     
     """ int_vars = get_int_vars(m_vars)
     if kelley_cuts and is_int_feasible(int_vars) and m_val >= UB:
@@ -571,7 +544,7 @@ def newCut(model,where):
         best_obj = model.cbGet(GRB.Callback.MIPSOL_OBJBST)
         if current_obj == best_obj:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
             cut_point, time_in_sub = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data,model._y,model._dual,model._w)
-            cut_point = model.cbGetSolution(model._y)
+            #cut_point = model.cbGetSolution(model._y)
             yTGy = cut_point.T @ model._G_l @ cut_point
             term1 = 2*cut_point.T @ model._G_l @ model._y
             term2 = model._d_l.T @ model._y
