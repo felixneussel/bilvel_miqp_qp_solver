@@ -505,7 +505,7 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     master._SETUP_SUB_FUNCTION = SETUP_SUB_FUNCTION
     master._problem_data = problem_data
     master._meta_data = meta_data
-    #master._vars = master.getVars()
+    master._times_in_sub = []
     master.optimize(newCut)
 
     solution = {}
@@ -514,29 +514,8 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     obj = master.ObjVal
     runtime = default_timer() - start
     status = master.status
-    return solution,obj,runtime,status
+    return solution,obj,runtime,master._times_in_sub,status
     
-    """ int_vars = get_int_vars(m_vars)
-    if kelley_cuts and is_int_feasible(int_vars) and m_val >= UB:
-        y_p = []
-        for v in m_vars:
-            if match(r'^y',v.varName):
-                y_p.append(v.x)
-        non_improving_ints.append(array(y_p))
-    
-    elif is_int_feasible(int_vars) and m_val < UB:
-        cut_point,solution,UB, TIME_LIMIT_EXCEEDED,time_in_sub = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit)
-        time_in_subs.append(time_in_sub)
-       
-        
-    stop = default_timer()
-    runtime = stop-start
-    if solution != {} and not TIME_LIMIT_EXCEEDED:
-        return solution, UB, runtime,time_in_subs,2
-    elif TIME_LIMIT_EXCEEDED:
-        return solution, UB, runtime,time_in_subs, GRB.TIME_LIMIT
-    else:
-        return None,None,runtime,time_in_subs, 4 """
 
 def newCut(model,where):
     if where == GRB.Callback.MIPSOL:
@@ -544,7 +523,7 @@ def newCut(model,where):
         best_obj = model.cbGet(GRB.Callback.MIPSOL_OBJBST)
         if current_obj == best_obj:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
             cut_point, time_in_sub = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data,model._y,model._dual,model._w)
-            #cut_point = model.cbGetSolution(model._y)
+            model._times_in_sub.append(time_in_sub)
             yTGy = cut_point.T @ model._G_l @ cut_point
             term1 = 2*cut_point.T @ model._G_l @ model._y
             term2 = model._d_l.T @ model._y
