@@ -3,7 +3,7 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, warmstart
+from Functional.problems import check_dimensions, getSParam, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, warmstart
 from bisect import bisect
 from operator import itemgetter
 
@@ -136,7 +136,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
 
 
 def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,y_var,dual_var,w_var):
-    sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var)
+    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master),getSParam(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
