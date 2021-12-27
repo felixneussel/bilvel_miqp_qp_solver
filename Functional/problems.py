@@ -64,6 +64,9 @@ def setup_st_master(problem_data,meta_data):
     return mp_common(problem_data,meta_data,model,x_I)
 
 def getX_IParam(model):
+    pass
+
+def getX_IParam(model):
     res = []
     sol = model.cbGetSolution(model._x_I)
     for v in sol:

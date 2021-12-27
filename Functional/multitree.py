@@ -24,8 +24,6 @@ def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm)
         return ST(problem_data,tol,time_limit,subproblem_mode,True,True,False)
     elif algorithm == 'ST-K-C-S':
         return ST(problem_data,tol,time_limit,subproblem_mode,True,True,True)
-    elif algorithm == 'ST-lazy':
-        return ST_lazy(problem_data,tol,time_limit,subproblem_mode,False,False,False)
     else:
         raise ValueError(f"Algorithm {algorithm} is not a valid argument")
 
@@ -353,7 +351,7 @@ def MT_rem_2(problem_data,tol):
     return solution,UB,runtime, 2
  """
 
-def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
+def ST_old(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
     start = default_timer()
     UB = infty
     iteration_counter = 0
@@ -437,7 +435,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     else:
         return None,None,runtime,time_in_subs, 4
 
-def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
+def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub):
     start = default_timer()
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     UB = infty
@@ -464,16 +462,17 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     if kelley_cuts:
         non_improving_ints = []
     if initial_cut or initial_ub:
-        initial_solution, initial_incumbent, initial_time,intial_time_in_sub, inital_status = MT(problem_data,tol,1,subproblem_mode,False,False,False)
+        initial_solution, initial_incumbent, initial_time,intial_time_in_sub, inital_status = MT(problem_data,tol,1,time_limit,subproblem_mode,False,False,False)
     if initial_cut:
         y_p = []
         for v in initial_solution:
             if match(r'^y',v):
                 y_p.append(initial_solution[v])
-        O[0] = (add_cut(problem_data,O[0][0],meta_data,y_var,dual_var,w_var,array(y_p)),O[0][1])
+        master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,array(y_p))
         cut_counter += 1
     if initial_ub:
         UB = initial_incumbent + 2*tol
+        master.setParam(GRB.Parma.Cutoff, UB)
     
         
     master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
@@ -491,6 +490,7 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     master._meta_data = meta_data
     master._times_in_sub = []
     master._vars = master.getVars()
+    master._kelley = kelley_cuts
     master.optimize(newCut)
 
     solution = {}
@@ -515,6 +515,15 @@ def newCut(model,where):
             term3 = -model._b.T @ model._dual
             term4 = model._bin_coeff@ model._w
             model.cbLazy(term1+term2+term3+term4-yTGy <= 0)
+        else:#integer feasible non improving -> potential addidtional kelley cut
+            if model._kelley:
+                cut_point = array(model.cbGetSolution(model._y))
+                yTGy = cut_point.T @ model._G_l @ cut_point
+                term1 = 2*cut_point.T @ model._G_l @ model._y
+                term2 = model._d_l.T @ model._y
+                term3 = -model._b.T @ model._dual
+                term4 = model._bin_coeff@ model._w
+                model.cbLazy(term1+term2+term3+term4-yTGy <= 0)
 """ 
 def ST_rem_1(problem_data,tol):
     start = default_timer()

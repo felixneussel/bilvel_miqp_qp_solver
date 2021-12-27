@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
 
-    solution,obj,runtime,times_in_sub, status = solve(problem_data,1e-5,infty,10,'remark_2','ST-lazy')
+    solution,obj,runtime,times_in_sub, status = solve(problem_data,1e-5,infty,10,'remark_2','ST-K-C-S')
    
     if status in [2,GRB.TIME_LIMIT]:
         print(f"Status : {status}")
