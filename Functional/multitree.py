@@ -3,7 +3,7 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, getSParam, setup_feas_lazy, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, setup_sub_st_lazy, warmstart
+from Functional.problems import check_dimensions, getSParam, getX_IParamLazy, setup_feas_lazy, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, setup_sub_st_lazy, warmstart
 from bisect import bisect
 from operator import itemgetter
 
@@ -134,13 +134,13 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
 
 
 def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
-    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master),getSParam(master))
+    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
-        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -152,13 +152,13 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
     return array(cp),time_in_sub
 
 def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
-    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
+    sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
-        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer()- sub_start
@@ -170,13 +170,13 @@ def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
     return array(cp),time_in_sub
 
 def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
-    sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
+    sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:#subproblem infeasible           
-        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
         sub_start = default_timer() 
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -472,7 +472,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
         cut_counter += 1
     if initial_ub:
         UB = initial_incumbent + 2*tol
-        master.setParam(GRB.Parma.Cutoff, UB)
+        master.setParam(GRB.Param.Cutoff, UB)
     
         
     master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
