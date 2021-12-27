@@ -3,7 +3,7 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, getSParam, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, warmstart
+from Functional.problems import check_dimensions, getSParam, setup_feas_lazy, setup_master, setup_meta_data, setup_sub_mt, setup_sub_rem_2, setup_sub_st,setup_sub_rem_1 ,optimize, setup_feas_mt, setup_feas_st, add_cut, setup_meta_data, check_dimensions,branch, setup_st_master, is_int_feasible, get_int_vars, getX_IParam, setup_sub_st_lazy, warmstart
 from bisect import bisect
 from operator import itemgetter
 
@@ -135,14 +135,14 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
     return array(cp),solution, UB, False, time_in_sub
 
 
-def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,y_var,dual_var,w_var):
+def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master),getSParam(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
-        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var)
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -153,48 +153,32 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
             cp.append(var.x)
     return array(cp),time_in_sub
 
-def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
+def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
-    sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
-    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
-        if s_val < UB:
-            for v in s_vars:
-                solution[v.varName] = v.x
-            for v in m_vars:
-                if match(r'x|s',v.varName) is not None:
-                    solution[v.varName] = v.x
-            UB = s_val
-        if s_status == GRB.TIME_LIMIT:
-            return array([]),solution,UB,True, time_in_sub
-    else:#Subproblem infeasible
-        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
-        feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer()- sub_start
         next_cut = f_vars
-        if f_status == GRB.TIME_LIMIT:
-            return array([]),solution,UB,True,time_in_sub
-    #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
-    #problem as constraint to masterproblem
     cp = []
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
             cp.append(var.x)
-    return array(cp),solution, UB, False,time_in_sub
+    return array(cp),time_in_sub
 
-def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,y_var,dual_var,w_var):
+def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:#subproblem infeasible           
-        feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var)
+        feas = setup_feas_lazy(problem_data,meta_data,getX_IParam(master),getSParam(master))
         sub_start = default_timer() 
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -468,9 +452,9 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     O = [(master,UB)]
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular_lazy
-        SETUP_SUB_FUNCTION = setup_sub_st
+        SETUP_SUB_FUNCTION = setup_sub_st_lazy
     elif subproblem_mode == 'remark_1':
-        SOLVE_SUB_FUNCTION = solve_subproblem_remark_1
+        SOLVE_SUB_FUNCTION = solve_subproblem_remark_1_lazy
         SETUP_SUB_FUNCTION = setup_sub_rem_1
     elif subproblem_mode == 'remark_2':
         SOLVE_SUB_FUNCTION = solve_subproblem_remark_2_lazy
@@ -506,6 +490,7 @@ def ST_lazy(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,
     master._problem_data = problem_data
     master._meta_data = meta_data
     master._times_in_sub = []
+    master._vars = master.getVars()
     master.optimize(newCut)
 
     solution = {}
@@ -522,7 +507,7 @@ def newCut(model,where):
         current_obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
         best_obj = model.cbGet(GRB.Callback.MIPSOL_OBJBST)
         if current_obj == best_obj:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
-            cut_point, time_in_sub = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data,model._y,model._dual,model._w)
+            cut_point, time_in_sub = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data)
             model._times_in_sub.append(time_in_sub)
             yTGy = cut_point.T @ model._G_l @ cut_point
             term1 = 2*cut_point.T @ model._G_l @ model._y

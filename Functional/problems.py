@@ -2,7 +2,7 @@ import enum
 from gurobipy import Model,GRB, tuplelist
 from numpy import ones,log2,floor,ceil, concatenate, array, infty
 from scipy.linalg import block_diag
-from re import match
+from re import match,compile
 from operator import itemgetter
 
 def setup_meta_data(problem_data):
@@ -71,11 +71,16 @@ def getX_IParam(model):
     return array(res)
 
 def getSParam(model):
-    res = []
-    sol = model.cbGetSolution(model._s)
-    for v in sol:
-        res.append(sol[v])
-    return array(res)
+    name_exp = compile(r'^s')
+    index_exp = compile(r'(?<=\[)\d+(?=,)|(?<=,)\d+(?=\])')
+    s = {}
+    for var in model._vars:
+        if name_exp.match(var.varName) is not None:
+            indices = list(map(int,index_exp.findall(var.varName)))
+            if len(indices) != 2:
+                raise ValueError('Regex did not find exactly two indices')
+            s[indices[0],indices[1]] = model.cbGetSolution(var)
+    return s
 
 def setup_master(problem_data,meta_data):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
