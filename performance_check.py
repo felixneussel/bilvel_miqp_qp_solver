@@ -27,9 +27,10 @@ def getProblemData(DIRECTORY,problem):
     mps_pa = f"{DIRECTORY}/{problem}.mps"
     aux_pa = f"{DIRECTORY}/{problem}.aux"
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-    H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l)
+    H,G_u,G_l = quadraticTerms(n_I,n_R,n_y)
+    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
      
-def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
+def quadraticTerms(n_I,n_R,n_y):
     #Input data
     np.random.seed(3)
     H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
@@ -44,6 +45,8 @@ def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
 if __name__ == '__main__':
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
     PROBLEMS_TO_SOLVE = getProblems(DIRECTORY)
+   
+
 
     
 
