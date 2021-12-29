@@ -60,18 +60,18 @@ if __name__ == '__main__':
         n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
         try:
             solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+            with open(OUTPUT_FILE,'a') as out:
+                out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {algorithm} status {status} solution ')
+                for key in solution:
+                    if re.match(r'x|y',key):
+                        out.write(f'{key} {solution[key]} ')
+                out.write(f'obj {obj} time {runtime} subtime {time_in_subs}\n')
         except Exception:
             with open(EXCEPTION_REPORT,"a") as out:
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")
                 out.write(traceback.format_exc())
                 out.write("\n")
-        with open(OUTPUT_FILE,'a') as out:
-            if status == 2:
-                out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {algorithm} status {status} solution ')
-                for key in solution:
-                    if re.match(r'x|y',key):
-                        out.write(f'{key} {solution[key]} ')
-                out.write(f'obj {obj} time {runtime} subtime {time_in_subs}\n') 
+         
 
    
 
