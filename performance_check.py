@@ -4,6 +4,7 @@ from Parsers.file_reader import mps_aux_reader
 import numpy as np
 from numpy.linalg import norm
 from Functional.multitree import solve
+import traceback
 
 def getProblems(directory):
     files = os.listdir(directory)
@@ -51,12 +52,19 @@ if __name__ == '__main__':
     PROBLEMS_TO_SOLVE = getProblems(DIRECTORY)
     TIME_LIMIT = 10
     SUBPROBLEM_MODE = "remark_2"
-    OUTPUT_FILE = "remark_2_test.txt"
+    OUTPUT_FILE = "Results/remark_2_test.txt"
+    EXCEPTION_REPORT = "Results/remark_2_exceptions.txt"
     for problem in PROBLEMS_TO_SOLVE:
         name, algorithm = problem.split()
         problem_data = getProblemData(DIRECTORY,name)
         n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-        solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+        try:
+            solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+        except Exception:
+            with open(EXCEPTION_REPORT,"a") as out:
+                out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")
+                out.write(traceback.format_exc())
+                out.write("\n")
         with open(OUTPUT_FILE,'a') as out:
             if status == 2:
                 out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {algorithm} status {status} solution ')
