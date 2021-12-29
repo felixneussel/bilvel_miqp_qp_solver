@@ -30,6 +30,7 @@ def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm)
 def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub = SETUP_SUB_FUNCTION(problem_data,master,meta_data,y_var,dual_var,w_var)
     sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub.setParam(GRB.NumericFocus,3)
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
@@ -46,6 +47,7 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
             return array([]),solution,UB,True, time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        feas.setParam(GRB.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
@@ -64,6 +66,7 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
 def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub.setParam(GRB.NumericFocus,3)
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
@@ -80,6 +83,7 @@ def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             return array([]),solution,UB,True, time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        feas.setParam(GRB.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
@@ -98,6 +102,7 @@ def solve_subproblem_remark_1(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
 def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     sub.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+    sub.setParam(GRB.NumericFocus,3)
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
@@ -116,6 +121,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             return array([]),solution,UB,True,time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
+        feas.setParam(GRB.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         sub_start = default_timer() 
         f_status,f_vars,f_obj = optimize(feas)
@@ -136,11 +142,13 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
 def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
     sub_start = default_timer()
+    sub.setParam(GRB.NumericFocus,3)
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
         feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
+        feas.setParam(GRB.NumericFocus,3)
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -154,11 +162,13 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
 def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
     sub_start = default_timer()
+    sub.setParam(GRB.NumericFocus,3)
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
         feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
+        feas.setParam(GRB.NumericFocus,3)
         sub_start = default_timer()
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer()- sub_start
@@ -171,12 +181,14 @@ def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
 
 def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
+    sub.setParam(GRB.NumericFocus,3)
     sub_start = default_timer()
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
     if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:#subproblem infeasible           
         feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
+        feas.setParam(GRB.NumericFocus,3)
         sub_start = default_timer() 
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
@@ -220,6 +232,7 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
         if use_warmstart:
             master = warmstart(master,solution)
         master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+        master.setParam(GRB.NumericFocus,3)
         m_status,m_vars,m_val = optimize(master)
         
         if m_status not in [GRB.OPTIMAL,15,GRB.TIME_LIMIT]:
@@ -477,6 +490,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
         
     master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
     master.setParam(GRB.Param.LazyConstraints,1)
+    master.setParam(GRB.NumericFocus,3)
     master._G_l = G_l
     master._d_l = d_l
     master._b = b
