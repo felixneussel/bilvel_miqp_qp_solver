@@ -6,7 +6,7 @@ from numpy.linalg import norm
 from Functional.multitree import solve
 import traceback
 
-def getProblems(directory):
+def getProblems(directory,solved_problems):
     files = os.listdir(directory)
     files = list(filter(lambda x: True if re.match(r'.*\.mps$',x) else False,files))
     files = list(map(lambda x: re.sub(r'.mps','',x),files))
@@ -15,7 +15,7 @@ def getProblems(directory):
         for algo in ['MT','MT-K','MT-K-F','MT-K-F-W','ST','ST-K','ST-K-C','ST-K-C-S']:
             all_approaches.add(f"{f} {algo}")
     solved = set([])
-    with open('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/solved.txt','r') as f:
+    with open(solved_problems,'r') as f:
         for line in f:
             solved.add(re.sub(r'\n','',line))
     unsolved = all_approaches - solved
@@ -49,7 +49,8 @@ def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
 
 if __name__ == '__main__':
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
-    PROBLEMS_TO_SOLVE = getProblems(DIRECTORY)
+    SOLVED_FILE = "Results/solved_remark_2.txt"
+    PROBLEMS_TO_SOLVE = getProblems(DIRECTORY, SOLVED_FILE)
     TIME_LIMIT = 10
     SUBPROBLEM_MODE = "remark_2"
     OUTPUT_FILE = "Results/remark_2_test.txt"
@@ -66,6 +67,8 @@ if __name__ == '__main__':
                     if re.match(r'x|y',key):
                         out.write(f'{key} {solution[key]} ')
                 out.write(f'obj {obj} time {runtime} subtime {time_in_subs}\n')
+            with open(SOLVED_FILE,"a") as out:
+                out.write(f"{name} {algorithm}\n")
         except Exception:
             with open(EXCEPTION_REPORT,"a") as out:
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")

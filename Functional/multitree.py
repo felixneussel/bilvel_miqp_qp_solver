@@ -476,7 +476,9 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     if kelley_cuts:
         non_improving_ints = []
     if initial_cut or initial_ub:
-        initial_solution, initial_incumbent, initial_time,intial_time_in_sub, inital_status = MT(problem_data,tol,1,time_limit,subproblem_mode,False,False,False)
+        initial_solution, initial_incumbent, initial_time,intial_time_in_sub, initial_status = MT(problem_data,tol,1,time_limit,subproblem_mode,False,False,False)
+        if initial_status == GRB.TIME_LIMIT:
+            return initial_solution,initial_incumbent,initial_time,[],initial_status
     if initial_cut:
         y_p = []
         for v in initial_solution:

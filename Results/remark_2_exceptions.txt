@@ -1,0 +1,22 @@
+exception occured in name p0201-0.500000 submode remark_2 algorithm ST-K-C-S
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 63, in <module>
+    solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 26, in solve
+    return ST(problem_data,tol,time_limit,subproblem_mode,True,True,True)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 485, in ST
+    master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,array(y_p))
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/problems.py", line 388, in add_cut
+    yTGy = cut_point.T @ G_l @ cut_point
+ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 100 is different from 0)
+
+exception occured in name p0201-0.500000 submode remark_2 algorithm ST-K-C-S
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 63, in <module>
+    solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 26, in solve
+    return ST(problem_data,tol,time_limit,subproblem_mode,True,True,True)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 480, in ST
+    if initial_status == GRB.TIME_LIMIT_EXCEEDED:
+AttributeError: type object 'GRB' has no attribute 'TIME_LIMIT_EXCEEDED'
+
