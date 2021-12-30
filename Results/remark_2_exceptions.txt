@@ -20,3 +20,16 @@ Traceback (most recent call last):
     if initial_status == GRB.TIME_LIMIT_EXCEEDED:
 AttributeError: type object 'GRB' has no attribute 'TIME_LIMIT_EXCEEDED'
 
+exception occured in name p2756-0.100000 submode remark_2 algorithm ST
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 64, in <module>
+    solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 20, in solve
+    return ST(problem_data,tol,time_limit,subproblem_mode,False,False,False)
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 514, in ST
+    solution[v.varName] = v.x
+  File "src/gurobipy/var.pxi", line 125, in gurobipy.Var.__getattr__
+  File "src/gurobipy/var.pxi", line 153, in gurobipy.Var.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'x'
+

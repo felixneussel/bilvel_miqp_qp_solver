@@ -59,6 +59,7 @@ if __name__ == '__main__':
         name, algorithm = problem.split()
         problem_data = getProblemData(DIRECTORY,name)
         n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+        print(f"Trying to solve {name} with {algorithm}")
         try:
             solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
             with open(OUTPUT_FILE,'a') as out:
@@ -74,6 +75,7 @@ if __name__ == '__main__':
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")
                 out.write(traceback.format_exc())
                 out.write("\n")
+            continue
          
 
    

@@ -511,7 +511,10 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
 
     solution = {}
     for v in master.getVars():
-        solution[v.varName] = v.x
+        try:
+            solution[v.varName] = v.x
+        except AttributeError:
+            break
     obj = master.ObjVal
     runtime = default_timer() - start
     status = master.status
