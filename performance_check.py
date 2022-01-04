@@ -5,6 +5,8 @@ import numpy as np
 from numpy.linalg import norm
 from Functional.multitree import solve
 import traceback
+import concurrent.futures as futures
+from datetime import datetime
 
 def getProblems(directory,solved_problems):
     files = os.listdir(directory)
@@ -46,22 +48,51 @@ def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
     D = np.diag(np.random.uniform(low=1,high=np.sqrt(sigma_l),size=n_y))
     G_l = G_l + D
     return H, G_u, G_l
+    
+def stop_process_pool(executor):
+    for pid, process in executor._processes.items():
+        process.terminate()
+    executor.shutdown()
+
+def MIPLIB():
+    res = []
+    for name in ["enigma-0.100000 MT","enigma-0.500000 MT","enigma-0.900000 MT","lseu-0.900000 MT","p0033-0.100000 MT","p0201-0.900000 MT","p0282-0.900000 MT","stein45-0.100000 MT"]:
+        for algo in ['MT-K','MT-K-F','MT-K-F-W','ST','ST-K','ST-K-C','ST-K-C-S']:
+            name = name.split()[0]
+            res.append(f"{name} {algo}")
+    return res
 
 if __name__ == '__main__':
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
-    SOLVED_FILE = "Results/solved_remark_2.txt"
-    PROBLEMS_TO_SOLVE = getProblems(DIRECTORY, SOLVED_FILE)
-    TIME_LIMIT = 10
+    SOLVED_FILE = "MIPLIB_RESULTS/remark_2_solved_15_min.txt"
+    PROBLEMS_TO_SOLVE = MIPLIB()#getProblems(DIRECTORY, SOLVED_FILE)
+    TIME_LIMIT = 900
     SUBPROBLEM_MODE = "remark_2"
-    OUTPUT_FILE = "Results/remark_2_test.txt"
-    EXCEPTION_REPORT = "Results/remark_2_exceptions.txt"
+    OUTPUT_FILE = "MIPLIB_RESULTS/remark_2_results_15_min.txt"
+    EXCEPTION_REPORT = "MIPLIB_RESULTS/remark_2_exceptions_15_min.txt"
+    with open(OUTPUT_FILE,"a") as out:
+        out.write(f"\nRun on {datetime.now()}\n")
+    with open(EXCEPTION_REPORT,"a") as out:
+        out.write(f"\nRun on {datetime.now()}\n")
     for problem in PROBLEMS_TO_SOLVE:
         name, algorithm = problem.split()
         problem_data = getProblemData(DIRECTORY,name)
         n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
         print(f"Trying to solve {name} with {algorithm}")
-        try:
-            solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+       
+        solution,obj,runtime,time_in_subs, status = {},np.infty,TIME_LIMIT,[],9       
+        with futures.ProcessPoolExecutor() as e:
+            f = e.submit(solve,problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+            try:
+                solution,obj,runtime,time_in_subs, status = f.result(timeout=TIME_LIMIT)
+            except futures._base.TimeoutError:
+                stop_process_pool(e)
+            except Exception:
+                with open(EXCEPTION_REPORT,"a") as out:
+                    out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")
+                    out.write(traceback.format_exc())
+                    out.write("\n")
+                continue
             with open(OUTPUT_FILE,'a') as out:
                 out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {algorithm} status {status} solution ')
                 for key in solution:
@@ -70,12 +101,9 @@ if __name__ == '__main__':
                 out.write(f'obj {obj} time {runtime} subtime {time_in_subs}\n')
             with open(SOLVED_FILE,"a") as out:
                 out.write(f"{name} {algorithm}\n")
-        except Exception:
-            with open(EXCEPTION_REPORT,"a") as out:
-                out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {algorithm}\n")
-                out.write(traceback.format_exc())
-                out.write("\n")
-            continue
+            
+
+            
          
 
    

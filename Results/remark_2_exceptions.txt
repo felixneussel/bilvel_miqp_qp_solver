@@ -33,3 +33,29 @@ Traceback (most recent call last):
   File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
 AttributeError: Unable to retrieve attribute 'x'
 
+exception occured in name p0282-0.900000 submode remark_2 algorithm ST-K
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 64, in <module>
+    solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 22, in solve
+    return ST(problem_data,tol,time_limit,subproblem_mode,True,False,False)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 518, in ST
+    obj = master.ObjVal
+  File "src/gurobipy/model.pxi", line 353, in gurobipy.Model.__getattr__
+  File "src/gurobipy/model.pxi", line 1882, in gurobipy.Model.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'ObjVal'
+
+exception occured in name p0282-0.900000 submode remark_2 algorithm ST
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 64, in <module>
+    solution,obj,runtime,time_in_subs, status= solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,algorithm)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 20, in solve
+    return ST(problem_data,tol,time_limit,subproblem_mode,False,False,False)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 518, in ST
+    obj = master.ObjVal
+  File "src/gurobipy/model.pxi", line 353, in gurobipy.Model.__getattr__
+  File "src/gurobipy/model.pxi", line 1882, in gurobipy.Model.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'ObjVal'
+
