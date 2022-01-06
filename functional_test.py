@@ -7,8 +7,8 @@ from gurobipy import GRB
 
 if __name__ == '__main__':
     #Paths of mps and aux file
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/p0201-0.500000.mps'
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/p0201-0.500000.aux'
+    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/p0282-0.900000.mps'
+    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/p0282-0.900000.aux'
 
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
     #Input data
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
 
-    solution,obj,runtime,times_in_sub, status = solve(problem_data,1e-5,infty,10,'remark_2','ST-K-C-S')
+    solution,obj,runtime,times_in_sub, status = solve(problem_data,1e-5,infty,10,'remark_2','ST')
    
     if status in [2,GRB.TIME_LIMIT]:
         print(f"Status : {status}")

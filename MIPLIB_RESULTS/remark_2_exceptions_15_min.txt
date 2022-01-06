@@ -4,3 +4,47 @@ Run on 2022-01-03 14:55:10.696539
 Run on 2022-01-03 16:44:43.689959
 
 Run on 2022-01-03 16:45:12.579013
+
+Run on 2022-01-06 11:19:11.322576
+exception occured in name lseu-0.900000 submode remark_2 algorithm MT-K-F
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/concurrent/futures/process.py", line 243, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 16, in solve
+    return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,True,True,False)
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/multitree.py", line 213, in MT
+    master,y_var,dual_var,w_var = setup_master(problem_data,meta_data)
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/problems.py", line 94, in setup_master
+    model = Model('Masterproblem')
+  File "src/gurobipy/model.pxi", line 68, in gurobipy.Model.__init__
+  File "src/gurobipy/gurobi.pxi", line 32, in gurobipy.gurobi._getdefaultenv
+  File "src/gurobipy/env.pxi", line 62, in gurobipy.Env.__init__
+gurobipy.GurobiError: License expired 2022-01-03
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/concurrent/futures/process.py", line 208, in _sendback_result
+    result_queue.put(_ResultItem(work_id, result=result,
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/multiprocessing/queues.py", line 372, in put
+    obj = _ForkingPickler.dumps(obj)
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/multiprocessing/reduction.py", line 51, in dumps
+    cls(buf, protocol).dump(obj)
+TypeError: cannot pickle 'PyCapsule' object
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 87, in <module>
+    solution,obj,runtime,time_in_subs, status = f.result(timeout=TIME_LIMIT)
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 438, in result
+    return self.__get_result()
+  File "/usr/local/Cellar/python@3.9/3.9.9/Frameworks/Python.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 390, in __get_result
+    raise self._exception
+TypeError: cannot pickle 'PyCapsule' object
+
+
+Run on 2022-01-06 11:26:30.426440

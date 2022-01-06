@@ -4,8 +4,12 @@ import re
 import numpy as np
 from Parsers.file_reader import mps_aux_reader
 from Data_Analysis.method_comparison import run_test
+from Data_Analysis.method_comparison import create_dataframe
 
-run_test()
+data = create_dataframe("MIPLIB_RESULTS/remark_2_results_15_min.txt")
+for p in ["enigma-0.100000","enigma-0.500000","enigma-0.900000","lseu-0.900000","p0033-0.100000","p0201-0.900000","p0282-0.900000","stein45-0.100000"]:
+    df = data[data["problem"]==p]
+    print(df.sort_values(by="runtime"))
 
 
 

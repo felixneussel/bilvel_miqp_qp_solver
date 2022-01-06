@@ -65,7 +65,7 @@ def MIPLIB():
 if __name__ == '__main__':
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
     SOLVED_FILE = "MIPLIB_RESULTS/remark_2_solved_15_min.txt"
-    PROBLEMS_TO_SOLVE = MIPLIB()#getProblems(DIRECTORY, SOLVED_FILE)
+    PROBLEMS_TO_SOLVE = ["lseu-0.900000 MT-K-F"]#MIPLIB()#getProblems(DIRECTORY, SOLVED_FILE)
     TIME_LIMIT = 900
     SUBPROBLEM_MODE = "remark_2"
     OUTPUT_FILE = "MIPLIB_RESULTS/remark_2_results_15_min.txt"
