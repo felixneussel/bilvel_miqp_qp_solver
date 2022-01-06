@@ -228,7 +228,7 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
     while LB + tol < UB and iteration_counter < iteration_limit and not TIME_LIMIT_EXCEEDED:
         #Solve Masterproblem
         if early_termination and iteration_counter > 0:
-            master.setParam(GRB.Param.BestObjStop, UB - 2*tol)
+            master.setParam(GRB.Param.BestObjStop, UB )
         if use_warmstart:
             master = warmstart(master,solution)
         master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
