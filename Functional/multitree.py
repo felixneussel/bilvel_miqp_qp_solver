@@ -200,7 +200,7 @@ def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
             if match(r'^y',var.varName) is not None:
                 cp.append(var.x)
         cp = array(cp)
-    return array(cp),time_in_sub
+    return array(cp),time_in_sub,s_val
 
 def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart):
     check_dimensions(problem_data)
@@ -227,8 +227,8 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     while LB + tol < UB and iteration_counter < iteration_limit and not TIME_LIMIT_EXCEEDED:
         #Solve Masterproblem
-        if early_termination and iteration_counter > 0:
-            master.setParam(GRB.Param.BestObjStop, UB )
+        if early_termination:
+            master.setParam(GRB.Param.BestObjStop, UB + 2*tol)
         if use_warmstart:
             master = warmstart(master,solution)
         master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
@@ -507,6 +507,8 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     master._times_in_sub = []
     master._vars = master.getVars()
     master._kelley = kelley_cuts
+    master._incumbents = []
+    master._incumbent = infty
     master.optimize(newCut)
 
     solution = {}
@@ -528,8 +530,11 @@ def newCut(model,where):
     if where == GRB.Callback.MIPSOL:
         current_obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
         best_obj = model.cbGet(GRB.Callback.MIPSOL_OBJBST)
-        if current_obj == best_obj:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
-            cut_point, time_in_sub = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data)
+        #model._incumbents.append(best_obj)
+        #best_obj = min(model._incumbents)
+        incumbent = model._incumbent
+        if current_obj == best_obj and best_obj < incumbent:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
+            cut_point, time_in_sub,sub_obj = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data)
             model._times_in_sub.append(time_in_sub)
             yTGy = cut_point.T @ model._G_l @ cut_point
             term1 = 2*cut_point.T @ model._G_l @ model._y
@@ -537,6 +542,8 @@ def newCut(model,where):
             term3 = -model._b.T @ model._dual
             term4 = model._bin_coeff@ model._w
             model.cbLazy(term1+term2+term3+term4-yTGy <= 0)
+            if sub_obj < model._incumbent:
+                model._incumbent = sub_obj
         else:#integer feasible non improving -> potential addidtional kelley cut
             if model._kelley:
                 cut_point = array(model.cbGetSolution(model._y))
