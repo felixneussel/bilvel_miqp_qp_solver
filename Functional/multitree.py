@@ -118,7 +118,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
                 solution[f"y[{i}]"] = v
             UB = s_val
         if s_status == GRB.TIME_LIMIT:
-            return array([]),solution,UB,True,time_in_sub
+            return array([cp]),solution,UB,True,time_in_sub
     else:#Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         feas.setParam(GRB.Param.NumericFocus,3)
@@ -157,7 +157,7 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
             cp.append(var.x)
-    return array(cp),time_in_sub
+    return array(cp),time_in_sub,s_val
 
 def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
@@ -177,7 +177,7 @@ def solve_subproblem_remark_1_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
             cp.append(var.x)
-    return array(cp),time_in_sub
+    return array(cp),time_in_sub,s_val
 
 def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data):
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
@@ -529,11 +529,8 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
 def newCut(model,where):
     if where == GRB.Callback.MIPSOL:
         current_obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
-        best_obj = model.cbGet(GRB.Callback.MIPSOL_OBJBST)
-        #model._incumbents.append(best_obj)
-        #best_obj = min(model._incumbents)
         incumbent = model._incumbent
-        if current_obj == best_obj and best_obj < incumbent:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
+        if current_obj < incumbent:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
             cut_point, time_in_sub,sub_obj = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data)
             model._times_in_sub.append(time_in_sub)
             yTGy = cut_point.T @ model._G_l @ cut_point
