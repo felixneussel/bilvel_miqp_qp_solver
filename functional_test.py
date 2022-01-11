@@ -6,6 +6,7 @@ from numpy import infty
 from gurobipy import GRB
 from numpy.linalg import norm
 from Solver_OOP.Problems import loadProblem
+from Benchmarks.KKT_MIQP import setup_kkt_miqp
 
 if __name__ == '__main__':
     

@@ -35,3 +35,8 @@ def setup_kkt_miqp(problem_data,M):
     IM = concatenate((identity(m_l),diag(array([M]*m_l))),axis=1)
     model.addMConstr(A=IM,x=dual.tolist()+v.tolist(),sense="<=",b=array([M]*m_l))
     return model
+
+def optimize_benchmark(model,time_limit):
+    model.setParam(GRB.Param.TimeLimit,time_limit)
+    model.optimize()
+    return model.status,model.ObjVal,model.Runtime,model.MIPGap

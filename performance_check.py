@@ -7,6 +7,7 @@ from Functional.multitree import solve
 import traceback
 import concurrent.futures as futures
 from datetime import datetime
+from Benchmarks.KKT_MIQP import optimize_benchmark, setup_kkt_miqp
 
 def getProblems(directory,solved_problems):
     files = os.listdir(directory)
@@ -62,10 +63,10 @@ def MIPLIB():
             res.append(f"{name} {algo}")
     return res
 
-if __name__ == '__main__':
+def Test_Run():
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
     SOLVED_FILE = "MIPLIB_RESULTS/remark_2_solved_15_min.txt"
-    PROBLEMS_TO_SOLVE = ["lseu-0.900000 MT-K-F"]#MIPLIB()#getProblems(DIRECTORY, SOLVED_FILE)
+    PROBLEMS_TO_SOLVE = MIPLIB()#getProblems(DIRECTORY, SOLVED_FILE)
     TIME_LIMIT = 900
     SUBPROBLEM_MODE = "remark_2"
     OUTPUT_FILE = "MIPLIB_RESULTS/remark_2_results_15_min.txt"
@@ -101,6 +102,39 @@ if __name__ == '__main__':
                 out.write(f'obj {obj} time {runtime} subtime {time_in_subs}\n')
             with open(SOLVED_FILE,"a") as out:
                 out.write(f"{name} {algorithm}\n")
+
+def benchmarking():
+    DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
+    PROBLEMS_TO_SOLVE = ["enigma-0.100000","enigma-0.500000","enigma-0.900000","lseu-0.900000","p0033-0.100000","p0201-0.900000","p0282-0.900000","stein45-0.100000"]
+    TIME_LIMIT = 900
+    OUTPUT_FILE = "MIPLIB_RESULTS/kkt_miqp_results.txt"
+    EXCEPTION_REPORT = "MIPLIB_RESULTS/kkt_miqp_exceptions.txt"
+    APPROACH = "KKT_MIQP"
+    if APPROACH == "KKT_MIQP":
+        ALGORITHM = setup_kkt_miqp
+    BIG_M = 1e5
+    with open(OUTPUT_FILE,"a") as out:
+        out.write(f"\nRun on {datetime.now()}\n")
+    with open(EXCEPTION_REPORT,"a") as out:
+        out.write(f"\nRun on {datetime.now()}\n")
+    for name in PROBLEMS_TO_SOLVE:
+        problem_data = getProblemData(DIRECTORY,name)
+        model = ALGORITHM(problem_data,BIG_M)
+        try:
+            status,ObjVal,Runtime,MIPGap = optimize_benchmark(model,TIME_LIMIT)
+            with open(OUTPUT_FILE,"a") as out:
+                out.write(f"name {name} algorithm {APPROACH} status {status} obj {ObjVal} time {Runtime} gap {MIPGap}\n")
+        except Exception:
+            with open(EXCEPTION_REPORT,"a") as out:
+                    out.write(f"exception occured in name {name} algorithm {APPROACH}\n")
+                    out.write(traceback.format_exc())
+                    out.write("\n")
+
+
+
+if __name__ == '__main__':
+    benchmarking()
+    
             
 
             
