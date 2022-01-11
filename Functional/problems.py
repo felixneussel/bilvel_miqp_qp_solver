@@ -170,7 +170,7 @@ def setup_sub_rem_1(problem_data,meta_data,x_I_param):
     lower_status,lower_vars,lower_obj = optimize(lower)
     model = Model('Subproblem')
     model.Params.LogToConsole = 0
-    x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
+    #x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
     x_R = model.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
     y = model.addVars(J, vtype=GRB.CONTINUOUS,name='y')
     #Objective
