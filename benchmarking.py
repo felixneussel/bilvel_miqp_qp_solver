@@ -17,9 +17,9 @@ if __name__ == '__main__':
 
     
 
-    #n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
+    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
     
-    """ np.random.seed(3)
+    np.random.seed(3)
     sigma_u = max(norm(c_u,np.infty),norm(d_u,np.infty))
     sigma_l = norm(d_l,np.infty)
     H = np.random.uniform(low=-np.sqrt(sigma_u),high = np.sqrt(sigma_u),size=(n_I+n_R,n_I+n_R))
@@ -29,10 +29,12 @@ if __name__ == '__main__':
     G_l = np.random.uniform(low=-np.sqrt(sigma_u),high = np.sqrt(sigma_l),size=(n_y,n_y))
     G_l = G_l.T@G_l 
     addtodiag = np.diag(np.random.uniform(low=1,high=np.sqrt(sigma_l),size=n_y))
-    G_l = G_l + addtodiag """
+    G_l = G_l + addtodiag
 
-    name = "ClarkWesterberg1990a"
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = loadProblem(name)
+    """  name = "ClarkWesterberg1990a"
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = loadProblem(name) """
+
+
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
     model = setup_kkt_miqp(problem_data,big_M)
     model.optimize()
