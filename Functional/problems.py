@@ -92,7 +92,7 @@ def getSParam(model):
 def setup_master(problem_data,meta_data):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = Model('Masterproblem')
-    model.Params.LogToConsole = 0
+    model.Params.LogToConsole = 1
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     x_I = model.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
     return mp_common(problem_data,meta_data,model,x_I)

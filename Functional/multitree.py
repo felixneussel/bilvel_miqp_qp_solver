@@ -403,6 +403,7 @@ def ST_old(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,i
     while O and not TIME_LIMIT_EXCEEDED:
         N_p,N_p_ub = O.pop()
         N_p.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
+        N_p.setParam(GRB.Param.DualReductions,1)
         m_status,m_vars,m_val = optimize(N_p)
         if m_status == GRB.TIME_LIMIT:
             TIME_LIMIT_EXCEEDED = True
