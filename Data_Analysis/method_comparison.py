@@ -67,7 +67,7 @@ def create_dataframe(filepath):
                     submode.append(line[line.index("submode")+1])
                     status.append(line[line.index("status")+1])
                     obj.append(line[line.index("obj")+1])
-                    time.append(line[line.index("time")+1])
+                    time.append(float(line[line.index("time")+1]))
     return pd.DataFrame(data={"problem":name,"algorithm":algo,"sub_mode":submode,"status":status,"obj":obj,"runtime":time})
 
 def run_test():

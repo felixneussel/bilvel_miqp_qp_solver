@@ -17,7 +17,7 @@ def setup_meta_data(problem_data):
     bin_coeff_arr = getBinaryCoeffsArray(jr)
     return jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr
 
-def mp_common(problem_data,meta_data,model,x_I):
+def mp_common(problem_data,meta_data,model,x_I,big_M):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
 
@@ -47,21 +47,21 @@ def mp_common(problem_data,meta_data,model,x_I):
     model.addMConstr(A=GD,x=y_lambda,sense='=',b=d_l)
     #setStrongDualityLinearizationConstraint(model)
     model.addConstrs((s.prod(bin_coeff_dict,j,'*') == x_I[j] for j,r in jr),'binary expansion')
-    ub = 1e5
-    lb = -1e5
+    ub = big_M
+    lb = -big_M
     model.addConstrs((w[j,r] <= ub*s[j,r] for j,r in jr),'13a')
     model.addConstrs((w[j,r] <= sum([C[i,j]*dual[i] for i in ll_constr]) + lb*(s[j,r] - 1) for j,r in jr),'13b')
     model.addConstrs((w[j,r] >= lb*s[j,r] for j,r in jr),'13c')
     model.addConstrs((w[j,r] >= sum([C[(i,j)]*dual[i] for i in ll_constr]) + ub*(s[j,r] - 1) for j,r in jr),'13d')
     return model,y.select(),dual.select(),w.select()
 
-def setup_st_master(problem_data,meta_data):
+def setup_st_master(problem_data,meta_data,big_M):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = Model('Masterproblem')
     model.Params.LogToConsole = 0
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
-    return mp_common(problem_data,meta_data,model,x_I)
+    return mp_common(problem_data,meta_data,model,x_I,big_M)
 
 def getX_IParam(model):
     res = []
@@ -89,13 +89,13 @@ def getSParam(model):
             s[indices[0],indices[1]] = model.cbGetSolution(var)
     return s
 
-def setup_master(problem_data,meta_data):
+def setup_master(problem_data,meta_data,big_M):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = Model('Masterproblem')
-    model.Params.LogToConsole = 1
+    model.Params.LogToConsole = 0
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     x_I = model.addVars(I, vtype=GRB.INTEGER,lb=int_lb, ub=int_ub,name='x_I')
-    return mp_common(problem_data,meta_data,model,x_I)
+    return mp_common(problem_data,meta_data,model,x_I,big_M)
 
 def setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data

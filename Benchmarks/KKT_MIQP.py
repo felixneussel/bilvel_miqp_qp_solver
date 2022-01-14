@@ -7,6 +7,7 @@ def setup_kkt_miqp(problem_data,M):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = gp.Model("KKT-MIQP")
     model.Params.LogToConsole = 0
+    model.setParam(GRB.Param.DualReductions,0)
     x_I = model.addMVar(shape=n_I,lb=int_lb,ub=int_ub,vtype=GRB.INTEGER,name="x_I")
     x_R = model.addMVar(shape=n_R, vtype=GRB.CONTINUOUS,name='x_R')
     y = model.addMVar(shape=n_y, vtype=GRB.CONTINUOUS,name='y')
@@ -30,10 +31,14 @@ def setup_kkt_miqp(problem_data,M):
     model.addMConstr(A=GD,x=y_lambda,sense='=',b=d_l)
 
     CDM = concatenate((C,D,-diag(array([M]*m_l))),axis=1)
-    model.addMConstr(A=CDM,x=x_I.tolist()+y.tolist()+v.tolist(),sense='<=',b=b)
+    #model.addMConstr(A=CDM,x=x_I.tolist()+y.tolist()+v.tolist(),sense='<=',b=b)
 
     IM = concatenate((identity(m_l),diag(array([M]*m_l))),axis=1)
-    model.addMConstr(A=IM,x=dual.tolist()+v.tolist(),sense="<=",b=array([M]*m_l))
+    #model.addMConstr(A=IM,x=dual.tolist()+v.tolist(),sense="<=",b=array([M]*m_l))
+    model.addMConstr(concatenate((identity(m_l),-C,-D),axis=1),v.tolist()+x_I.tolist()+y.tolist(),"=",-b)
+    v_list = v.tolist()
+    for i, var in enumerate(dual.tolist()):
+        model.addSOS(GRB.SOS_TYPE1,[var,v_list[i]])
     return model
 
 def optimize_benchmark(model,time_limit):
