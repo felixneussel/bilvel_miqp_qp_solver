@@ -29,15 +29,15 @@ def runPerformanceTest(DIRECTORY,PROBLEMS,TIME_LIMIT):
         problem, algo = problem.split()
         problem_data = getProblemData(DIRECTORY,problem)
 
-def getProblemData(DIRECTORY,problem):
+def getProblemData(DIRECTORY,problem,seed):
     mps_pa = f"{DIRECTORY}/{problem}.mps"
     aux_pa = f"{DIRECTORY}/{problem}.aux"
     n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-    H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l)
+    H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l,seed)
     return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
      
-def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
-    np.random.seed(3)
+def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l,seed):
+    np.random.seed(seed)
     sigma_u = max(norm(c_u,np.infty),norm(d_u,np.infty))
     sigma_l = norm(d_l,np.infty)
     max_u = np.power(sigma_u,1/4)
@@ -51,6 +51,20 @@ def quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l):
     D = np.diag(np.random.uniform(low=1,high=max_l,size=n_y))
     G_l = G_l + D
     return H, G_u, G_l
+
+def prepareQuadraticTerms(in_dir,out_dir):
+    files = os.listdir(in_dir)
+    files = list(filter(lambda x: True if re.match(r'.*\.mps$',x) else False,files))
+    names = list(map(lambda x: re.sub(r'.mps','',x),files))
+    for i,f in enumerate(names):
+        if i < 14:
+            continue
+        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = getProblemData(in_dir,f,i)
+        save_to = f"{out_dir}/{f}.npz"
+        with open(f"{out_dir}/dimensions.txt","a") as out:
+            out.write(f"name {f} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}\n")
+        np.savez(save_to,H=H,G_u=G_u,G_l=G_l)
+        
     
 def stop_process_pool(executor):
     for pid, process in executor._processes.items():
@@ -126,7 +140,7 @@ def benchmarking():
 
 
 if __name__ == '__main__':
-    Test_Run("rem_2_5_min")
+    prepareQuadraticTerms("/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv","/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Quadratic_Matrices")
     
             
 

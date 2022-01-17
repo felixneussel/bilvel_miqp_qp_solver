@@ -1,0 +1,16 @@
+name {f} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}
+name {f} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l}
+name cap6000-0.500000 n_I 3000 n_R 0 n_y 3000 m_u 0 m_l 8299
+name stein45-0.100000 n_I 41 n_R 0 n_y 4 m_u 0 m_l 339
+name l152lav-0.500000 n_I 995 n_R 0 n_y 994 m_u 0 m_l 2181
+name air03-0.900000 n_I 1076 n_R 0 n_y 9681 m_u 0 m_l 19610
+name air04-0.900000 n_I 891 n_R 0 n_y 8013 m_u 0 m_l 17672
+name stein27-0.100000 n_I 25 n_R 0 n_y 2 m_u 0 m_l 122
+name p0282-0.500000 n_I 141 n_R 0 n_y 141 m_u 0 m_l 523
+name p0033-0.100000 n_I 30 n_R 0 n_y 3 m_u 0 m_l 22
+name p0201-0.900000 n_I 21 n_R 0 n_y 180 m_u 0 m_l 493
+name mitre-0.900000 n_I 1073 n_R 0 n_y 9651 m_u 0 m_l 21739
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284

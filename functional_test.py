@@ -11,7 +11,7 @@ from Benchmarks.KKT_MIQP import setup_kkt_miqp
 if __name__ == '__main__':
     
     #Paths of mps and aux file
-    name = "lseu-0.900000"
+    name = "fast0507-0.100000"
     mps_pa = f'/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/{name}.mps'
     aux_pa = f'/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/{name}.aux'
 
