@@ -1,3 +1,6 @@
 # Ignore all pyc files:
 *.pyc
 .DS_Store
+# Npz files are to big
+*.npz
+Problem_Data.nosync

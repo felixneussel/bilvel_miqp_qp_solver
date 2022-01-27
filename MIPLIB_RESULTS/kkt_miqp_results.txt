@@ -1,0 +1,12 @@
+
+Run on 2022-01-11 11:15:33.750003
+name enigma-0.100000 algorithm KKT_MIQP status 2 obj 1044.7116861281759 time 1.5203449726104736 gap 0.0
+name enigma-0.500000 algorithm KKT_MIQP status 2 obj 261.3138253034239 time 25.837255001068115 gap 0.0
+name enigma-0.900000 algorithm KKT_MIQP status 9 obj inf time 900.0069680213928 gap inf
+name lseu-0.900000 algorithm KKT_MIQP status 9 obj inf time 900.0047550201416 gap inf
+name p0033-0.100000 algorithm KKT_MIQP status 2 obj 15887.307070123814 time 0.06487298011779785 gap 0.0
+name p0201-0.900000 algorithm KKT_MIQP status 9 obj inf time 900.0091369152069 gap inf
+name stein45-0.100000 algorithm KKT_MIQP status 2 obj 114.19926763143037 time 1.4873239994049072 gap 0.0
+
+Run on 2022-01-14 09:21:36.641455
+name enigma-0.100000 algorithm KKT_MIQP status 2 obj 1044.7116861281759 time 0.5880599021911621 gap 0.0

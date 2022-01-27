@@ -1,0 +1,3 @@
+
+Run on 2022-01-14 18:08:57.261710
+name air05-0.900000 n_I 720 n_R 0 n_y 6475 m_u 0 m_l 13802 submode remark_2 algorithm MT status 9 obj inf time 848.1576153220001 subtime 0 subnum 0 gap inf

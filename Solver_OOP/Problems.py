@@ -21,7 +21,7 @@ c = np.array([-6])
 d_u = np.array([-4])
 d_l = np.array([-10])
 
-A = np.array([[-1],[1]])
+A = np.array([[0],[0]])
 B = np.array([[0],[0]])
 a = np.array([-8,0])
 

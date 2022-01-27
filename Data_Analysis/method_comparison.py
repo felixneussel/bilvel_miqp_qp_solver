@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 
 from collections import defaultdict
@@ -50,7 +50,25 @@ def evaluateData(oop,data):
                 res[name] = {}
     return res
         
-    
+def create_dataframe(filepath):
+    name = []
+    algo = []
+    submode = []
+    status = []
+    obj = []
+    time = []
+    with open(filepath,"r") as file:
+        for line in file:
+            line = line.split()
+            if len(line)>0:
+                if line[0] == "name":
+                    name.append(line[1])
+                    algo.append(line[line.index("algorithm")+1])
+                    submode.append(line[line.index("submode")+1])
+                    status.append(line[line.index("status")+1])
+                    obj.append(line[line.index("obj")+1])
+                    time.append(float(line[line.index("time")+1]))
+    return pd.DataFrame(data={"problem":name,"algorithm":algo,"sub_mode":submode,"status":status,"obj":obj,"runtime":time})
 
 def run_test():
     pa ='/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Results/test_run8.txt'
