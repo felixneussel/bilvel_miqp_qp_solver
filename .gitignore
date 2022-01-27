@@ -1,2 +1,5 @@
 # Ignore all pyc files:
 *.pyc
+# Npz files are to big
+*.npz
+Problem_Data.nosync

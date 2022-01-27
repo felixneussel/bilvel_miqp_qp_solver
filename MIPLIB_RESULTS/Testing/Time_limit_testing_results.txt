@@ -1,0 +1,2 @@
+Run algorithm MT submode remark_2 on 2022-01-27 15:10:29.554534
+name p0201-0.900000 n_I 21 n_R 0 n_y 180 m_u 0 m_l 493 submode remark_2 algorithm MT status 9 obj 27663.06073212024 time 300.014418961 subtime 0.002641615000077202 subnum 14 gap 6481.677663489725

@@ -1,0 +1,59 @@
+Run on 2022-01-24 14:02:58.838951
+name p0201-0.500000 n_I 101 n_R 0 n_y 100 m_u 0 m_l 333 submode remark_2 algorithm ST-K-C-S status 9 obj 27914.367882298928 time 300.015476105 subtime 0.0027127519999723404 subnum 15 gap 0.35959742887634666
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K-C-S status 2 obj 2439.6827153550303 time 2.9064472530000103 subtime 0.0002434310000012374 subnum 2 gap 0.0
+name enigma-0.900000 n_I 10 n_R 0 n_y 90 m_u 0 m_l 222 submode remark_2 algorithm ST-K-C-S status 2 obj 72.65109044754279 time 3.632565145000001 subtime 0.002107373999990614 subnum 11 gap 0.0
+name enigma-0.500000 n_I 50 n_R 0 n_y 50 m_u 0 m_l 142 submode remark_2 algorithm ST-K-C-S status 2 obj 85.65257780241107 time 11.493182284999989 subtime 0.005778198999792039 subnum 34 gap 0.0
+name stein45-0.100000 n_I 41 n_R 0 n_y 4 m_u 0 m_l 339 submode remark_2 algorithm ST-K-C-S status 2 obj 96.23249408799265 time 3.816897522999966 subtime 0.00029440500003374837 subnum 1 gap 0.0
+name stein27-0.100000 n_I 25 n_R 0 n_y 2 m_u 0 m_l 122 submode remark_2 algorithm ST-K-C-S status 2 obj 37.68667589385526 time 0.6979434099999935 subtime 0.0001152090000005046 subnum 1 gap 0.0
+name p0201-0.900000 n_I 21 n_R 0 n_y 180 m_u 0 m_l 493 submode remark_2 algorithm ST-K-C-S status 11 obj inf time 3.7010080680000215 subtime 0 subnum 0 gap inf
+name p0033-0.100000 n_I 30 n_R 0 n_y 3 m_u 0 m_l 22 submode remark_2 algorithm ST-K-C-S status 2 obj 3827.952240171085 time 0.42378945100000465 subtime 0.00012932200002069294 subnum 1 gap 0.0
+name lseu-0.900000 n_I 9 n_R 0 n_y 80 m_u 0 m_l 188 submode remark_2 algorithm ST-K-C-S status 2 obj 7678.4354446191255 time 0.6029023479999864 subtime 0.00015521400001716756 subnum 1 gap 0.0
+Run on 2022-01-24 14:13:35.250992
+Run on 2022-01-24 14:14:21.976794
+Run on 2022-01-24 14:31:01.391868
+Run on 2022-01-24 14:35:39.481065
+name p0201-0.500000 n_I 101 n_R 0 n_y 100 m_u 0 m_l 333 submode remark_2 algorithm ST-K-C-S status 9 obj 27914.367882298928 time 300.021182112 subtime 0.0026089160000140055 subnum 15 gap 0.36116810468100474
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K-C-S status 2 obj 2439.6827153550303 time 2.968828940000037 subtime 0.00037321999997175226 subnum 2 gap 0.0
+name enigma-0.900000 n_I 10 n_R 0 n_y 90 m_u 0 m_l 222 submode remark_2 algorithm ST-K-C-S status 2 obj 72.65109044754279 time 1.7531589060000101 subtime 0.0015631049999456081 subnum 11 gap 0.0
+name enigma-0.500000 n_I 50 n_R 0 n_y 50 m_u 0 m_l 142 submode remark_2 algorithm ST-K-C-S status 2 obj 85.65257780241107 time 10.996112546999996 subtime 0.006636437999986811 subnum 34 gap 0.0
+name stein45-0.100000 n_I 41 n_R 0 n_y 4 m_u 0 m_l 339 submode remark_2 algorithm ST-K-C-S status 2 obj 96.23249408799265 time 2.888637731000017 subtime 0.00013716500001237364 subnum 1 gap 0.0
+name p0282-0.500000 n_I 141 n_R 0 n_y 141 m_u 0 m_l 523 submode remark_2 algorithm ST-K-C-S status 6 obj inf time 35.647120943000004 subtime 0 subnum 0 gap inf
+name stein27-0.100000 n_I 25 n_R 0 n_y 2 m_u 0 m_l 122 submode remark_2 algorithm ST-K-C-S status 2 obj 37.68667589385526 time 0.6256143869999846 subtime 0.00011133099997095997 subnum 1 gap 0.0
+name p0201-0.900000 n_I 21 n_R 0 n_y 180 m_u 0 m_l 493 submode remark_2 algorithm ST-K-C-S status 2 obj 27401.744003273983 time 49.73141491400003 subtime 0.005169245999923078 subnum 15 gap 0.0
+name p0033-0.100000 n_I 30 n_R 0 n_y 3 m_u 0 m_l 22 submode remark_2 algorithm ST-K-C-S status 2 obj 3827.952240171085 time 0.22843422699997973 subtime 0.00015446800000518124 subnum 1 gap 0.0
+name lseu-0.900000 n_I 9 n_R 0 n_y 80 m_u 0 m_l 188 submode remark_2 algorithm ST-K-C-S status 2 obj 7678.4354446191255 time 0.37534027899999955 subtime 0.00012430099997118305 subnum 1 gap 0.0
+name stein45-0.500000 n_I 23 n_R 0 n_y 22 m_u 0 m_l 375 submode remark_2 algorithm ST-K-C-S status 2 obj 101.77308132648824 time 15.756090861999951 subtime 0.0050577910001834425 subnum 31 gap 0.0
+name enigma-0.100000 n_I 90 n_R 0 n_y 10 m_u 0 m_l 62 submode remark_2 algorithm ST-K-C-S status 2 obj 309.13254356966155 time 2.9107287399999677 subtime 0.00011755499997434526 subnum 1 gap 0.0
+name p0033-0.500000 n_I 17 n_R 0 n_y 16 m_u 0 m_l 48 submode remark_2 algorithm ST-K-C-S status 2 obj 3614.964578798149 time 1.097375659000022 subtime 0.002029519000302571 subnum 12 gap 0.0
+name stein27-0.500000 n_I 14 n_R 0 n_y 13 m_u 0 m_l 144 submode remark_2 algorithm ST-K-C-S status 2 obj 32.443051129634135 time 0.8002947040000663 subtime 0.0008334710000781342 subnum 5 gap 0.0
+name stein27-0.900000 n_I 3 n_R 0 n_y 24 m_u 0 m_l 166 submode remark_2 algorithm ST-K-C-S status 2 obj 40.923448586811936 time 0.32824256800006424 subtime 0.001109298999836028 subnum 5 gap 0.0
+name p0033-0.900000 n_I 4 n_R 0 n_y 29 m_u 0 m_l 74 submode remark_2 algorithm ST-K-C-S status 2 obj 6338.396871675104 time 0.14797007799995754 subtime 0.00048522899987801793 subnum 4 gap 0.0
+name lseu-0.500000 n_I 45 n_R 0 n_y 44 m_u 0 m_l 116 submode remark_2 algorithm ST-K-C-S status 2 obj 3228.7343835000065 time 1.4639597549999053 subtime 0.0007573900001034417 subnum 4 gap 0.0
+name stein45-0.900000 n_I 5 n_R 0 n_y 40 m_u 0 m_l 411 submode remark_2 algorithm ST-K-C-S status 2 obj 63.97533646288383 time 0.9818705550000004 subtime 0.0004349740000861857 subnum 3 gap 0.0
+Run on 2022-01-24 16:03:51.091256
+Run on 2022-01-24 16:06:34.308492
+Run on 2022-01-24 16:07:17.737251
+Run on 2022-01-24 16:08:03.622522
+Run on 2022-01-24 16:09:48.284770
+Run on 2022-01-24 16:11:54.488336
+Run on 2022-01-24 16:13:26.963966
+Run on 2022-01-24 16:20:34.172848
+Run on 2022-01-24 16:26:04.328105
+Run on 2022-01-24 17:12:54.095252
+Run on 2022-01-24 17:13:17.539645
+Run on 2022-01-24 17:13:40.405540
+Run on 2022-01-24 17:13:51.700551
+Run on 2022-01-24 17:14:13.752272
+name harp2-0.500000 n_I 1497 n_R 0 n_y 1496 m_u 0 m_l 3177 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 810.7545801819999 subtime 0 subnum 0 gap inf
+name p0201-0.500000 n_I 101 n_R 0 n_y 100 m_u 0 m_l 333 submode remark_2 algorithm ST-K-C-S status 9 obj 27215.24103266726 time 900.0031953709997 subtime 0.00402368300069611 subnum 18 gap 0.27419508959975863
+name mod010-0.500000 n_I 1328 n_R 0 n_y 1327 m_u 0 m_l 2945 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 748.7671178340001 subtime 0 subnum 0 gap inf
+name p0282-0.900000 n_I 29 n_R 0 n_y 253 m_u 0 m_l 747 submode remark_2 algorithm ST-K-C-S status 9 obj 805609.3304739003 time 42.14159544100039 subtime 0.0020214439987285004 subnum 12 gap 0.286224753405619
+name l152lav-0.900000 n_I 199 n_R 0 n_y 1790 m_u 0 m_l 3773 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 901.2719874970003 subtime 0 subnum 0 gap inf
+name p0548-0.900000 n_I 55 n_R 0 n_y 493 m_u 0 m_l 1162 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 900.4722181320003 subtime 0.0004919399998470908 subnum 2 gap inf
+name p0282-0.100000 n_I 254 n_R 0 n_y 28 m_u 0 m_l 297 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 495.76572359700003 subtime 0 subnum 0 gap inf
+name l152lav-0.500000 n_I 995 n_R 0 n_y 994 m_u 0 m_l 2181 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 575.4941610839996 subtime 0 subnum 0 gap inf
+name mod010-0.900000 n_I 266 n_R 0 n_y 2389 m_u 0 m_l 5069 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 903.3222374659999 subtime 0 subnum 0 gap inf
+name p0201-0.100000 n_I 181 n_R 0 n_y 20 m_u 0 m_l 173 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 900.0028543260005 subtime 0 subnum 0 gap inf
+name harp2-0.900000 n_I 300 n_R 0 n_y 2693 m_u 0 m_l 5571 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 763.2247772869996 subtime 0 subnum 0 gap inf
+name p0548-0.500000 n_I 274 n_R 0 n_y 274 m_u 0 m_l 724 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 333.6632060970005 subtime 0 subnum 0 gap inf
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 751.7826549740003 subtime 0 subnum 0 gap inf
