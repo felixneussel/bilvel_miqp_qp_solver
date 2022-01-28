@@ -363,6 +363,7 @@ if __name__ == '__main__':
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
     BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
     FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]
+    HARD_PROBLEMS = []
     TIMELIMIT_PROBLEM = ["p0201-0.900000"]
     ####
 
@@ -370,7 +371,7 @@ if __name__ == '__main__':
 
     ######
     start = timeit.default_timer()
-    df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,BIG_SET)
+    df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,HARD_PROBLEMS)
     print(f"Time : {timeit.default_timer()-start}")
 
    
