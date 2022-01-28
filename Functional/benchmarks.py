@@ -1,5 +1,5 @@
-from gurobipy import GRB,tuplelist
-import gurobipy as gp
+from Functional.problems import setup_meta_data, setup_master
+from gurobipy import GRB,tuplelist,gp
 from numpy import concatenate,diag,array,identity
 from scipy.linalg import block_diag
 
@@ -41,7 +41,19 @@ def setup_kkt_miqp(problem_data,M):
         model.addSOS(GRB.SOS_TYPE1,[var,v_list[i]])
     return model
 
+def setup_sd_miqcpcp(problem_data,big_M,optimized_binary_expansion):
+    _,_,_,_,_,_,_,G_l,_,_,d_l,_,_,_,_,_,_,_,b = problem_data
+    meta_data = setup_meta_data(problem_data,optimized_binary_expansion)
+    _,_,_,_,_,_,bin_coeff_arr, _ = meta_data
+    model,y,dual,w = setup_master(problem_data,meta_data,big_M,optimized_binary_expansion)
+    #setup strong duality constraint
+    linear_vector = concatenate((d_l, - b, bin_coeff_arr))
+    y_lam_w = model.y.select() + dual.select() + w.select()
+    model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y.select(), xQ_R=y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
+    return model
+
 def optimize_benchmark(model,time_limit):
     model.setParam(GRB.Param.TimeLimit,time_limit)
     model.optimize()
     return model.status,model.ObjVal,model.Runtime,model.MIPGap
+
