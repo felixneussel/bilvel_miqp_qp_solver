@@ -1,5 +1,6 @@
 from Functional.problems import setup_meta_data, setup_master
-from gurobipy import GRB,tuplelist,gp
+from gurobipy import GRB,tuplelist
+import gurobipy as gp
 from numpy import concatenate,diag,array,identity
 from scipy.linalg import block_diag
 
@@ -48,11 +49,17 @@ def setup_sd_miqcpcp(problem_data,big_M,optimized_binary_expansion):
     model,y,dual,w = setup_master(problem_data,meta_data,big_M,optimized_binary_expansion)
     #setup strong duality constraint
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
-    y_lam_w = model.y.select() + dual.select() + w.select()
-    model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y.select(), xQ_R=y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
+    y_lam_w = y + dual + w
+    model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y, xQ_R=y, xc=y_lam_w, name="Strong Duality Constraint" )
     return model
 
-def optimize_benchmark(model,time_limit):
+def optimize_benchmark(approach,time_limit,problem_data,big_M,optimized_binary_expansion):
+    if approach == "KKT-MIQP":
+        model = setup_kkt_miqp(problem_data,big_M)
+    elif approach == "SD-MIQCQP":
+        model = setup_sd_miqcpcp(problem_data,big_M,optimized_binary_expansion)
+    else:
+        raise ValueError(f"Approach {approach} is not valid.")
     model.setParam(GRB.Param.TimeLimit,time_limit)
     model.optimize()
     return model.status,model.ObjVal,model.Runtime,model.MIPGap

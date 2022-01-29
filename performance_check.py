@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import timeit
 from venv import create
 from Parsers.file_reader import mps_aux_reader
@@ -9,7 +10,7 @@ from Functional.multitree import solve
 import traceback
 import concurrent.futures as futures
 from datetime import datetime
-from Benchmarks.KKT_MIQP import optimize_benchmark, setup_kkt_miqp
+from Functional.benchmarks import optimize_benchmark, setup_kkt_miqp, setup_sd_miqcpcp
 import signal
 import pandas as pd
 from Data_Analysis.performance_profiles import create_dataframe
@@ -91,10 +92,10 @@ def analyze_data(file):
 def make_data_set(df,in_dir,out_dir):
     #names = df.loc[27:,"name"]
     names = ["air03-0.500000","harp2-0.100000"]
-    names = ["enigma-0.100000"]
+    names = ["p0282-0.900000"]
     for i,name in enumerate(names):
         print(f"Name {i} : {name}")
-        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = getProblemData(in_dir,name,i)
+        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = getProblemData(in_dir,name)
         save_to = f"{out_dir}/{name}.npz"
         np.savez(save_to,n_I=n_I,n_R=n_R,n_y=n_y,m_u=m_u,m_l=m_l,H=H,G_u=G_u,G_l=G_l,c_u=c_u,d_u=d_u,d_l=d_l,A=A,B=B,a=a,int_lb=int_lb,int_ub=int_ub,C=C,D=D,b=b)
         print(f"{name} succesful")
@@ -266,31 +267,39 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
         print(f"Time : {timeit.default_timer() - start}")
 
 def benchmarking():
-    DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
-    PROBLEMS_TO_SOLVE = ["enigma-0.100000","enigma-0.500000","enigma-0.900000","lseu-0.900000","p0033-0.100000","p0201-0.900000","p0282-0.900000","stein45-0.100000"]
+    DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
+    #PROBLEMS_TO_SOLVE = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
+    PROBLEMS_TO_SOLVE = ["lseu-0.100000","stein45-0.100000"]
     TIME_LIMIT = 300
-    OUTPUT_FILE = "MIPLIB_RESULTS/kkt_miqp_results.txt"
-    EXCEPTION_REPORT = "MIPLIB_RESULTS/kkt_miqp_exceptions.txt"
-    APPROACH = "KKT_MIQP"
-    if APPROACH == "KKT_MIQP":
-        ALGORITHM = setup_kkt_miqp
+    OUTPUT_FILE = "MIPLIB_RESULTS/Benchmarks/benchmark_results.txt"
+    EXCEPTION_REPORT = "MIPLIB_RESULTS/Benchmarks/benchmark_exceptions.txt"
     BIG_M = 1e5
-    with open(OUTPUT_FILE,"a") as out:
-        out.write(f"\nRun on {datetime.now()}\n")
-    with open(EXCEPTION_REPORT,"a") as out:
-        out.write(f"\nRun on {datetime.now()}\n")
-    for name in PROBLEMS_TO_SOLVE:
-        problem_data = getProblemData(DIRECTORY,name)
-        model = ALGORITHM(problem_data,BIG_M)
-        try:
-            status,ObjVal,Runtime,MIPGap = optimize_benchmark(model,TIME_LIMIT)
-            with open(OUTPUT_FILE,"a") as out:
-                out.write(f"name {name} algorithm {APPROACH} status {status} obj {ObjVal} time {Runtime} gap {MIPGap}\n")
-        except Exception:
-            with open(EXCEPTION_REPORT,"a") as out:
-                    out.write(f"exception occured in name {name} algorithm {APPROACH}\n")
-                    out.write(traceback.format_exc())
-                    out.write("\n")
+    for APPROACH in ["KKT-MIQP","SD-MIQCQP"]:
+        with open(OUTPUT_FILE,"a") as out:
+            out.write(f"\nRun on {datetime.now()}\n")
+        with open(EXCEPTION_REPORT,"a") as out:
+            out.write(f"\nRun on {datetime.now()}\n")
+        for name in PROBLEMS_TO_SOLVE:
+            problem = np.load(f"{DIRECTORY}/{name}.npz")
+            problem_data = [problem[key] for key in problem]
+            n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+            n_I = int(n_I)
+            n_R = int(n_R)
+            n_y = int(n_y)
+            m_u = int(m_u)
+            m_l = int(m_l)
+            problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+            print(f"Trying to solve {name} with {APPROACH}")
+            try:
+                status,ObjVal,Runtime,MIPGap = optimize_benchmark(APPROACH,TIME_LIMIT,problem_data,BIG_M,True)
+                with open(OUTPUT_FILE,"a") as out:
+                    out.write(f"name {name} algorithm {APPROACH} status {status} obj {ObjVal} time {Runtime} gap {MIPGap}\n")
+            except Exception:
+                with open(EXCEPTION_REPORT,"a") as out:
+                        out.write(f"exception occured in name {name} algorithm {APPROACH}\n")
+                        out.write(traceback.format_exc())
+                        out.write("\n")
+            time.sleep(5)
 
 def create_reduced_data_set():
     df = create_dataframe("dimensions.txt",["name","n_I","n_R","n_y","m_u","m_l"],[str,int,int,int,int,int])
@@ -357,13 +366,14 @@ def reduced_df(df):
 
 
 if __name__ == '__main__':
-    DESCRIPTION = "MT_second_measure"
-    ALGORITHMS = ["MT"]
+    DESCRIPTION = "P0282-0.900000"
+    ALGORITHMS = ["MT","MT-K","MT-K-F","MT-K-F-W","ST","ST-K","ST-K-C","ST-K-C-S"]
     SUBMODE = ["remark_2"]
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
     BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
     FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]
     HARD_PROBLEMS = []
+    P_0282 = ["p0282-0.900000"]
     TIMELIMIT_PROBLEM = ["p0201-0.900000"]
     ####
 
@@ -371,8 +381,10 @@ if __name__ == '__main__':
 
     ######
     start = timeit.default_timer()
-    df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,HARD_PROBLEMS)
+    #df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,P_0282)
+    benchmarking()
     print(f"Time : {timeit.default_timer()-start}")
+
 
    
 

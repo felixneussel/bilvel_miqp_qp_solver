@@ -10,6 +10,7 @@ from numpy import infty
 from Functional.multitree import solve
 import pandas as pd
 import matplotlib.pyplot as plt
+from Functional.benchmarks import optimize_benchmark
 
 
 
@@ -166,6 +167,23 @@ def test_binary_optimization(n):
     plt.legend()
     plt.show()
 
+def test_benchmark():
+    name = "enigma-0.100000"
+    problem = np.load(f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz")
+    problem_data = [problem[key] for key in problem]
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    n_I = int(n_I)
+    n_R = int(n_R)
+    n_y = int(n_y)
+    m_u = int(m_u)
+    m_l = int(m_l)
+    problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+    status, obj, time, gap = optimize_benchmark("SD-MIQCQP",10,problem_data,1e5,True)
+    print(f"Status : {status}")
+    print(f"Obj : {obj}")
+    print(f"Time : {time}")
+    print(f"Gap : {gap}")
+
 
 #Paths of mps and aux file
 """ mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.mps'
@@ -226,36 +244,7 @@ if __name__ == "__main__":
     for p in ["enigma-0.100000","enigma-0.500000","enigma-0.900000","lseu-0.900000","p0033-0.100000","p0201-0.900000","p0282-0.900000","stein45-0.100000"]:
         df = data[data["problem"]==p]
         print(df.sort_values(by="runtime")) """
-    problem_data = shift_problem("Problem_Data.nosync/Sub_1000_Vars/stein45-0.900000.npz",-10)
-    solution,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,infty,300,'remark_1','ST-K-C-S',1e5,True)
-
-    if status in [2,GRB.TIME_LIMIT]:
-        print()
-        print("Shifted")
-        print(f"Status : {status}")
-        """ print('All variables')
-        print()
-        for key in solution:
-            print(key,'=', solution[key])
-        print() """
-        print()
-        print('Variables of the Bilevel problem')
-        print()
-        for key in solution:
-            if re.match(r'^x',key):
-                print(key,'=', solution[key])
-        for key in solution:
-            if re.match(r'^y',key):
-                print(key,'=', solution[key])
-        print()
-
-        print('Objective Function : ', obj)
-        # print()
-        print('Runtime : ',runtime, 's')
-        print(f"Num of subproblems : {num_of_subs}")
-        print(f"Time in Subproblems : {times_in_sub}")
-        print(f"Gap : {gap}")
-    else:
-        print('Problem infeasible')
+    test_benchmark()
+        
 
     

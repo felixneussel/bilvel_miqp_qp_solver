@@ -1,0 +1,28 @@
+
+Run on 2022-01-29 11:10:10.962669
+exception occured in name lseu-0.100000 algorithm KKT-MIQP
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 294, in benchmarking
+    status,ObjVal,Runtime,MIPGap = optimize_benchmark(APPROACH,TIME_LIMIT,problem_data,BIG_M,True)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/benchmarks.py", line 65, in optimize_benchmark
+    return model.status,model.ObjVal,model.Runtime,model.MIPGap
+  File "src/gurobipy/model.pxi", line 353, in gurobipy.Model.__getattr__
+  File "src/gurobipy/model.pxi", line 1882, in gurobipy.Model.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'ObjVal'
+
+exception occured in name stein45-0.100000 algorithm KKT-MIQP
+Traceback (most recent call last):
+  File "/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/performance_check.py", line 294, in benchmarking
+    status,ObjVal,Runtime,MIPGap = optimize_benchmark(APPROACH,TIME_LIMIT,problem_data,BIG_M,True)
+  File "/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/Functional/benchmarks.py", line 65, in optimize_benchmark
+    return model.status,model.ObjVal,model.Runtime,model.MIPGap
+  File "src/gurobipy/model.pxi", line 353, in gurobipy.Model.__getattr__
+  File "src/gurobipy/model.pxi", line 1882, in gurobipy.Model.getAttr
+  File "src/gurobipy/attrutil.pxi", line 100, in gurobipy.__getattr
+AttributeError: Unable to retrieve attribute 'ObjVal'
+
+
+Run on 2022-01-29 11:10:21.101073
+
+Run on 2022-01-29 11:11:15.276874
