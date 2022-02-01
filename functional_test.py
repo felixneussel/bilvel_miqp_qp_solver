@@ -7,12 +7,11 @@ from numpy import infty
 from gurobipy import GRB
 from numpy.linalg import norm
 from Solver_OOP.Problems import loadProblem
-from Benchmarks.KKT_MIQP import setup_kkt_miqp
 
 if __name__ == '__main__':
     
     #Paths of mps and aux file
-    name = "p0201-0.900000"
+    name = "lseu-0.100000"
     mps_pa = f'/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/{name}.mps'
     aux_pa = f'/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/{name}.aux'
 
@@ -38,7 +37,7 @@ if __name__ == '__main__':
     #n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = loadProblem(name)
     problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
     start = timeit.default_timer()
-    solution,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,infty,300,'remark_2','MT',1e5,True)
+    solution,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,infty,300,'remark_2','ST-K',1e5,True)
     print(f"Time : {timeit.default_timer() - start}")
     if status in [2,GRB.TIME_LIMIT]:
         print()

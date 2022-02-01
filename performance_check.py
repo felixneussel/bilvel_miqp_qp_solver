@@ -229,7 +229,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
     #SOLVED_FILE = f"MIPLIB_RESULTS/{description}_solved.txt"
     #PROBLEMS_TO_SOLVE = set(os.listdir(DIRECTORY)) - {"lseu-0.100000.npz","enigma-0.900000.npz","enigma-0.500000.npz","stein45-0.100000.npz","p0282-0.500000.npz","stein27-0.100000.npz","p0201-0.900000.npz","p0033-0.100000.npz","lseu-0.900000.npz","stein45-0.500000.npz","enigma-0.100000.npz","p0033-0.500000.npz","stein27-0.500000.npz","stein27-0.900000.npz","p0033-0.900000.npz","lseu-0.500000.npz","stein45-0.900000.npz"}
-    TIME_LIMIT = 300
+    TIME_LIMIT = 3600
     #SUBPROBLEM_MODE = "remark_2"
     OUTPUT_FILE = f"{out_dir}_results.txt"
     EXCEPTION_REPORT = f"{out_dir}_exceptions.txt"
@@ -265,11 +265,11 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
         #with open(SOLVED_FILE,"a") as out:
         #    out.write(f"{name} {algorithm}\n")
         print(f"Time : {timeit.default_timer() - start}")
+        time.sleep(5)
 
 def benchmarking():
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
-    #PROBLEMS_TO_SOLVE = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
-    PROBLEMS_TO_SOLVE = ["lseu-0.100000","stein45-0.100000"]
+    PROBLEMS_TO_SOLVE = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
     TIME_LIMIT = 300
     OUTPUT_FILE = "MIPLIB_RESULTS/Benchmarks/benchmark_results.txt"
     EXCEPTION_REPORT = "MIPLIB_RESULTS/Benchmarks/benchmark_exceptions.txt"
@@ -362,17 +362,27 @@ def reduced_df(df):
     label = f"{algo} {sub}"
     df = df.rename(columns={"obj":label})
     df = df.drop(["submode","algorithm"],axis=1)
-    return df    
+    return df   
 
+def get_hard_problems():
+    all_names = []
+    with open("Problem_Data.nosync/reasonable_problems.txt","r") as file:
+        for line in file:
+            line = line.split() 
+            all_names.append(line[1])
+    all_names = set(all_names)
+    easy_problems = set(["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"])
+    hard_problems = all_names - easy_problems
+    return list(hard_problems)
 
 if __name__ == '__main__':
-    DESCRIPTION = "P0282-0.900000"
-    ALGORITHMS = ["MT","MT-K","MT-K-F","MT-K-F-W","ST","ST-K","ST-K-C","ST-K-C-S"]
-    SUBMODE = ["remark_2"]
+    DESCRIPTION = "regular_subproblem"
+    ALGORITHMS = ["MT-K-F-W","ST"]
+    SUBMODE = ["regular"]
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
-    BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
+    BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
     FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]
-    HARD_PROBLEMS = []
+    HARD_PROBLEMS = get_hard_problems()
     P_0282 = ["p0282-0.900000"]
     TIMELIMIT_PROBLEM = ["p0201-0.900000"]
     ####
@@ -381,8 +391,8 @@ if __name__ == '__main__':
 
     ######
     start = timeit.default_timer()
-    #df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,P_0282)
-    benchmarking()
+    df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,BIG_SET)
+    
     print(f"Time : {timeit.default_timer()-start}")
 
 

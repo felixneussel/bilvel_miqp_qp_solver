@@ -1,0 +1,6 @@
+Run algorithm ST-K-C-S submode remark_2 on 2022-01-29 15:11:49.869798
+name p0548-0.100000 n_I 494 n_R 0 n_y 54 m_u 0 m_l 284 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 955.817440892 subtime 0 subnum 0 gap inf
+name p0548-0.500000 n_I 274 n_R 0 n_y 274 m_u 0 m_l 724 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 373.697420071 subtime 0 subnum 0 gap inf
+name p0201-0.500000 n_I 101 n_R 0 n_y 100 m_u 0 m_l 333 submode remark_2 algorithm ST-K-C-S status 9 obj 27215.241032667283 time 98.283117468 subtime 0.002051617000006445 subnum 12 gap 0.44608247107211924
+name p0201-0.100000 n_I 181 n_R 0 n_y 20 m_u 0 m_l 173 submode remark_2 algorithm ST-K-C-S status 9 obj inf time 97.8321822549999 subtime 0 subnum 0 gap inf
+name p0282-0.900000 n_I 29 n_R 0 n_y 253 m_u 0 m_l 747 submode remark_2 algorithm ST-K-C-S status 9 obj 784692.486059382 time 53.04870956599984 subtime 0.002873592000014469 subnum 19 gap 0.25754224162261424

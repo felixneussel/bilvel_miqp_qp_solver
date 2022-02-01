@@ -301,6 +301,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     master._start = start
     master._time_limit = time_limit
     master._optimized_binary_expansion = optimized_binary_expansion
+    master._kelley_cut_points = []
     master.optimize(newCut)
 
     solution = {}
@@ -326,6 +327,8 @@ def newCut(model,where):
     if where == GRB.Callback.MIPSOL:
         current_obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
         incumbent = model._incumbent
+        if model._kelley:
+            model._kelley_cut_points.append(array(model.cbGetSolution(model._y)))
         if current_obj < incumbent:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
             cut_point, time_in_sub,sub_obj = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data,model._start,model._time_limit)
             model._time_in_subs += time_in_sub
@@ -333,10 +336,10 @@ def newCut(model,where):
             model = add_lazy_constraint(cut_point,model)
             if sub_obj < incumbent:
                 model._incumbent = sub_obj
-        else:#integer feasible non improving -> potential addidtional kelley cut
-            if model._kelley:
-                cut_point = array(model.cbGetSolution(model._y))
-                model = add_lazy_constraint(cut_point,model)
+            kelley_points = model._kelley_cut_points
+            for point in kelley_points:
+                model = add_lazy_constraint(point,model)
+            model._kelley_cut_points = []
 """ 
 def ST_rem_1(problem_data,tol):
     start = default_timer()
