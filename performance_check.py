@@ -229,7 +229,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
     #SOLVED_FILE = f"MIPLIB_RESULTS/{description}_solved.txt"
     #PROBLEMS_TO_SOLVE = set(os.listdir(DIRECTORY)) - {"lseu-0.100000.npz","enigma-0.900000.npz","enigma-0.500000.npz","stein45-0.100000.npz","p0282-0.500000.npz","stein27-0.100000.npz","p0201-0.900000.npz","p0033-0.100000.npz","lseu-0.900000.npz","stein45-0.500000.npz","enigma-0.100000.npz","p0033-0.500000.npz","stein27-0.500000.npz","stein27-0.900000.npz","p0033-0.900000.npz","lseu-0.500000.npz","stein45-0.900000.npz"}
-    TIME_LIMIT = 3600
+    TIME_LIMIT = 300
     #SUBPROBLEM_MODE = "remark_2"
     OUTPUT_FILE = f"{out_dir}_results.txt"
     EXCEPTION_REPORT = f"{out_dir}_exceptions.txt"
@@ -253,7 +253,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
         print(f"Trying to solve {name} with {ALGORITHM} and submode {SUBPROBLEM_MODE}")
         start = timeit.default_timer()
         try:
-            solution,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,True)
+            _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,True)
         except Exception:
             with open(EXCEPTION_REPORT,"a") as out:
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM}\n")
@@ -376,9 +376,9 @@ def get_hard_problems():
     return list(hard_problems)
 
 if __name__ == '__main__':
-    DESCRIPTION = "regular_subproblem"
-    ALGORITHMS = ["MT-K-F-W","ST"]
-    SUBMODE = ["regular"]
+    DESCRIPTION = "ST_kelley_corrected_new"
+    ALGORITHMS = ["ST-K","ST-K-C","ST-K-C-S"]
+    SUBMODE = ["remark_2"]
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
     BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
     FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]

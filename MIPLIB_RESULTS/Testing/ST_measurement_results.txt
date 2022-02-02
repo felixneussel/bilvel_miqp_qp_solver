@@ -16,3 +16,4 @@ name stein27-0.900000 n_I 3 n_R 0 n_y 24 m_u 0 m_l 166 submode remark_2 algorith
 name p0033-0.900000 n_I 4 n_R 0 n_y 29 m_u 0 m_l 74 submode remark_2 algorithm ST status 2 obj 6338.396871675133 time 0.16641352800002096 subtime 0.0008118330000002061 subnum 5 gap 0.0
 name lseu-0.500000 n_I 45 n_R 0 n_y 44 m_u 0 m_l 116 submode remark_2 algorithm ST status 2 obj 3228.7343835000065 time 0.9072544820000417 subtime 0.000981842999976834 subnum 7 gap 0.0
 name stein45-0.900000 n_I 5 n_R 0 n_y 40 m_u 0 m_l 411 submode remark_2 algorithm ST status 2 obj 63.97533646288379 time 0.8094514990000334 subtime 0.0006000569999855543 subnum 4 gap 0.0
+name p0282-0.900000 n_I 29 n_R 0 n_y 253 m_u 0 m_l 747 submode remark_2 algorithm ST status 9 obj 784692.4860593753 time 300.009665349 subtime 0.009710135999057457 subnum 57 gap 0.10941679071267074

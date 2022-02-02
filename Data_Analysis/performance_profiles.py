@@ -53,7 +53,23 @@ def create_dataframe(filepath,colnames,dtypes):
 
     return list(map(lambda x: pd.DataFrame(x),dicts))
 
-
+def discardUnsolved(df):
+    time_limit = 300
+    df["status"] = df.apply(lambda row: row.status if row.runtime <= time_limit else 9, axis=1)
+    print(df)
+    new = df.groupby("problem")["status"].apply(list).to_frame()
+    print(new)
+    unsolved_by_all = []
+    for i,row in new.iterrows():
+        status = row["status"]
+        not_solved = np.array(status) != np.array([2]*len(status))
+        if all(not_solved):
+            unsolved_by_all.append(i)
+    for i in unsolved_by_all:
+        df = df.drop(df[df.problem == i].index)
+    
+    print(df)
+    return(df)
 
 def ratios(df):
     solved = df[df["status"]==2]
@@ -73,20 +89,21 @@ def performance_profile(df):
     y = np.arange(1,n+1)/n
     for index, row in df.iterrows():
         plt.step(row.r_ps,y,label=index)
-    plt.xscale("log")
+    #plt.xscale("log")
     plt.legend()
     plt.show()
 
 def create_performance_profiles():
-    ST_FILES = ["MIPLIB_RESULTS/Testing/ST-K-C-S_measurement_results.txt","MIPLIB_RESULTS/Testing/ST-K-C_measurement_results.txt","MIPLIB_RESULTS/Testing/ST-K_measurement_results.txt","MIPLIB_RESULTS/Testing/ST_measurement_results.txt"]
+    ST_FILES = ["MIPLIB_RESULTS/Testing/ST_kelley_corrected_new_results.txt","MIPLIB_RESULTS/Testing/ST_measurement_results.txt"]
     MT_FILES = ["MIPLIB_RESULTS/Testing/MT_second_measure_results.txt","MIPLIB_RESULTS/Testing/MT-K_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
     MIXED = ["MIPLIB_RESULTS/Testing/ST_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
     data = []
-    COLNAMES = ["name","submode","algorithm","status","4.968212993"]
+    COLNAMES = ["name","submode","algorithm","status","runtime"]
     DTYPES = [str,str,str,int,float]
-    for file in MT_FILES:
+    for file in ST_FILES:
         data.append(getData(file))
     df = pd.concat(data)
+    df = discardUnsolved(df)
     performance_profile(df)
     
 
