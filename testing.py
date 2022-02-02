@@ -14,6 +14,7 @@ from Functional.benchmarks import optimize_benchmark
 
 
 
+
 def make_problem():
     #Number of Integer upper-level variables
     n_I = 3
@@ -88,7 +89,7 @@ def solve_problem(path):
     else:
         print('Problem infeasible')
 
-def shift_problem(path,shift_by):
+def shift_problem(problem_data,shift_by):
     """
     Shifts feasible set of problem away from zero by specified distance
 
@@ -98,20 +99,17 @@ def shift_problem(path,shift_by):
 
     shift_by: Distance to shift problem from zero
     """
-    problem = np.load(path)
-    problem_data = [problem[key] for key in problem]
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    n_I = int(n_I)
-    n_R = int(n_R)
-    n_y = int(n_y)
-    m_u = int(m_u)
-    m_l = int(m_l)
-    problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
-    a = a +  A @ np.array([shift_by]*n_I)
+    constant = 0.5*np.array([shift_by]*n_I).T @ H @ np.array([shift_by]*n_I) + 0.5*np.array([shift_by]*n_y).T @ G_u @ np.array([shift_by]*n_y) - c_u.T@np.array([shift_by]*n_I) - d_u.T@np.array([shift_by]*n_y)
+    a = a +  A @ np.array([shift_by]*n_I) + B @ np.array([shift_by]*n_y)
     b = b + C @ np.array([shift_by]*n_I) + D @ np.array([shift_by]*n_y)
     int_lb = int_lb + shift_by* np.ones(n_I)
     int_ub = int_ub + shift_by * np.ones(n_I)
-    return n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b
+    c_u = c_u - H@ np.array([shift_by]*n_I)
+    d_u = d_u - G_u @ np.array([shift_by]*n_y)
+    d_l = d_l - G_l @ np.array([shift_by]*n_y)
+    
+    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b], constant
 
 def test_binary_optimization(n):
 
@@ -184,6 +182,40 @@ def test_benchmark():
     print(f"Time : {time}")
     print(f"Gap : {gap}")
 
+def test_reduction():
+    UB_I = 50
+    name = "p0548-0.500000"
+    path = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
+    problem = np.load(f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz")
+    problem_data = [problem[key] for key in problem]
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    n_I = int(n_I)
+    n_R = int(n_R)
+    n_y = int(n_y)
+    m_u = int(m_u)
+    m_l = int(m_l)
+    seed = n_I
+    np.random.seed(seed)
+    if n_I > UB_I:
+        n_I = 100
+    n_x = n_I + n_R
+
+    c_u = c_u[:n_x]
+    A = A[:m_u,:n_x]
+    int_lb = int_lb[:n_I]
+    int_ub = int_ub[:n_I]
+    C = C[:m_l,:n_I]
+    D = D[:m_l,:n_y]
+    b = b[:m_l]
+    H = H[:n_x,:n_x]
+    problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+    #status, _,_,_ = optimize_benchmark("KKT-MIQP",10,problem_data,1e5,True)
+    _,obj,runtime,_,_, status,_  = solve(problem_data,1e-5,infty,300,'remark_2','ST-K',1e5,True)
+    print(status)
+    
+
+
+
 
 #Paths of mps and aux file
 """ mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.900000.mps'
@@ -240,11 +272,8 @@ for f in ["MT"]:
         print('Iterations : ', m.iteration_counter) """
 
 if __name__ == "__main__":
-    """ data = create_dataframe("MIPLIB_RESULTS/remark_2_results_15_min.txt")
-    for p in ["enigma-0.100000","enigma-0.500000","enigma-0.900000","lseu-0.900000","p0033-0.100000","p0201-0.900000","p0282-0.900000","stein45-0.100000"]:
-        df = data[data["problem"]==p]
-        print(df.sort_values(by="runtime")) """
-    test_benchmark()
+
+    shift_problem("Problem_Data.nosync/Sub_1000_Vars/lseu-0.500000.npz",512)
         
 
     

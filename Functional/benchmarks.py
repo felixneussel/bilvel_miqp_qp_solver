@@ -8,7 +8,6 @@ def setup_kkt_miqp(problem_data,M):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = gp.Model("KKT-MIQP")
     model.Params.LogToConsole = 0
-    model.setParam(GRB.Param.DualReductions,0)
     x_I = model.addMVar(shape=n_I,lb=int_lb,ub=int_ub,vtype=GRB.INTEGER,name="x_I")
     x_R = model.addMVar(shape=n_R, vtype=GRB.CONTINUOUS,name='x_R')
     y = model.addMVar(shape=n_y, vtype=GRB.CONTINUOUS,name='y')
@@ -63,5 +62,9 @@ def optimize_benchmark(approach,time_limit,problem_data,big_M,optimized_binary_e
         ObjVal = model.ObjVal
     except AttributeError:
         ObjVal = infty
-    return model.status,ObjVal,model.Runtime,model.MIPGap
+    try: 
+        MIPGap = model.MIPGap
+    except AttributeError:
+        MIPGap = infty
+    return model.status,ObjVal,model.Runtime,MIPGap
 

@@ -14,6 +14,7 @@ from Functional.benchmarks import optimize_benchmark, setup_kkt_miqp, setup_sd_m
 import signal
 import pandas as pd
 from Data_Analysis.performance_profiles import create_dataframe
+from testing import shift_problem
 
 def signal_handler(signum, frame):
     raise Exception("Timed out!")
@@ -154,21 +155,11 @@ def create_reduced_data(name):
     if n_I > UB_I:
         n_I = np.random.randint(50,UB_I)
         reduced = True
-    if n_y > UB_y:
-        n_y = np.random.randint(50,UB_y)
-        reduced = True
-    if m_l > UB_m:
-        m_l = np.random.randint(100,UB_m)
-        reduced = True
     n_x = n_I + n_R
 
     if reduced:
         c_u = c_u[:n_x]
-        d_u = d_u[:n_y]
-        d_l = d_l[:n_y]
         A = A[:m_u,:n_x]
-        B = B[:m_u,:n_y]
-        a = a[:m_u]
         int_lb = int_lb[:n_I]
         int_ub = int_ub[:n_I]
         C = C[:m_l,:n_I]
@@ -177,8 +168,7 @@ def create_reduced_data(name):
         appendix = "_reduced"
 
     H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l,seed)
-    save_to = f"{out_dir}/{name}{appendix}.npz"
-    np.savez(save_to,n_I=n_I,n_R=n_R,n_y=n_y,m_u=m_u,m_l=m_l,H=H,G_u=G_u,G_l=G_l,c_u=c_u,d_u=d_u,d_l=d_l,A=A,B=B,a=a,int_lb=int_lb,int_ub=int_ub,C=C,D=D,b=b)
+    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
         
     
 def stop_process_pool(executor):
@@ -193,6 +183,7 @@ def MIPLIB():
             name = name.split()[0]
             res.append(f"{name} {algo}")
     return res
+
 
 def Test_Run(description):
     DIRECTORY = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'
@@ -225,7 +216,7 @@ def Test_Run(description):
         with open(SOLVED_FILE,"a") as out:
             out.write(f"{name} {algorithm}\n")
 
-def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
+def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE,OPTIMIZED_BINARY_EXPANSION):
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
     #SOLVED_FILE = f"MIPLIB_RESULTS/{description}_solved.txt"
     #PROBLEMS_TO_SOLVE = set(os.listdir(DIRECTORY)) - {"lseu-0.100000.npz","enigma-0.900000.npz","enigma-0.500000.npz","stein45-0.100000.npz","p0282-0.500000.npz","stein27-0.100000.npz","p0201-0.900000.npz","p0033-0.100000.npz","lseu-0.900000.npz","stein45-0.500000.npz","enigma-0.100000.npz","p0033-0.500000.npz","stein27-0.500000.npz","stein27-0.900000.npz","p0033-0.900000.npz","lseu-0.500000.npz","stein45-0.900000.npz"}
@@ -253,7 +244,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
         print(f"Trying to solve {name} with {ALGORITHM} and submode {SUBPROBLEM_MODE}")
         start = timeit.default_timer()
         try:
-            _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,True)
+            _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OPTIMIZED_BINARY_EXPANSION)
         except Exception:
             with open(EXCEPTION_REPORT,"a") as out:
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM}\n")
@@ -261,7 +252,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
                 out.write("\n")
             continue
         with open(OUTPUT_FILE,'a') as out:
-            out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} status {status} obj {obj} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
+            out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} opt_bin_exp {OPTIMIZED_BINARY_EXPANSION} status {status} obj {obj} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
         #with open(SOLVED_FILE,"a") as out:
         #    out.write(f"{name} {algorithm}\n")
         print(f"Time : {timeit.default_timer() - start}")
@@ -316,13 +307,15 @@ def create_thirty_dataset():
         save_to = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
         np.savez(save_to,n_I=n_I,n_R=n_R,n_y=n_y,m_u=m_u,m_l=m_l,H=H,G_u=G_u,G_l=G_l,c_u=c_u,d_u=d_u,d_l=d_l,A=A,B=B,a=a,int_lb=int_lb,int_ub=int_ub,C=C,D=D,b=b)
 
-def testing(DESCRIPTION,ALGORITHMS,SUBPROBLEMS,PROBLEMS):
+def testing(DESCRIPTION,ALGORITHMS,SUBPROBLEMS,PROBLEMS,SHIFTS):
     TEST_SET = create_dataframe("MIPLIB_RESULTS/Test_Set_Results",["name","obj"],[str,float])[0]
     DIRECTORY = f"MIPLIB_RESULTS/Testing/{DESCRIPTION}"
     TOL = 1e-5
     for algo in ALGORITHMS:
         for subproblem in SUBPROBLEMS:
-            Test_Run_npz(DIRECTORY,PROBLEMS,algo,subproblem)
+            for shift in SHIFTS:
+                for optimized_binary_expansion in [True,False]:
+                    Test_Run_npz(DIRECTORY,PROBLEMS,algo,subproblem,optimized_binary_expansion,shift)
     RESULTS = create_dataframe(f"{DIRECTORY}_results.txt",["name","submode","algorithm","obj"],[str,str,str,float])
 
     for res in RESULTS:
@@ -375,13 +368,38 @@ def get_hard_problems():
     hard_problems = all_names - easy_problems
     return list(hard_problems)
 
+def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OUTPUT_FILE):
+
+    for name in names:
+        path = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
+        problem = np.load(path)
+        problem_data = [problem[key] for key in problem]
+        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+        n_I = int(n_I)
+        n_R = int(n_R)
+        n_y = int(n_y)
+        m_u = int(m_u)
+        m_l = int(m_l)
+        problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+        for s in SHIFTS:
+            problem_data,constant = shift_problem(problem_data,s)
+            for opt_bin_exp in [True,False]:
+                print(f"Solving {name} shifted by {s}, opt_bin_exp : {opt_bin_exp}")
+                _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,opt_bin_exp)
+                with open(OUTPUT_FILE,'a') as out:
+                    out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} shift {s} opt_bin_exp {opt_bin_exp} status {status} obj {obj+constant} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
+                print(f"Time : {timeit.default_timer() - start}")
+                time.sleep(2)
+
+
 if __name__ == '__main__':
     DESCRIPTION = "ST_kelley_corrected_new"
-    ALGORITHMS = ["ST-K","ST-K-C","ST-K-C-S"]
+    ALGORITHMS = ["ST-K"]
     SUBMODE = ["remark_2"]
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
     BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
     FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]
+    SOLVABLE_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
     HARD_PROBLEMS = get_hard_problems()
     P_0282 = ["p0282-0.900000"]
     TIMELIMIT_PROBLEM = ["p0201-0.900000"]
@@ -391,7 +409,11 @@ if __name__ == '__main__':
 
     ######
     start = timeit.default_timer()
-    df = testing(DESCRIPTION,ALGORITHMS,SUBMODE,BIG_SET)
+    TIME_LIMIT = 300
+    SUBPROBLEM_MODE = "remark_2"
+    ALGORITHM = "ST-K"
+    BIG_M = 1e6
+    test_optimized_binary_expansion(SOLVABLE_SET,[1,7,63,1023],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/opt_bin_exp_res.txt")
     
     print(f"Time : {timeit.default_timer()-start}")
 

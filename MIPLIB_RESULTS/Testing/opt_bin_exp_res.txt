@@ -1,0 +1,7 @@
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 1 opt_bin_exp True status 2 obj 2439.682450633736 time 4.401319197 subtime 0.0035144170000016572 subnum 24 gap 0.0
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 1 opt_bin_exp False status 13 obj 2414.190504697186 time 10.801447840999998 subtime 0.00248630900000002 subnum 17 gap 0.0
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 7 opt_bin_exp True status 2 obj -10893.728270028252 time 3.3511031729999985 subtime 0.001738050000007263 subnum 13 gap 9.154957397576304e-05
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 7 opt_bin_exp False status 2 obj -10911.30129007739 time 4.285758583000003 subtime 0.0011597939999994367 subnum 9 gap 9.586966398543867e-05
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 63 opt_bin_exp True status 2 obj -1717359.8392587006 time 0.4559696439999996 subtime 0.00034177800000634306 subnum 3 gap 2.1328739692972634e-05
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 63 opt_bin_exp False status 2 obj -1717274.6645631492 time 2.466336016999996 subtime 0.0002506169999989538 subnum 2 gap 2.2231761285434775e-05
+name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_2 algorithm ST-K shift 1023 opt_bin_exp True status 2 obj -144302782.3617096 time 0.5396434959999965 subtime 0.0005170559999925217 subnum 4 gap 8.734014779185775e-08

@@ -9,6 +9,7 @@ Watch out: Major Error in the Solver that doesn't ues OOP (Everything thats not 
 # Remarks
 
 - p0282-0.500000 solvable with big-M of 1e6
+- Reduction of n_I only makes problem infeasible too. Maybe their removal adds too much slack for lower level constraints.
 
 # TODO
 
