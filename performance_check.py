@@ -412,8 +412,8 @@ if __name__ == '__main__':
     TIME_LIMIT = 300
     SUBPROBLEM_MODE = "remark_2"
     ALGORITHM = "ST-K"
-    BIG_M = 1e6
-    test_optimized_binary_expansion(SOLVABLE_SET,[1,7,63,1023],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/opt_bin_exp_res.txt")
+    BIG_M = 1e7
+    test_optimized_binary_expansion(SOLVABLE_SET,[64,128,256,512],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/shift_x_dir.txt")
     
     print(f"Time : {timeit.default_timer()-start}")
 

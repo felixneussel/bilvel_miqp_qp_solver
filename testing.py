@@ -100,6 +100,7 @@ def shift_problem(problem_data,shift_by):
     shift_by: Distance to shift problem from zero
     """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+
     constant = 0.5*np.array([shift_by]*n_I).T @ H @ np.array([shift_by]*n_I) + 0.5*np.array([shift_by]*n_y).T @ G_u @ np.array([shift_by]*n_y) - c_u.T@np.array([shift_by]*n_I) - d_u.T@np.array([shift_by]*n_y)
     a = a +  A @ np.array([shift_by]*n_I) + B @ np.array([shift_by]*n_y)
     b = b + C @ np.array([shift_by]*n_I) + D @ np.array([shift_by]*n_y)
@@ -108,13 +109,36 @@ def shift_problem(problem_data,shift_by):
     c_u = c_u - H@ np.array([shift_by]*n_I)
     d_u = d_u - G_u @ np.array([shift_by]*n_y)
     d_l = d_l - G_l @ np.array([shift_by]*n_y)
+
     
     return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b], constant
 
+def shift_x(problem_data,shift_by):
+    """
+    Shifts x variables of problem away from zero by specified distance
+
+    Input:
+
+    path: file path of npz file with problem data
+
+    shift_by: Distance to shift problem from zero
+    """
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+
+    constant = 0.5*np.array([shift_by]*n_I).T @ H @ np.array([shift_by]*n_I)  - c_u.T@np.array([shift_by]*n_I)
+    a = a +  A @ np.array([shift_by]*n_I) 
+    b = b + C @ np.array([shift_by]*n_I) 
+    int_lb = int_lb + shift_by* np.ones(n_I)
+    int_ub = int_ub + shift_by * np.ones(n_I)
+    c_u = c_u - H@ np.array([shift_by]*n_I)
+    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b], constant
+
+
 def test_binary_optimization(n):
+    
 
     #Number of Integer upper-level variables
-    n_I = 1000
+    n_I = 100
     #Number of Continuous upper-level variables
     n_R = 0
     #Number of lower-level variables
@@ -125,12 +149,13 @@ def test_binary_optimization(n):
     m_l = 2
 
     #Input data
-    H = 2*np.eye(n_I)
-    G_u = 2*np.eye(1)
-    G_l = 2*np.eye(1)
-    c_u = np.zeros(n_I)
-    d_u = np.array([0])
-    d_l = np.array([-2])
+    np.random.seed(99)
+    H = 2*np.diag(np.random.uniform(0.1,0.5,n_I))
+    G_u = 2*np.diag(np.random.uniform(0.1,0.5,n_y))
+    G_l = 2*np.diag(np.random.uniform(0.1,0.5,n_y))
+    c_u = np.random.uniform(0,0,n_I)
+    d_u = np.random.uniform(-0,0,n_y)
+    d_l = np.random.uniform(-0,0,n_y)
 
     A = np.zeros((m_u,n_I+n_R))
     B = np.zeros((m_u,n_y))
@@ -158,6 +183,7 @@ def test_binary_optimization(n):
         obj_optimized.append(obj)
     df = pd.DataFrame({"lower_bound":lower_bounds,"runtimes_normal":runtimes_normal,"runtimes_optimized":runtimes_optimized,"obj_normal":obj_normal,"obj_optimized":obj_optimized})
     print(df)
+    df.to_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem.pkl",)
     plt.plot(lower_bounds,runtimes_normal,label="Normal")
     plt.plot(lower_bounds,runtimes_optimized,label="Optimized")
     plt.xlabel("Lower Bound")
@@ -272,8 +298,7 @@ for f in ["MT"]:
         print('Iterations : ', m.iteration_counter) """
 
 if __name__ == "__main__":
-
-    shift_problem("Problem_Data.nosync/Sub_1000_Vars/lseu-0.500000.npz",512)
-        
-
+    test_binary_optimization(10)
+    #df = pd.read_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem.pkl")
+    #print(df)
     
