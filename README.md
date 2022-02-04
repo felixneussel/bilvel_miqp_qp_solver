@@ -2,7 +2,7 @@
 
 
 
-This project is part of my Bachelor thesis. I implemented solvers for bilevel optimization problems with a mixed-integer quadratic leader problem and a quadratic follower problem. They are implementations from the algorithms proposed by Thomas Kleinert, Verkonika Grimm and Martin Schmidt in the paper "Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems".
+This work-in-process project is part of my Bachelor thesis. I implemented solvers for bilevel optimization problems with a mixed-integer quadratic leader problem and a quadratic follower problem. They are implementations from the algorithms proposed by Thomas Kleinert, Verkonika Grimm and Martin Schmidt in the paper "Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems".
 
 Concretely, the algorithms solve problems of the form
 
@@ -21,22 +21,21 @@ $$ -->
 
 with positive semidefinite matrices <!-- $H_u \in \R^{n_x \times n_x}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=H_u%20%5Cin%20%5CR%5E%7Bn_x%20%5Ctimes%20n_x%7D">, <!-- $G_u \in \R^{n_y \times n_y}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=G_u%20%5Cin%20%5CR%5E%7Bn_y%20%5Ctimes%20n_y%7D">, <!-- $G_l \in \R^{n_y \times n_y}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=G_l%20%5Cin%20%5CR%5E%7Bn_y%20%5Ctimes%20n_y%7D"> and vectors <!-- $c_u \in \R^{n_x}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=c_u%20%5Cin%20%5CR%5E%7Bn_x%7D">, <!-- $d_u, d_l \in \R^{n_y}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=d_u%2C%20d_l%20%5Cin%20%5CR%5E%7Bn_y%7D">, <!-- $a \in \R^{m_u}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=a%20%5Cin%20%5CR%5E%7Bm_u%7D">, <!-- $b \in \R^{m_l}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=b%20%5Cin%20%5CR%5E%7Bm_l%7D"> and matrices <!-- $A \in \R^{m_u \times n_x}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=A%20%5Cin%20%5CR%5E%7Bm_u%20%5Ctimes%20n_x%7D">, <!-- $B \in \R^{m_u \times n_y}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=B%20%5Cin%20%5CR%5E%7Bm_u%20%5Ctimes%20n_y%7D">, <!-- $C \in \R^{m_l \times n_x}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=C%20%5Cin%20%5CR%5E%7Bm_l%20%5Ctimes%20n_x%7D"> and <!-- $D \in \R^{m_l \times n_y}$ --> <img style="transform: translateY(0.1em); background: white;" src="https://render.githubusercontent.com/render/math?math=D%20%5Cin%20%5CR%5E%7Bm_l%20%5Ctimes%20n_y%7D">.
 
-# Ideas
+In [main.py](main.py), there is a demonstration how to use the solver.
+The specific algorithm to be used can be set with the algorithm parameter.
+These are the different algorithms:
 
-- Maybe reduced problems stay feasible if only number of int variables is reduced
+|  Algorithm | Description  |
+|---|---|
+|  MT | Multi-tree approach  |
+| MT-K  |  Like MT with addidtional Kelley-type cutting planes |
+|  MT-K-F | Like MT-K but the master problem is terminated with the first improving integer solution  |
+|  MT-K-F-W |  Like MT-K-F but the master problem is warmstarted with the current best solution |
+| ST  |  Single-tree approach |
+| ST-K  |  Like ST with additional Kelley-type cutting planes |
+|  ST-K-C |  Like ST-K but a bilevel feasible solution is used to derive an initial strong-duality cut |
+| ST-K-C-S  |  Like ST-K-C but the initial master problem is warmstarted with a bilevel feasible solution |
 
-# Remarks
+Numerical studies have shown that MT-K-F-W and ST-K-C-S are the best performing algorithm.
 
-- p0282-0.500000 solvable with big-M of 1e6
-- Reduction of n_I only makes problem infeasible too. Maybe their removal adds too much slack for lower level constraints.
 
-# TODO
-
-- MT-K-F: Kelley cuts are added for every non-improving integer solution too.
-
-## Errors to fix
-
-- harp2-0.500000 with ST-K-C-S took longer than 900s but had a measured running time of 810 s
-- Sometimes Multitree produces negative Gap, e.g. for lseu-0.900000. This causes ST-K-C-S to deem problem infeasible. Especially severe for remark_1.
-    - I observed constraint violations in remark_1 subproblem of maginitude 1e-3, while there is no violation for remark_2.
-- Unsolved Issue : p0033-0.500000 has better obj val in MT than in other approaches. If corresponding integer solution is set as x_I_param in debugging of other functions, they also have the same (better obj val)
