@@ -5,3 +5,4 @@
 *.npz
 Problem_Data.nosync
 Solver_OOP/
+Solver/
