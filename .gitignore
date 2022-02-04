@@ -4,3 +4,4 @@
 # Npz files are to big
 *.npz
 Problem_Data.nosync
+Solver_OOP/

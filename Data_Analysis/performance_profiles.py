@@ -56,9 +56,9 @@ def create_dataframe(filepath,colnames,dtypes):
 def discardUnsolved(df):
     time_limit = 300
     df["status"] = df.apply(lambda row: row.status if row.runtime <= time_limit else 9, axis=1)
-    print(df)
+
     new = df.groupby("problem")["status"].apply(list).to_frame()
-    print(new)
+
     unsolved_by_all = []
     for i,row in new.iterrows():
         status = row["status"]
@@ -67,8 +67,7 @@ def discardUnsolved(df):
             unsolved_by_all.append(i)
     for i in unsolved_by_all:
         df = df.drop(df[df.problem == i].index)
-    
-    print(df)
+
     return(df)
 
 def ratios(df):
@@ -90,6 +89,8 @@ def performance_profile(df):
     for index, row in df.iterrows():
         plt.step(row.r_ps,y,label=index)
     #plt.xscale("log")
+    plt.rcParams['text.usetex'] = True
+    plt.xlabel(r"Factor $\tau$")
     plt.legend()
     plt.show()
 
@@ -97,20 +98,53 @@ def create_performance_profiles():
     ST_FILES = ["MIPLIB_RESULTS/Testing/ST_kelley_corrected_new_results.txt","MIPLIB_RESULTS/Testing/ST_measurement_results.txt"]
     MT_FILES = ["MIPLIB_RESULTS/Testing/MT_second_measure_results.txt","MIPLIB_RESULTS/Testing/MT-K_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
     MIXED = ["MIPLIB_RESULTS/Testing/ST_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
+    BENCHMARKS = ["MIPLIB_RESULTS/Benchmarks/benchmark_results.txt"]
+    BM_ST_MT = ["MIPLIB_RESULTS/Benchmarks/st_mt_comparison.txt"]
     data = []
     COLNAMES = ["name","submode","algorithm","status","runtime"]
     DTYPES = [str,str,str,int,float]
-    for file in ST_FILES:
+    for file in MT_FILES:
         data.append(getData(file))
     df = pd.concat(data)
     df = discardUnsolved(df)
     performance_profile(df)
     
 
+def latex_table_times_obj(ALG):
+    ST_FILES = ["MIPLIB_RESULTS/Testing/ST_kelley_corrected_new_results.txt","MIPLIB_RESULTS/Testing/ST_measurement_results.txt"]
+    MT_FILES = ["MIPLIB_RESULTS/Testing/MT_second_measure_results.txt","MIPLIB_RESULTS/Testing/MT-K_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
+    MIXED = ["MIPLIB_RESULTS/Testing/ST_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
+    BENCHMARKS = ["MIPLIB_RESULTS/Benchmarks/benchmark_results.txt"]
+    BM_ST_MT = ["MIPLIB_RESULTS/Benchmarks/st_mt_comparison.txt"]
+    data = []
+    COLNAMES = ["name","algorithm","status","time","obj"]
+    DTYPES = [str,str,int,float,float]
+    for file in BENCHMARKS:
+        frames = create_dataframe(file,COLNAMES,DTYPES)
+        for frame in frames:
+            data.append(frame)
+    df = pd.concat(data)
+    print(df)
+    df = df[df.algorithm == ALG]
+    df = df.drop(columns="algorithm")
+    df["status"] = df["status"].map(status_to_string)
+    print(df)
+    df = df.rename({"name":"Name","status":"Status","time":"Time","obj":"Objective"},axis=1)
+    table = df.to_latex(index=False)
+    with open("MIPLIB_RESULTS/Latex/Tables.txt","a") as out:
+        out.write(f"{ALG}\n")
+        out.write(table)
+        out.write("\n")
+
+def status_to_string(x):
+    d = {2:"Optimal",9:"Time Limit",6 : "Cutoff",3:"Infeasible"}
+    return d[x]
+
 
 
 
 if __name__ == "__main__":
     pd.set_option("display.max_rows", 100)
-    create_performance_profiles()
+    df = create_dataframe("Problem_Data.nosync/dimensions.txt",["name","n_I","n_R","n_y","m_u","m_l"],[str,int,int,int,int,int])[0]
+    print(df.to_latex(index=False))
 

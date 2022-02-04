@@ -170,20 +170,31 @@ def test_binary_optimization(n):
     runtimes_optimized = []
     obj_normal = []
     obj_optimized = []
+    status_normal = []
+    status_optimized = []
     for i in range(n):
         int_lb = np.array([2**i -1]*n_I)
         int_ub = np.array([2**i]*n_I)
         lower_bounds.append(int_lb[0])
         problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
-        _,obj,runtime,_,_, _,_ = solve(problem_data,1e-5,infty,300,'remark_2','ST-K-C-S',1e5,False)
+        _,obj,runtime,_,_, status,_ = solve(problem_data,1e-5,infty,300,'remark_2','ST-K-C-S',1e5,False)
         runtimes_normal.append(runtime)
         obj_normal.append(obj)
-        _,obj,runtime,_,_, _,_  = solve(problem_data,1e-5,infty,300,'remark_2','ST-K-C-S',1e5,True)
+        status_normal.append(status)
+        _,obj,runtime,_,_, status,_  = solve(problem_data,1e-5,infty,300,'remark_2','ST-K-C-S',1e5,True)
         runtimes_optimized.append(runtime)
         obj_optimized.append(obj)
+        status_optimized.append(status)
     df = pd.DataFrame({"lower_bound":lower_bounds,"runtimes_normal":runtimes_normal,"runtimes_optimized":runtimes_optimized,"obj_normal":obj_normal,"obj_optimized":obj_optimized})
-    print(df)
-    df.to_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem.pkl",)
+    df = pd.DataFrame({("Lower Bound",""):lower_bounds,("Normal","Status"):status_normal,("Normal","Time"):runtimes_normal,("Normal","Objective"):obj_normal,
+    ("Optimized","Status"):status_optimized, ("Optimized","Time"):runtimes_optimized,("Optimized","Objective"):obj_optimized})
+    df.set_index("Lower Bound",inplace=True)
+    df.to_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem_multi_index.pkl")
+    table = df.to_latex()
+    with open("MIPLIB_RESULTS/Latex/Tables.txt","a") as out:
+        out.write(f"Binary_Expansion\n")
+        out.write(table)
+        out.write("\n")
     plt.plot(lower_bounds,runtimes_normal,label="Normal")
     plt.plot(lower_bounds,runtimes_optimized,label="Optimized")
     plt.xlabel("Lower Bound")
@@ -299,6 +310,6 @@ for f in ["MT"]:
 
 if __name__ == "__main__":
     test_binary_optimization(10)
-    #df = pd.read_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem.pkl")
-    #print(df)
+    df = pd.read_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem_multi_index.pkl")
+    print(df)
     

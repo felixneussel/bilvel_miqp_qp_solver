@@ -13,6 +13,8 @@ Watch out: Major Error in the Solver that doesn't ues OOP (Everything thats not 
 
 # TODO
 
+- MT-K-F: Kelley cuts are added for every non-improving integer solution too.
+
 ## Errors to fix
 
 - harp2-0.500000 with ST-K-C-S took longer than 900s but had a measured running time of 810 s
