@@ -1,7 +1,7 @@
 from numpy import concatenate,array
 from gurobipy import Model,GRB
 from scipy.linalg import block_diag
-from Functional.problems import optimize
+from Solvers.problems import optimize
 
 def setup_sub_as_fixed_nonconvex_reform(problem_data,meta_data,x_I_param):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data

@@ -7,10 +7,10 @@ from Data_Analysis.method_comparison import run_test
 from Data_Analysis.method_comparison import create_dataframe
 from gurobipy import GRB
 from numpy import infty
-from Functional.multitree import solve
+from Solvers.multitree import solve
 import pandas as pd
 import matplotlib.pyplot as plt
-from Functional.benchmarks import optimize_benchmark
+from Solvers.benchmarks import optimize_benchmark
 
 
 

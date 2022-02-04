@@ -6,11 +6,11 @@ from venv import create
 from Parsers.file_reader import mps_aux_reader
 import numpy as np
 from numpy.linalg import norm
-from Functional.multitree import solve
+from Solvers.multitree import solve
 import traceback
 import concurrent.futures as futures
 from datetime import datetime
-from Functional.benchmarks import optimize_benchmark, setup_kkt_miqp, setup_sd_miqcpcp
+from Solvers.benchmarks import optimize_benchmark, setup_kkt_miqp, setup_sd_miqcpcp
 import signal
 import pandas as pd
 from Data_Analysis.performance_profiles import create_dataframe
@@ -216,7 +216,7 @@ def Test_Run(description):
         with open(SOLVED_FILE,"a") as out:
             out.write(f"{name} {algorithm}\n")
 
-def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE,OPTIMIZED_BINARY_EXPANSION):
+def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE):
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
     #SOLVED_FILE = f"MIPLIB_RESULTS/{description}_solved.txt"
     #PROBLEMS_TO_SOLVE = set(os.listdir(DIRECTORY)) - {"lseu-0.100000.npz","enigma-0.900000.npz","enigma-0.500000.npz","stein45-0.100000.npz","p0282-0.500000.npz","stein27-0.100000.npz","p0201-0.900000.npz","p0033-0.100000.npz","lseu-0.900000.npz","stein45-0.500000.npz","enigma-0.100000.npz","p0033-0.500000.npz","stein27-0.500000.npz","stein27-0.900000.npz","p0033-0.900000.npz","lseu-0.500000.npz","stein45-0.900000.npz"}
@@ -244,7 +244,7 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE,OPTIMIZED_B
         print(f"Trying to solve {name} with {ALGORITHM} and submode {SUBPROBLEM_MODE}")
         start = timeit.default_timer()
         try:
-            _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OPTIMIZED_BINARY_EXPANSION)
+            _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,True)
         except Exception:
             with open(EXCEPTION_REPORT,"a") as out:
                 out.write(f"exception occured in name {name} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM}\n")
@@ -252,11 +252,11 @@ def Test_Run_npz(out_dir,PROBLEMS_TO_SOLVE,ALGORITHM,SUBPROBLEM_MODE,OPTIMIZED_B
                 out.write("\n")
             continue
         with open(OUTPUT_FILE,'a') as out:
-            out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} opt_bin_exp {OPTIMIZED_BINARY_EXPANSION} status {status} obj {obj} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
+            out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} opt_bin_exp {True} status {status} obj {obj} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
         #with open(SOLVED_FILE,"a") as out:
         #    out.write(f"{name} {algorithm}\n")
         print(f"Time : {timeit.default_timer() - start}")
-        time.sleep(5)
+        time.sleep(.5)
 
 def benchmarking():
     DIRECTORY = "Problem_Data.nosync/Sub_1000_Vars"
@@ -307,15 +307,13 @@ def create_thirty_dataset():
         save_to = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
         np.savez(save_to,n_I=n_I,n_R=n_R,n_y=n_y,m_u=m_u,m_l=m_l,H=H,G_u=G_u,G_l=G_l,c_u=c_u,d_u=d_u,d_l=d_l,A=A,B=B,a=a,int_lb=int_lb,int_ub=int_ub,C=C,D=D,b=b)
 
-def testing(DESCRIPTION,ALGORITHMS,SUBPROBLEMS,PROBLEMS,SHIFTS):
+def testing(DESCRIPTION,ALGORITHMS,SUBPROBLEMS,PROBLEMS):
     TEST_SET = create_dataframe("MIPLIB_RESULTS/Test_Set_Results",["name","obj"],[str,float])[0]
     DIRECTORY = f"MIPLIB_RESULTS/Testing/{DESCRIPTION}"
     TOL = 1e-5
     for algo in ALGORITHMS:
-        for subproblem in SUBPROBLEMS:
-            for shift in SHIFTS:
-                for optimized_binary_expansion in [True,False]:
-                    Test_Run_npz(DIRECTORY,PROBLEMS,algo,subproblem,optimized_binary_expansion,shift)
+        for subproblem in SUBPROBLEMS: 
+            Test_Run_npz(DIRECTORY,PROBLEMS,algo,subproblem)
     RESULTS = create_dataframe(f"{DIRECTORY}_results.txt",["name","submode","algorithm","obj"],[str,str,str,float])
 
     for res in RESULTS:
@@ -394,7 +392,7 @@ def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGO
 
 if __name__ == '__main__':
     DESCRIPTION = "ST_kelley_corrected_new"
-    ALGORITHMS = ["ST-K"]
+    ALGORITHMS = ["ST","ST-K","ST-K-C","ST-K-C-S","MT","MT-K","MT-K-F","MT-K-F-W"]
     SUBMODE = ["remark_2"]
     SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
     BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
@@ -413,7 +411,8 @@ if __name__ == '__main__':
     SUBPROBLEM_MODE = "remark_2"
     ALGORITHM = "ST-K"
     BIG_M = 1e7
-    test_optimized_binary_expansion(SOLVABLE_SET,[64,128,256,512],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/shift_x_dir.txt")
+    #test_optimized_binary_expansion(SOLVABLE_SET,[64,128,256,512],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/shift_x_dir.txt")
+    testing("Test_after_rename",ALGORITHMS, SUBMODE,SMALL_SET)
     
     print(f"Time : {timeit.default_timer()-start}")
 

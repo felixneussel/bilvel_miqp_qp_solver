@@ -1,5 +1,5 @@
 import timeit
-from Functional.multitree import MT,ST, solve
+from Solvers.multitree import MT,ST, solve
 from Parsers.file_reader import mps_aux_reader
 import numpy as np
 import re

@@ -1,4 +1,4 @@
-from Functional.problems import setup_meta_data, setup_master
+from Solvers.problems import setup_meta_data, setup_master
 from gurobipy import GRB,tuplelist
 import gurobipy as gp
 from numpy import concatenate,diag,array,identity,infty

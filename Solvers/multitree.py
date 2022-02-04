@@ -3,13 +3,13 @@ from gurobipy import GRB
 from numpy import infty, array
 from re import match
 from timeit import default_timer
-from Functional.problems import check_dimensions, getSParam, getX_IParamLazy, setup_master, setup_meta_data ,optimize,  add_cut, setup_meta_data, check_dimensions,getX_IParam, warmstart,add_lazy_constraint
-from Functional.subproblem import setup_sub_rem_1,setup_sub_rem_2,setup_sub_as_fixed_nonconvex_reform,setup_sub_st_lazy
-from Functional.feasibility import setup_feas_lazy,setup_feas_mt
+from Solvers.problems import check_dimensions, getSParam, getX_IParamLazy, setup_master, setup_meta_data ,optimize,  add_cut, setup_meta_data, check_dimensions,getX_IParam, warmstart,add_lazy_constraint
+from Solvers.subproblem import setup_sub_rem_1,setup_sub_rem_2,setup_sub_as_fixed_nonconvex_reform,setup_sub_st_lazy
+from Solvers.feasibility import setup_feas_lazy,setup_feas_mt
 from bisect import bisect
 from operator import itemgetter
 import concurrent.futures as futures
-from Functional.utils import stop_process_pool, time_remaining
+from Solvers.utils import stop_process_pool, time_remaining
 
 def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm,big_M,optimized_binary_expansion):
     if algorithm == 'MT':

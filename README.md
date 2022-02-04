@@ -1,5 +1,23 @@
-# bilvel_miqp_qp_solver
+# Documentation
 
+
+
+This project is part of my Bachelor thesis. I implemented solvers for bilevel optimization problems with a mixed-integer quadratic leader problem and a quadratic follower problem. They are implementations from the algorithms proposed by Thomas Kleinert, Verkonika Grimm and Martin Schmidt in the paper "Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems".
+
+Concretely, the algorithms solve problems of the form
+
+$$
+\begin{split}
+\min_{x,\bar{y}} \; & q_u(x,\bar{y}) = \frac{1}{2} x^\top H_u x + c_u^\top x
++ \frac{1}{2} \bar{y}^\top G_u \bar{y} + d_u^\top \bar{y}\\
+s.t. \; & A x + B \bar{y} \geq a,\\
+& x_i \in \mathbb{Z} \cap [x_i^-, x_i^+] \; \forall i \in I := \{1, ..., |I| \},\\
+& x_i \in \mathbb{R} \; \forall i \in R := \{|I| + 1, ..., n_x \},\\
+& \bar{y} \in \argmin_y \{q_l (y) = \frac{1}{2}y^\top G_l y + d_l^\top y : C x_I + Dy \geq b, y \in \mathbb{R}^{n_y}\}
+\end{split}
+$$
+
+with positive semidefinite matrices $H_u \in \R^{n_x \times n_x}$, $G_u \in \R^{n_y \times n_y}$, $G_l \in \R^{n_y \times n_y}$ and vectors $c_u \in \R^{n_x}$, $d_u, d_l \in \R^{n_y}$, $a \in \R^{m_u}$, $b \in \R^{m_l}$ and matrices $A \in \R^{m_u \times n_x}$, $B \in \R^{m_u \times n_y}$, $C \in \R^{m_l \times n_x}$ and $D \in \R^{m_l \times n_y}$.
 
 # Ideas
 
