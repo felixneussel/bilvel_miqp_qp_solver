@@ -24,7 +24,7 @@ def setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter
 
 def setup_feas_lazy(problem_data,meta_data,x_I_param,s_param):
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,_ = meta_data
     x_I_param = x_I_param
     s_param = s_param
     model = Model('Feasiblity-Problem')
