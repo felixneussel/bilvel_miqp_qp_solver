@@ -38,6 +38,6 @@ These are the different algorithms:
 |  ST-K-C |  Like ST-K but a bilevel feasible solution is used to derive an initial strong-duality cut |
 | ST-K-C-S  |  Like ST-K-C but the initial master problem is warmstarted with a bilevel feasible solution |
 
-Numerical studies have shown that MT-K-F-W and ST-K-C-S are the best performing algorithm.
+Numerical studies have shown that MT-K-F-W and ST-K-C-S are the best performing algorithms.
 
 
