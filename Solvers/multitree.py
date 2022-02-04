@@ -236,15 +236,12 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
 
 def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub,big_M,optimized_binary_expansion):
     start = default_timer()
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    _,_,_,_,_,_,_,G_l,_,_,d_l,_,_,_,_,_,_,_,b = problem_data
     UB = infty
-    iteration_counter = 0
     cut_counter = 0
     solution = {}
-    time_in_subs = []
-    TIME_LIMIT_EXCEEDED = False
     meta_data = setup_meta_data(problem_data,optimized_binary_expansion)
-    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,non_binary_index_sets = meta_data
+    _,_,_,_,_,_,bin_coeff_arr,_ = meta_data
     master,y_var,dual_var,w_var = setup_master(problem_data,meta_data,big_M,optimized_binary_expansion)
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular_lazy
