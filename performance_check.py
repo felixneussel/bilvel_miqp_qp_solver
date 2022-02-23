@@ -16,8 +16,15 @@ import pandas as pd
 from Data_Analysis.performance_profiles import create_dataframe
 from testing import shift_problem
 
-def signal_handler(signum, frame):
-    raise Exception("Timed out!")
+
+
+CONTEXT = {
+    'tol':1e-5,
+    'time_limt':300,
+    'big_m':1e5,
+    'iteration_limit':np.infty,
+    'optimized_binary_expansion':True
+}
 
 def getProblems(directory,solved_problems):
     files = os.listdir(directory)
@@ -292,6 +299,18 @@ def benchmarking():
                         out.write("\n")
             time.sleep(5)
 
+def get_problem(path,name):
+    problem = np.load(f"{path}/{name}.npz")
+    problem_data = [problem[key] for key in problem]
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    n_I = int(n_I)
+    n_R = int(n_R)
+    n_y = int(n_y)
+    m_u = int(m_u)
+    m_l = int(m_l)
+    problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+    return problem_data
+
 def create_reduced_data_set():
     df = create_dataframe("dimensions.txt",["name","n_I","n_R","n_y","m_u","m_l"],[str,int,int,int,int,int])
     for name in df.loc[:,"name"]:
@@ -390,31 +409,86 @@ def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGO
                 time.sleep(2)
 
 
+
+
+def run_tests_final(problems,algos,submodes,file):
+    for p in problems:
+        problem_data = get_problem('Problem_Data.nosync/Sub_1000_Vars',p)
+        for a in algos:
+            if a in ['KKT-MIQP','SD-MIQCQP']:
+                print(f"Solving {p} with {a}.")
+                try:
+                    status,obj,runtime,gap = optimize_benchmark(a,CONTEXT["time_limt"],problem_data,CONTEXT["big_m"],CONTEXT["optimized_binary_expansion"])
+                    with open(file,'a') as out:
+                        out.write(f'algorithm {a} submode - name {p} status {status} time {runtime} obj {obj} gap {gap} subtime -1 subnum -1\n')
+                except:
+                    with open('test_exceptions.txt',"a") as out:
+                        out.write(f"exception occured in name {p} algorithm {a}\n")
+                        out.write(traceback.format_exc())
+                        out.write("\n")
+                        continue
+                continue
+            for s in submodes:
+                print(f"Solving {p} with {a} and {s}.")
+                try:
+                    _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,CONTEXT["tol"],CONTEXT["iteration_limit"],CONTEXT["time_limt"],s,a,CONTEXT["big_m"],CONTEXT["optimized_binary_expansion"])
+                    with open(file,'a') as out:
+                        out.write(f'algorithm {a} submode {s} name {p} status {status} time {runtime} obj {obj} gap {gap} subtime {times_in_sub} subnum {num_of_subs}\n')
+                except:
+                    with open('test_exceptions.txt',"a") as out:
+                        out.write(f"exception occured in name {p} algorithm {a}\n")
+                        out.write(traceback.format_exc())
+                        out.write("\n")
+                        continue
+
+FINAL_TEST_DATA = {
+    'algos' : ["ST","ST-K","ST-K-C","ST-K-C-S","MT","MT-K","MT-K-F","MT-K-F-W","KKT-MIQP","SD-MIQCQP"],
+    'submodes' : ['regular','remark_2'],
+    'problems' : ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
+}
+
+def create_mi_df(file):
+    d = {}
+    algo = []
+    submode = []
+    name = []
+    status = []
+    time = []
+    obj = []
+    gap = []
+    subtime = []
+    subnum = []
+    with open(file,'r') as f:
+        for l in f:
+            l = l.split()
+            algo.append(l[l.index('algorithm')+1])
+            submode.append(l[l.index('submode')+1])
+            name.append(l[l.index('name')+1])
+            status.append(int(l[l.index('status')+1]))
+            time.append(float(l[l.index('time')+1]))
+            obj.append(float(l[l.index('obj')+1]))
+            gap.append(float(l[l.index('gap')+1]))
+            subtime.append(float(l[l.index('subtime')+1]))
+            subnum.append(int(l[l.index('subnum')+1]))
+
+    d = {
+        'status':status,
+        'time':time,
+        'obj':obj,
+        'gap':gap,
+        'subtime':subtime,
+        'subnum':subnum
+    }
+    return pd.DataFrame(d,index=[algo,submode,name])
+
+
 if __name__ == '__main__':
-    DESCRIPTION = "ST_kelley_corrected_new"
-    ALGORITHMS = ["ST","ST-K","ST-K-C","ST-K-C-S","MT","MT-K","MT-K-F","MT-K-F-W"]
-    SUBMODE = ["remark_2"]
-    SMALL_SET = ["lseu-0.100000","stein45-0.900000","stein27-0.900000","stein45-0.500000"]
-    BIG_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
-    FAST = ["lseu-0.100000","stein45-0.900000","stein27-0.900000"]
-    SOLVABLE_SET = ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
-    HARD_PROBLEMS = get_hard_problems()
-    P_0282 = ["p0282-0.900000"]
-    TIMELIMIT_PROBLEM = ["p0201-0.900000"]
-    ####
-
-    #REMEMBER TO CHOOSE AN EMPTY LOG FILE!
-
-    ######
     start = timeit.default_timer()
-    TIME_LIMIT = 300
-    SUBPROBLEM_MODE = "remark_2"
-    ALGORITHM = "ST-K"
-    BIG_M = 1e7
-    #test_optimized_binary_expansion(SOLVABLE_SET,[64,128,256,512],TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,"MIPLIB_RESULTS/Testing/shift_x_dir.txt")
-    testing("Test_after_rename",ALGORITHMS, SUBMODE,SMALL_SET)
+  
+    run_tests_final(FINAL_TEST_DATA["problems"],FINAL_TEST_DATA["algos"],FINAL_TEST_DATA["submodes"],"results.txt")
     
     print(f"Time : {timeit.default_timer()-start}")
+
 
 
    
