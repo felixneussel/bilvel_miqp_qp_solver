@@ -479,13 +479,25 @@ def create_mi_df(file):
         'subtime':subtime,
         'subnum':subnum
     }
-    return pd.DataFrame(d,index=[algo,submode,name])
+    tuples = list(zip(algo,submode,name))
+    index = pd.MultiIndex.from_tuples(tuples, names=["algorithm", "submode","problem"])
+    return pd.DataFrame(d,index=index)
 
 
 if __name__ == '__main__':
     pd.set_option('display.max_rows', 500)
-    print(create_mi_df('results.txt'))
+    df = create_mi_df('results.txt')
+    #df = df.loc[[('ST','remark_2'),('ST-K','remark_2'),('ST-K-C','remark_2'),('ST-K-C-S','remark_2')]]
+    single_remark_2 = df.loc[:,'remark_2',:].loc[['ST','ST-K','ST-K-C','ST-K-C-S']]
 
+    unsolved = set()
+    for i,row in single_remark_2.iterrows():
+        if row.status != 2:
+            unsolved.add(row.name[2])
+    unsolved = list(unsolved)
+
+    print(single_remark_2)
+    print(unsolved)
 
 
    
