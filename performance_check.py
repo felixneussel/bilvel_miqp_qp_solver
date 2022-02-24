@@ -483,11 +483,8 @@ def create_mi_df(file):
 
 
 if __name__ == '__main__':
-    start = timeit.default_timer()
-  
-    run_tests_final(FINAL_TEST_DATA["problems"],FINAL_TEST_DATA["algos"],FINAL_TEST_DATA["submodes"],"results.txt")
-    
-    print(f"Time : {timeit.default_timer()-start}")
+    pd.set_option('display.max_rows', 500)
+    print(create_mi_df('results.txt'))
 
 
 
