@@ -496,8 +496,7 @@ if __name__ == '__main__':
             unsolved.add(row.name[2])
     unsolved = list(unsolved)
 
-    print(single_remark_2)
-    print(unsolved)
+    
 
 
    

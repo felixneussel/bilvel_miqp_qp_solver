@@ -1,3 +1,4 @@
+from re import S
 from numpy import NAN, NaN
 import pandas as pd
 import numpy as np
@@ -140,11 +141,47 @@ def status_to_string(x):
     d = {2:"Optimal",9:"Time Limit",6 : "Cutoff",3:"Infeasible"}
     return d[x]
 
+def performance_from_dict(d):
+    """
+    Dict has form {solver1 : [time for p1, time for p2 ...], solver2: [time for p1, time for p2]}
+    """
+    times = [d[key] for key in d]
+    minimal_times = [min(*a) for a in zip(*times)]
+    ratios = {}
+    for solver in d:
+        ratios[solver] = [a/b for a,b in zip(d[solver],minimal_times)]
+    n_p = len(minimal_times)
+    n_s = len(times)
+    result = {}
+    max_tau = 0
+    for solver in ratios:
+        tau,rho = get_tau_rho(ratios[solver])
+        if tau[0] != 1:
+            tau.insert(0,1)
+            rho.insert(0,0)
+        if tau[-1] > max_tau:
+            max_tau = tau[-1]
+        rho = list(map(lambda x:x/n_p,rho))
+        result[solver] = {'tau':tau,'rho':rho}
 
+    for solver in result:
+        if result[solver]['tau'][-1] < max_tau:
+            result[solver]['tau'].append(max_tau)
+            result[solver]['rho'].append(1)
+    return result
 
+def get_tau_rho(l):
+    """
+    Input: List of ratios of a solver
+    """
+    l = sorted(l)
+    tau = sorted(list(set(l)))
+    rho = [sum(r <= x for r in l) for x in tau]
+    return tau,rho
 
-if __name__ == "__main__":
-    pd.set_option("display.max_rows", 100)
-    df = create_dataframe("Problem_Data.nosync/dimensions.txt",["name","n_I","n_R","n_y","m_u","m_l"],[str,int,int,int,int,int])[0]
-    print(df.to_latex(index=False))
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
 
+    plt.step([1,10],[1,1])
+    plt.step([1,5,10],[0,0.5,1])
+    plt.show()
