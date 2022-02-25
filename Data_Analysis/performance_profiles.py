@@ -143,31 +143,29 @@ def status_to_string(x):
 
 def performance_from_dict(d):
     """
-    Dict has form {solver1 : [time for p1, time for p2 ...], solver2: [time for p1, time for p2]}
+    Dict has form {solver1 : [time for p1, time for p2 ...], solver2:[time for p1, time for p2]} and time is inf if s did not solve p
     """
     times = [d[key] for key in d]
     minimal_times = [min(*a) for a in zip(*times)]
     ratios = {}
+    max_ratio = 1
     for solver in d:
-        ratios[solver] = [a/b for a,b in zip(d[solver],minimal_times)]
-    n_p = len(minimal_times)
-    n_s = len(times)
-    result = {}
-    max_tau = 0
+        ratios[solver] = [a/b if b != np.infty else np.infty for a,b in zip(d[solver],minimal_times)]
+        ratios[solver] = list(map(lambda x:-1 if x == np.infty else x,ratios[solver]))
+        if max(ratios[solver]) > max_ratio and max(ratios[solver]) != np.infty:
+            max_ratio = max(ratios[solver])
+    r_m = 2*max_ratio
     for solver in ratios:
-        tau,rho = get_tau_rho(ratios[solver])
-        if tau[0] != 1:
-            tau.insert(0,1)
-            rho.insert(0,0)
-        if tau[-1] > max_tau:
-            max_tau = tau[-1]
-        rho = list(map(lambda x:x/n_p,rho))
-        result[solver] = {'tau':tau,'rho':rho}
+        ratios[solver] = list(map(lambda x: r_m if x == -1 else x,ratios[solver]))
+    
+    result = {}
+    for solver in ratios:
+        tau = np.arange(start=1,stop=r_m,step=0.01)
+        rho = np.array(list(map(lambda t:rho_of_tau(t,ratios[solver]),tau)))
+        result[solver] = {}
+        result[solver]['tau'] = tau
+        result[solver]['rho'] = rho
 
-    for solver in result:
-        if result[solver]['tau'][-1] < max_tau:
-            result[solver]['tau'].append(max_tau)
-            result[solver]['rho'].append(1)
     return result
 
 def get_tau_rho(l):
@@ -179,9 +177,30 @@ def get_tau_rho(l):
     rho = [sum(r <= x for r in l) for x in tau]
     return tau,rho
 
+def rho_of_tau(tau,ratios):
+    n = len(ratios)
+    return sum(a <= tau for a in ratios) / n
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    from matplotlib.scale import LogScale
 
-    plt.step([1,10],[1,1])
-    plt.step([1,5,10],[0,0.5,1])
+    d = {
+        'simplex':[1,1,1],
+        'interior':[2,4,8],
+        'kkt':[4,8,16]
+        }
+    linestyles = {
+        'simplex' : ':',
+        'interior' : '--',
+        'kkt' : '-.'
+    }
+    profiles = performance_from_dict(d)
+    for solver in profiles:
+        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=solver,ls=linestyles[solver])
+
+    plt.xscale(LogScale(0,base=2))
+    plt.ylim([-0.01,1.01])
+    plt.xlim(left=1)
+    plt.legend()
     plt.show()
