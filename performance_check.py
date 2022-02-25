@@ -447,54 +447,10 @@ FINAL_TEST_DATA = {
     'problems' : ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
 }
 
-def create_mi_df(file):
-    d = {}
-    algo = []
-    submode = []
-    name = []
-    status = []
-    time = []
-    obj = []
-    gap = []
-    subtime = []
-    subnum = []
-    with open(file,'r') as f:
-        for l in f:
-            l = l.split()
-            algo.append(l[l.index('algorithm')+1])
-            submode.append(l[l.index('submode')+1])
-            name.append(l[l.index('name')+1])
-            status.append(int(l[l.index('status')+1]))
-            time.append(float(l[l.index('time')+1]))
-            obj.append(float(l[l.index('obj')+1]))
-            gap.append(float(l[l.index('gap')+1]))
-            subtime.append(float(l[l.index('subtime')+1]))
-            subnum.append(int(l[l.index('subnum')+1]))
-
-    d = {
-        'status':status,
-        'time':time,
-        'obj':obj,
-        'gap':gap,
-        'subtime':subtime,
-        'subnum':subnum
-    }
-    tuples = list(zip(algo,submode,name))
-    index = pd.MultiIndex.from_tuples(tuples, names=["algorithm", "submode","problem"])
-    return pd.DataFrame(d,index=index)
 
 
-if __name__ == '__main__':
-    pd.set_option('display.max_rows', 500)
-    df = create_mi_df('results.txt')
-    #df = df.loc[[('ST','remark_2'),('ST-K','remark_2'),('ST-K-C','remark_2'),('ST-K-C-S','remark_2')]]
-    single_remark_2 = df.loc[:,'remark_2',:].loc[['ST','ST-K','ST-K-C','ST-K-C-S']]
 
-    unsolved = set()
-    for i,row in single_remark_2.iterrows():
-        if row.status != 2:
-            unsolved.add(row.name[2])
-    unsolved = list(unsolved)
+    
 
     
 
