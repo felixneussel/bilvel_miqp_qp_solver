@@ -1,5 +1,6 @@
 import unittest
 from Data_Analysis.performance_profiles import performance_profile,rho_of_tau,select_problems, select
+import numpy as np
 
 class TestPerformance(unittest.TestCase):
 
@@ -14,12 +15,12 @@ class TestPerformance(unittest.TestCase):
             's2':{'times':[10,9,8,7,6], 'status':[2,9,2,2,8]}
         }
         d_none = {
-            's1':[1,2,3,4,5],
-            's2':[10,9,8,7,6]
+            's1':[1,2,np.infty,4,np.infty],
+            's2':[10,np.infty,8,7,np.infty]
         }
         d_one = {
-            's1':[1,2,3,4],
-            's2':[10,9,8,7]
+            's1':[1,2,np.infty,4],
+            's2':[10,np.infty,8,7]
         }
         d_all = {
             's1':[1,4],
@@ -30,15 +31,17 @@ class TestPerformance(unittest.TestCase):
         self.assertEqual(select_problems(d,'all'),d_all)
 
     def test_select(self):
-        self.assertEqual(select((2,9,2),'none'),True)
-        self.assertEqual(select((2,9,2),'one'),True)
-        self.assertEqual(select((2,9,2),'all'),False)
+        self.assertEqual(select((2,np.infty,2),'none'),True)
+        self.assertEqual(select((2,np.infty,2),'one'),True)
+        self.assertEqual(select((2,np.infty,2),'all'),False)
         self.assertEqual(select((2,2,2,2),'none'),True)
         self.assertEqual(select((2,2,2,2),'one'),True)
         self.assertEqual(select((2,2,2,2),'all'),True)
-        self.assertEqual(select((9,9,5,1),'none'),True)
-        self.assertEqual(select((9,9,5,1),'one'),False)
-        self.assertEqual(select((9,9,5,1),'all'),False)
+        self.assertEqual(select((np.infty,np.infty,np.infty,np.infty),'none'),True)
+        self.assertEqual(select((np.infty,np.infty,np.infty,np.infty),'one'),False)
+        self.assertEqual(select((np.infty,np.infty,np.infty,np.infty),'all'),False)
+        self.assertEqual(select((np.infty,np.infty),'one'),False)
+        
 
 
 if __name__ == '__main__':

@@ -138,7 +138,7 @@ def rho_of_tau(tau,ratios):
     n = len(ratios)
     return sum(a <= tau for a in ratios) / n
 
-def get_run_times(df,algos,submodes,status):
+def get_run_times(df,algos,submodes,option):
     """
     ## Input:
 
@@ -153,10 +153,8 @@ def get_run_times(df,algos,submodes,status):
             d[f'{a} {s}'] = {}
             d[f'{a} {s}']['times'] = df.loc[(a,s),'time'].tolist()
             d[f'{a} {s}']['status'] = df.loc[(a,s),'status'].tolist()
+    return select_problems(d,option)
 
-
-
-    return d
 
 def select_problems(d,option):
     times = []
@@ -164,11 +162,10 @@ def select_problems(d,option):
         d[solver]['times'] = list(map(lambda t,s : t if s == 2 else np.infty, d[solver]['times'],d[solver]['status']))
         times.append(d[solver]['times'])
     times = zip(*times)
-    times = list(filter(lambda x : select(x,option),times))
-    times = list(zip(*times))
+    mask = list(map(lambda x : select(x,option),times))
     result = {}
     for key in d:
-        result[key] = d[key]['times']
+        result[key] = [t for t,i in zip(d[key]['times'],mask) if i ==True]
 
     return result
 
@@ -177,17 +174,31 @@ def select_problems(d,option):
 
 def select(s,option):
     if option == 'one':
-            return 2 in s
+            return  s != tuple([np.infty]*len(s))
     elif option == 'all':
-        return s == tuple([2]*len(s))
+        return np.infty not in s
     elif option == 'none':
         return True
     else:
         raise ValueError(f"'{option}' is not a valid option.")
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    from matplotlib.scale import LogScale
 
     pd.set_option('display.max_rows', 500)
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
-    print(get_run_times(df,['ST','ST-K'],['remark_2','regular'],'none'))
+    st = get_run_times(df,['KKT-MIQP','SD-MIQCQP'],['-'],'one')
+    profiles = performance_profile(st)
+
+    
+    for solver in profiles:
+        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=solver)
+
+    plt.xscale(LogScale(0,base=2))
+    plt.ylim([-0.01,1.01])
+    plt.xlim(left=1)
+    plt.legend()
+    plt.show()
+
     
