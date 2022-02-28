@@ -58,34 +58,18 @@ def create_dataframe(filepath,colnames,dtypes):
 
     
 
-def latex_table_times_obj(ALG):
-    ST_FILES = ["MIPLIB_RESULTS/Testing/ST_kelley_corrected_new_results.txt","MIPLIB_RESULTS/Testing/ST_measurement_results.txt"]
-    MT_FILES = ["MIPLIB_RESULTS/Testing/MT_second_measure_results.txt","MIPLIB_RESULTS/Testing/MT-K_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
-    MIXED = ["MIPLIB_RESULTS/Testing/ST_measurement_results.txt","MIPLIB_RESULTS/Testing/MT-K-F-W_measurement_results.txt"]
-    BENCHMARKS = ["MIPLIB_RESULTS/Benchmarks/benchmark_results.txt"]
-    BM_ST_MT = ["MIPLIB_RESULTS/Benchmarks/st_mt_comparison.txt"]
-    data = []
-    COLNAMES = ["name","algorithm","status","time","obj"]
-    DTYPES = [str,str,int,float,float]
-    for file in BENCHMARKS:
-        frames = create_dataframe(file,COLNAMES,DTYPES)
-        for frame in frames:
-            data.append(frame)
-    df = pd.concat(data)
-    print(df)
-    df = df[df.algorithm == ALG]
-    df = df.drop(columns="algorithm")
+def latex_table_times_obj(df):
     df["status"] = df["status"].map(status_to_string)
-    print(df)
-    df = df.rename({"name":"Name","status":"Status","time":"Time","obj":"Objective"},axis=1)
-    table = df.to_latex(index=False)
-    with open("MIPLIB_RESULTS/Latex/Tables.txt","a") as out:
-        out.write(f"{ALG}\n")
+    df["obj"] = df["obj"].map(lambda x: round(x,2))
+    df["time"] = df["time"].map(lambda x: round(x,2))
+    df = df.drop(['gap','subtime','subnum'],axis = 1)
+    df = df.rename({"problem":"Instance","status":"Status","time":"Time","obj":"Objective"},axis=1)
+    table = df.to_latex()
+    with open('LaTex.txt',"w") as out:
         out.write(table)
-        out.write("\n")
 
 def status_to_string(x):
-    d = {2:"Optimal",9:"Time Limit",6 : "Cutoff",3:"Infeasible"}
+    d = {2:"Optimal",9:"Limit",6 : "Cutoff",3:"Infeasible"}
     return d[x]
 
 def performance_profile(d):
@@ -197,6 +181,7 @@ def select(s,option):
     else:
         raise ValueError(f"'{option}' is not a valid option.")
 
+
 PROFILE_CONFIGS = [
     {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'none'},
     {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'all'},
@@ -211,6 +196,7 @@ if __name__ == '__main__':
     name = '_'.join(map('_'.join,solvers)) + f'_{select_option}'
     pd.set_option('display.max_rows', 500)
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
+    latex_table_times_obj(df)
     st = get_run_times(df,solvers,select_option)
     profiles = performance_profile(st)
 
@@ -228,6 +214,6 @@ if __name__ == '__main__':
     plt.xlabel(r"Factor $\tau$")
     plt.legend()
     #plt.show()
-    plt.savefig(f"Plots/{name}.png")
+    #plt.savefig(f"Plots/{name}.png")
 
     
