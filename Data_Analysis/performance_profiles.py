@@ -3,6 +3,22 @@ from numpy import NAN, NaN
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.scale import LogScale
+
+ALPHA_OVERLAP = 0.9
+
+PLOT_DESIGN = {
+    'KKT-MIQP -':{'label':'KKT-MIQP','linestyle':'-','alpha':ALPHA_OVERLAP},
+    'SD-MIQCQP -':{'label':'SD-MIQCQP','linestyle':':','alpha':ALPHA_OVERLAP},
+    'MT remark_2':{'label':'MT','linestyle':'-','alpha':ALPHA_OVERLAP},
+    'MT-K remark_2':{'label':'MT-K','linestyle':':','alpha':ALPHA_OVERLAP},
+    'MT-K-F remark_2':{'label':'MT-K-F','linestyle':'--','alpha':ALPHA_OVERLAP},
+    'MT-K-F-W remark_2':{'label':'MT-K-F-W','linestyle':'-.','alpha':ALPHA_OVERLAP},
+    'ST remark_2':{'label':'ST','linestyle':'-','alpha':ALPHA_OVERLAP},
+    'ST-K remark_2':{'label':'ST-K','linestyle':':','alpha':ALPHA_OVERLAP},
+    'ST-K-C remark_2':{'label':'ST-K-C','linestyle':'--','alpha':ALPHA_OVERLAP},
+    'ST-K-C-S remark_2':{'label':'ST-K-C-S','linestyle':'-.','alpha':ALPHA_OVERLAP}
+}
 
 def create_dataframe(filepath,colnames,dtypes):
     """
@@ -138,7 +154,7 @@ def rho_of_tau(tau,ratios):
     n = len(ratios)
     return sum(a <= tau for a in ratios) / n
 
-def get_run_times(df,algos,submodes,option):
+def get_run_times(df,algos_submodes,option):
     """
     ## Input:
 
@@ -148,11 +164,11 @@ def get_run_times(df,algos,submodes,option):
     - status : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solver could solve
     """
     d = {}
-    for a in algos:
-        for s in submodes:
-            d[f'{a} {s}'] = {}
-            d[f'{a} {s}']['times'] = df.loc[(a,s),'time'].tolist()
-            d[f'{a} {s}']['status'] = df.loc[(a,s),'status'].tolist()
+    for a_s in algos_submodes:
+        a,s = a_s
+        d[f'{a} {s}'] = {}
+        d[f'{a} {s}']['times'] = df.loc[(a,s),'time'].tolist()
+        d[f'{a} {s}']['status'] = df.loc[(a,s),'status'].tolist()
     return select_problems(d,option)
 
 
@@ -169,9 +185,6 @@ def select_problems(d,option):
 
     return result
 
-
-
-
 def select(s,option):
     if option == 'one':
             return  s != tuple([np.infty]*len(s))
@@ -182,23 +195,37 @@ def select(s,option):
     else:
         raise ValueError(f"'{option}' is not a valid option.")
 
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    from matplotlib.scale import LogScale
+PROFILE_CONFIGS = [
+    {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'none'},
+    {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'all'},
+    {'solvers' : ['MT','MT-K','MT-K-F','MT-K-F-W'],'submodes' : ['remark_2'],'select_option' : 'one'},
+    {'solvers' : ['ST','ST-K','ST-K-C','ST-K-C-S'],'submodes' : ['remark_2'],'select_option' : 'one'}
+]
 
+if __name__ == '__main__':
+    
+    solvers = [('MT-K-F-W','remark_2'),('ST','remark_2'),('SD-MIQCQP','-')]
+    select_option = 'one'
+    name = '_'.join(map('_'.join,solvers)) + f'_{select_option}'
     pd.set_option('display.max_rows', 500)
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
-    st = get_run_times(df,['KKT-MIQP','SD-MIQCQP'],['-'],'one')
+    st = get_run_times(df,[('MT-K-F-W','remark_2'),('ST','remark_2'),('SD-MIQCQP','-')],select_option)
     profiles = performance_profile(st)
 
+    max_tau = 1
     
     for solver in profiles:
-        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=solver)
+        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=PLOT_DESIGN[solver]['label'],linestyle=PLOT_DESIGN[solver]['linestyle'],alpha=PLOT_DESIGN[solver]['alpha'],linewidth=2)
+        if max(profiles[solver]['tau']) > max_tau:
+            max_tau = max(profiles[solver]['tau'])
 
     plt.xscale(LogScale(0,base=2))
-    plt.ylim([-0.01,1.01])
-    plt.xlim(left=1)
+    plt.ylim([-0,1])
+    plt.xlim(left=1,right = max_tau)
+    plt.rcParams['text.usetex'] = True
+    plt.xlabel(r"Factor $\tau$")
     plt.legend()
-    plt.show()
+    #plt.show()
+    plt.savefig(f"Plots/{name}.png")
 
     

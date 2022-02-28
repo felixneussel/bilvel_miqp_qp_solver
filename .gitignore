@@ -4,6 +4,6 @@
 # Npz files are to big
 *.npz
 Problem_Data.nosync
-Solver_OOP/
-Solver/
-mps_aux_tester.py
+#png files
+Plots/
+*.png
