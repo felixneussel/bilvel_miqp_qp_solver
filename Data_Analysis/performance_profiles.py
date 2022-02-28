@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.scale import LogScale
+from itertools import product
 
 ALPHA_OVERLAP = 0.9
 
@@ -147,7 +148,7 @@ def get_run_times(df,algos_submodes,option):
     - df : pd Dataframe with test data
     - algos : Algorithms of which times should be retrieved
     - submodes: Submodes of which times should be retrieved
-    - status : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solver could solve
+    - option : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solver could solve
     """
     d = {}
     for a_s in algos_submodes:
@@ -155,6 +156,8 @@ def get_run_times(df,algos_submodes,option):
         d[f'{a} {s}'] = {}
         d[f'{a} {s}']['times'] = df.loc[(a,s),'time'].tolist()
         d[f'{a} {s}']['status'] = df.loc[(a,s),'status'].tolist()
+        d[f'{a} {s}']['subnum'] = df.loc[(a,s),'subnum'].tolist()
+        d[f'{a} {s}']['subtime'] = df.loc[(a,s),'subtime'].tolist()
     return select_problems(d,option)
 
 
@@ -165,11 +168,17 @@ def select_problems(d,option):
         times.append(d[solver]['times'])
     times = zip(*times)
     mask = list(map(lambda x : select(x,option),times))
-    result = {}
+    times_dict = {}
     for key in d:
-        result[key] = [t for t,i in zip(d[key]['times'],mask) if i ==True]
+        times_dict[key] = [t for t,i in zip(d[key]['times'],mask) if i ==True]
+    subnum_dict = {}
+    for key in d:
+        subnum_dict[key] = [t for t,i in zip(d[key]['subnum'],mask) if i ==True]
+    subtime_dict = {}
+    for key in d:
+        subtime_dict[key] = [t for t,i in zip(d[key]['subtime'],mask) if i ==True]
 
-    return result
+    return times_dict,subnum_dict,subtime_dict
 
 def select(s,option):
     if option == 'one':
@@ -181,6 +190,11 @@ def select(s,option):
     else:
         raise ValueError(f"'{option}' is not a valid option.")
 
+def mean_median_df(df,algos,submodes):
+    for a,s in product(algos,submodes):
+        current_df = df.loc[[a,s]]
+        time_mean = current_df['time'].mean()
+        time_median = current_df['time'].median()
 
 PROFILE_CONFIGS = [
     {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'none'},
