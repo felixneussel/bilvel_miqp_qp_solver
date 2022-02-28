@@ -190,11 +190,24 @@ def select(s,option):
     else:
         raise ValueError(f"'{option}' is not a valid option.")
 
-def mean_median_df(df,algos,submodes):
-    for a,s in product(algos,submodes):
-        current_df = df.loc[[a,s]]
-        time_mean = current_df['time'].mean()
-        time_median = current_df['time'].median()
+def mean_median_df(df,algo_submodes):
+    times_dict,subnum_dict,subtime_dict = get_run_times(df,algo_submodes,'all')
+    d = {
+        ('Running Time','Mean'):[],
+        ('Running Time','Median'):[],
+        ('Solved subproblems','Mean'):[],
+        ('Solved subproblems','Median'):[],
+        ('Time in subproblems','Mean'):[],
+        ('Time in subproblems','Median'):[]
+        }
+    for key in times_dict:
+        d[('Running Time','Mean')].append(np.mean(np.array(times_dict[key])))
+        d[('Running Time','Median')].append(np.median(times_dict[key]))
+        d[('Solved subproblems','Mean')].append(np.mean(subnum_dict[key]))
+        d[('Solved subproblems','Median')].append(np.median(subnum_dict[key]))
+        d[('Time in subproblems','Mean')].append(np.mean(subtime_dict[key]))
+        d[('Time in subproblems','Median')].append(np.median(subtime_dict[key]))
+    return pd.DataFrame(d,index=algo_submodes)
 
 PROFILE_CONFIGS = [
     {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'none'},
@@ -205,29 +218,9 @@ PROFILE_CONFIGS = [
 
 if __name__ == '__main__':
     
-    solvers = [('MT-K-F-W','remark_2'),('MT-K-F-W','regular')]
-    select_option = 'one'
-    name = '_'.join(map('_'.join,solvers)) + f'_{select_option}'
-    pd.set_option('display.max_rows', 500)
+    solvers = [('MT','remark_2'),('MT-K','remark_2'),('MT-K-F','remark_2'),('MT-K-F-W','remark_2'),('MT-K-F-W','regular')]
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
-    latex_table_times_obj(df)
-    st = get_run_times(df,solvers,select_option)
-    profiles = performance_profile(st)
 
-    max_tau = 1
-    
-    for solver in profiles:
-        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=PLOT_DESIGN[solver]['label'],linestyle=PLOT_DESIGN[solver]['linestyle'],alpha=PLOT_DESIGN[solver]['alpha'],linewidth=2)
-        if max(profiles[solver]['tau']) > max_tau:
-            max_tau = max(profiles[solver]['tau'])
-
-    plt.xscale(LogScale(0,base=2))
-    plt.ylim([-0,1])
-    plt.xlim(left=1,right = max_tau)
-    plt.rcParams['text.usetex'] = True
-    plt.xlabel(r"Factor $\tau$")
-    plt.legend()
-    #plt.show()
-    #plt.savefig(f"Plots/{name}.png")
-
+    means = mean_median_df(df,solvers)
+    print(means)
     
