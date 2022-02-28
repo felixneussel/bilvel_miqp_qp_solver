@@ -17,7 +17,9 @@ PLOT_DESIGN = {
     'ST remark_2':{'label':'ST','linestyle':'-','alpha':ALPHA_OVERLAP},
     'ST-K remark_2':{'label':'ST-K','linestyle':':','alpha':ALPHA_OVERLAP},
     'ST-K-C remark_2':{'label':'ST-K-C','linestyle':'--','alpha':ALPHA_OVERLAP},
-    'ST-K-C-S remark_2':{'label':'ST-K-C-S','linestyle':'-.','alpha':ALPHA_OVERLAP}
+    'ST-K-C-S remark_2':{'label':'ST-K-C-S','linestyle':'-.','alpha':ALPHA_OVERLAP},
+    'ST regular':{'label':'ST-STD','linestyle':':','alpha':ALPHA_OVERLAP},
+    'MT-K-F-W regular':{'label':'MT-STD','linestyle':':','alpha':ALPHA_OVERLAP}
 }
 
 def create_dataframe(filepath,colnames,dtypes):
@@ -204,12 +206,12 @@ PROFILE_CONFIGS = [
 
 if __name__ == '__main__':
     
-    solvers = [('MT-K-F-W','remark_2'),('ST','remark_2'),('SD-MIQCQP','-')]
+    solvers = [('MT-K-F-W','remark_2'),('MT-K-F-W','regular')]
     select_option = 'one'
     name = '_'.join(map('_'.join,solvers)) + f'_{select_option}'
     pd.set_option('display.max_rows', 500)
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
-    st = get_run_times(df,[('MT-K-F-W','remark_2'),('ST','remark_2'),('SD-MIQCQP','-')],select_option)
+    st = get_run_times(df,solvers,select_option)
     profiles = performance_profile(st)
 
     max_tau = 1
