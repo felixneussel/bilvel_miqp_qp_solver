@@ -201,12 +201,13 @@ def mean_median_df(df,algo_submodes):
         ('Time in subproblems','Median'):[]
         }
     for key in times_dict:
-        d[('Running Time','Mean')].append(np.mean(np.array(times_dict[key])))
-        d[('Running Time','Median')].append(np.median(times_dict[key]))
-        d[('Solved subproblems','Mean')].append(np.mean(subnum_dict[key]))
-        d[('Solved subproblems','Median')].append(np.median(subnum_dict[key]))
-        d[('Time in subproblems','Mean')].append(np.mean(subtime_dict[key]))
-        d[('Time in subproblems','Median')].append(np.median(subtime_dict[key]))
+        m=6
+        d[('Running Time','Mean')].append(round(np.mean(np.array(times_dict[key])),m))
+        d[('Running Time','Median')].append(round(np.median(times_dict[key]),m))
+        d[('Solved subproblems','Mean')].append(round(np.mean(subnum_dict[key]),m))
+        d[('Solved subproblems','Median')].append(int(np.median(subnum_dict[key])))
+        d[('Time in subproblems','Mean')].append(round(np.mean(subtime_dict[key]),m))
+        d[('Time in subproblems','Median')].append(round(np.median(subtime_dict[key]),m))
     return pd.DataFrame(d,index=algo_submodes)
 
 PROFILE_CONFIGS = [
@@ -222,5 +223,5 @@ if __name__ == '__main__':
     df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
 
     means = mean_median_df(df,solvers)
-    print(means)
+    print(means.to_latex())
     
