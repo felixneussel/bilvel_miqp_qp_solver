@@ -1,6 +1,5 @@
 from pysmps import smps_loader as smps
 import numpy as np
-from Solver_OOP.miqp_qp_solver import MIQP_QP
 import re
 import os
 import threading as th

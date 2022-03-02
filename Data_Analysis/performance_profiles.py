@@ -201,7 +201,7 @@ def mean_median_df(df,algo_submodes):
         ('Time in subproblems','Median'):[]
         }
     for key in times_dict:
-        m=6
+        m=2
         d[('Running Time','Mean')].append(round(np.mean(np.array(times_dict[key])),m))
         d[('Running Time','Median')].append(round(np.median(times_dict[key]),m))
         d[('Solved subproblems','Mean')].append(round(np.mean(subnum_dict[key]),m))
@@ -219,9 +219,20 @@ PROFILE_CONFIGS = [
 
 if __name__ == '__main__':
     
-    solvers = [('MT','remark_2'),('MT-K','remark_2'),('MT-K-F','remark_2'),('MT-K-F-W','remark_2'),('MT-K-F-W','regular')]
-    df = get_test_data('/Users/felixneussel/Library/Mobile Documents/com~apple~CloudDocs/Documents/Uni/Vertiefung/Bachelorarbeit/Implementierung/MIQP_QP_Solver/results.txt')
-
-    means = mean_median_df(df,solvers)
-    print(means.to_latex())
+    d = {
+        's1':[1,1,1,np.infty],
+        's2':[2,3,4,5]
+    }
     
+    r = performance_profile(d)
+    
+    plt.step(r['s1']['tau'],r['s1']['rho'],where='post',linestyle='--',alpha=0.9,label='$s_1$',linewidth=2)
+    plt.step(r['s2']['tau'],r['s2']['rho'],where='post',linestyle=':',alpha=0.9,label='$s_2$',linewidth=2)
+    plt.rcParams['text.usetex'] = True
+    plt.legend()
+    plt.xscale(LogScale(0,base=2))
+    plt.ylim([-0,1])
+    plt.xlim(left=1,right = 8)
+    plt.yticks([int(0),0.25,0.5,0.75,int(1)])
+    plt.xlabel(r"Factor $\tau$")
+    plt.savefig('Plots/perf_exmaple.png')

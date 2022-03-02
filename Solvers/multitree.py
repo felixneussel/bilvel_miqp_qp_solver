@@ -256,7 +256,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     if initial_cut or initial_ub:
         initial_solution, initial_incumbent, initial_time,initial_time_in_sub,initial_num_of_subs, initial_status,initial_gap = MT(problem_data,tol,1,time_limit,subproblem_mode,False,False,False,big_M,optimized_binary_expansion)
-        if initial_status == GRB.TIME_LIMIT:
+        if initial_status != GRB.OPTIMAL:
             return initial_solution,initial_incumbent,initial_time,initial_time_in_sub,initial_num_of_subs,initial_status,initial_gap
     if initial_cut:
         y_p = []

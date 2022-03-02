@@ -250,3 +250,285 @@ Lower Bound &        &           &               &           &           &      
 \bottomrule
 \end{tabular}
 
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time & Objective &    Status &      Time & Objective \\
+Lower Bound &        &           &           &           &           &           \\
+\midrule
+0           &      2 &  0.064721 &       0.0 &         2 &  0.019707 &       0.0 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.074864 &    0.000000 &         2 &  0.019412 &    0.000000 \\
+1           &      2 &  0.029584 &    1.621612 &         2 &  0.019320 &    1.621612 \\
+3           &      2 &  0.033330 &   14.594511 &         2 &  0.018914 &   14.594511 \\
+7           &      2 &  0.041600 &   79.459006 &         2 &  0.020679 &   79.459006 \\
+15          &      2 &  0.048237 &  364.862784 &         2 &  0.019726 &  364.862784 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  1.777986 &    -1.754660 &         2 &  1.242298 &    -1.754660 \\
+1           &      2 &  0.389031 &     7.191685 &         2 &  0.347574 &     7.191685 \\
+3           &      2 &  0.137784 &    72.534936 &         2 &  0.065921 &    72.534936 \\
+7           &      2 &  0.165398 &   407.489583 &         2 &  0.058625 &   407.489583 \\
+15          &      2 &  0.201638 &  1895.740117 &         2 &  0.051398 &  1895.740117 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  0.129964 &     0.000000 &         2 &  0.097781 &     0.000000 \\
+1           &      2 &  0.202019 &    32.233895 &         2 &  0.111815 &    32.233895 \\
+3           &      2 &  0.376086 &   290.105059 &         2 &  0.134074 &   290.105059 \\
+7           &      2 &  0.423378 &  1579.460876 &         2 &  0.132269 &  1579.460876 \\
+15          &      2 &  0.431085 &  7252.626473 &         2 &  0.091506 &  7252.626473 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  0.304063 &     0.000000 &         2 &  0.303737 &     0.000000 \\
+1           &      2 &  0.393120 &    32.233895 &         2 &  0.204888 &    32.233895 \\
+3           &      2 &  0.526668 &   290.105059 &         2 &  0.095573 &   290.105059 \\
+7           &      2 &  0.338850 &  1579.460876 &         2 &  0.182785 &  1579.460876 \\
+15          &      2 &  0.502415 &  7252.626473 &         2 &  0.230081 &  7252.626473 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.180503 &    0.000000 &         2 &  0.097846 &    0.000000 \\
+1           &      2 &  0.239548 &   32.616673 &         2 &  0.150059 &   32.616673 \\
+3           &      2 &  0.515409 &  312.512990 &         2 &  0.331214 &  312.512990 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.166205 &    0.000000 &         2 &  0.091995 &    0.000000 \\
+1           &      2 &  0.322687 &   35.326752 &         2 &  0.307908 &   35.294128 \\
+3           &      2 &  0.759873 &  324.272023 &         2 &  0.509803 &  324.272023 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.186448 &    0.000000 &         2 &  0.107149 &    0.000000 \\
+1           &      2 &  0.384705 &   35.326752 &         2 &  0.342563 &   35.294128 \\
+3           &      2 &  0.606151 &  324.272023 &         2 &  0.406893 &  324.272023 \\
+7           &      4 &  0.123172 &         NaN &         4 &  0.033424 &         NaN \\
+15          &      4 &  0.152151 &         NaN &         4 &  0.033274 &         NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.143270 &    0.000000 &         2 &  0.087682 &    0.000000 \\
+1           &      2 &  0.181379 &   32.616673 &         2 &  0.110445 &   32.616673 \\
+3           &      2 &  0.430119 &  312.512990 &         2 &  0.268169 &  312.512990 \\
+7           &      4 &  0.127209 &         NaN &         4 &  0.034325 &         NaN \\
+15          &      4 &  0.156558 &         NaN &         4 &  0.034511 &         NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.166130 &    0.000000 &         2 &  0.118187 &    0.000000 \\
+1           &      2 &  0.165845 &   32.233895 &         2 &  0.104701 &   32.233895 \\
+3           &      2 &  0.404829 &  301.512860 &         2 &  0.375114 &  301.512860 \\
+7           &      4 &  0.192953 &         NaN &         4 &  0.047787 &         NaN \\
+15          &      4 &  0.161766 &         NaN &         4 &  0.034581 &         NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.146578 &    0.000000 &         2 &  0.111709 &    0.000000 \\
+1           &      2 &  0.205526 &   32.233895 &         2 &  0.094964 &   32.233895 \\
+3           &      2 &  0.378603 &  301.512860 &         2 &  0.329682 &  301.512860 \\
+7           &      4 &  0.126776 &         NaN &         4 &  0.034853 &         NaN \\
+15          &      4 &  0.156608 &         NaN &         4 &  0.033989 &         NaN \\
+31          &      4 &  0.187745 &         NaN &         4 &  0.035325 &         NaN \\
+63          &      4 &  0.222654 &         NaN &         4 &  0.034774 &         NaN \\
+127         &      4 &  0.253676 &         NaN &         4 &  0.036856 &         NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &   Objective &    Status &      Time &   Objective \\
+Lower Bound &        &           &             &           &           &             \\
+\midrule
+0           &      2 &  0.146366 &    0.000000 &         2 &  0.087068 &    0.000000 \\
+1           &      2 &  0.167280 &   32.233895 &         2 &  0.131847 &   32.233895 \\
+3           &      2 &  0.490087 &  301.512860 &         2 &  0.345713 &  301.512860 \\
+7           &      4 &  0.181963 &         NaN &         4 &  0.048125 &         NaN \\
+15          &      4 &  0.193625 &         NaN &         4 &  0.063962 &         NaN \\
+31          &      4 &  0.219571 &         NaN &         4 &  0.039508 &         NaN \\
+63          &      4 &  0.227732 &         NaN &         4 &  0.034483 &         NaN \\
+127         &      4 &  0.365594 &         NaN &         4 &  0.034562 &         NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  0.146451 &     0.000000 &         2 &  0.088007 &     0.000000 \\
+1           &      2 &  0.162109 &    32.233895 &         2 &  0.088174 &    32.233895 \\
+3           &      2 &  0.230966 &   290.105059 &         2 &  0.095653 &   290.105059 \\
+7           &      2 &  0.489052 &  1673.300898 &         2 &  0.228093 &  1673.300898 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  0.145269 &     0.000000 &         2 &  0.099716 &     0.000000 \\
+1           &      2 &  0.174329 &    32.233895 &         2 &  0.096557 &    32.233895 \\
+3           &      2 &  0.241497 &   290.105059 &         2 &  0.090721 &   290.105059 \\
+7           &      2 &  0.497962 &  1673.300898 &         2 &  0.242010 &  1673.300898 \\
+15          &      4 &  0.157707 &          NaN &         4 &  0.035248 &          NaN \\
+31          &      4 &  0.188687 &          NaN &         4 &  0.034313 &          NaN \\
+63          &      4 &  0.222205 &          NaN &         4 &  0.035030 &          NaN \\
+127         &      4 &  0.261783 &          NaN &         4 &  0.034865 &          NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &    Objective &    Status &      Time &    Objective \\
+Lower Bound &        &           &              &           &           &              \\
+\midrule
+0           &      2 &  0.147975 &     0.000000 &         2 &  0.095474 &     0.000000 \\
+1           &      2 &  0.174551 &    32.233895 &         2 &  0.099491 &    32.233895 \\
+3           &      2 &  0.237694 &   290.105059 &         2 &  0.088907 &   290.105059 \\
+7           &      2 &  0.328455 &  1579.460876 &         2 &  0.090650 &  1579.460876 \\
+15          &      4 &  0.160549 &          NaN &         4 &  0.033522 &          NaN \\
+31          &      4 &  0.216710 &          NaN &         4 &  0.036198 &          NaN \\
+63          &      4 &  0.249748 &          NaN &         4 &  0.039049 &          NaN \\
+127         &      4 &  0.250871 &          NaN &         4 &  0.033761 &          NaN \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &      Objective &    Status &      Time &      Objective \\
+Lower Bound &        &           &                &           &           &                \\
+\midrule
+0           &      2 &  0.149917 &       0.000000 &         2 &  0.115810 &       0.000000 \\
+1           &      2 &  0.172895 &      32.233895 &         2 &  0.107691 &      32.233895 \\
+3           &      2 &  0.290006 &     290.105059 &         2 &  0.099474 &     290.105059 \\
+7           &      2 &  0.356191 &    1579.460876 &         2 &  0.114240 &    1579.460876 \\
+15          &      2 &  0.393434 &    7252.626473 &         2 &  0.087715 &    7252.626473 \\
+31          &      2 &  0.494079 &   30976.773514 &         2 &  0.112306 &   30976.773514 \\
+63          &      2 &  0.658098 &  127936.330987 &         2 &  0.112262 &  127936.330987 \\
+127         &      2 &  0.718245 &  519900.499494 &         2 &  0.152182 &  519900.499494 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &      Objective &    Status &      Time &      Objective \\
+Lower Bound &        &           &                &           &           &                \\
+\midrule
+0           &      2 &  0.193194 &       0.000000 &         2 &  0.089356 &       0.000000 \\
+1           &      2 &  0.174222 &      32.233895 &         2 &  0.092960 &      32.233895 \\
+3           &      2 &  0.260576 &     290.105059 &         2 &  0.119358 &     290.105059 \\
+7           &      2 &  0.303992 &    1579.460876 &         2 &  0.090836 &    1579.460876 \\
+15          &      2 &  0.383010 &    7252.626473 &         2 &  0.095322 &    7252.626473 \\
+31          &      2 &  0.479785 &   30976.773514 &         2 &  0.091126 &   30976.773514 \\
+63          &      2 &  0.542243 &  127936.330987 &         2 &  0.092216 &  127936.330987 \\
+127         &      2 &  0.607032 &  519900.499494 &         2 &  0.114974 &  519900.499494 \\
+\bottomrule
+\end{tabular}
+
+Binary_Expansion
+\begin{tabular}{lrrrrrr}
+\toprule
+{} & \multicolumn{3}{l}{Normal} & \multicolumn{3}{l}{Optimized} \\
+{} & Status &      Time &      Objective &    Status &      Time &      Objective \\
+Lower Bound &        &           &                &           &           &                \\
+\midrule
+0           &      2 &  0.150912 &       0.000000 &         2 &  0.090192 &       0.000000 \\
+1           &      2 &  0.156286 &      32.233895 &         2 &  0.087496 &      32.233895 \\
+3           &      2 &  0.242832 &     290.105059 &         2 &  0.090968 &     290.105059 \\
+7           &      2 &  0.295457 &    1579.460876 &         2 &  0.088628 &    1579.460876 \\
+15          &      2 &  0.365643 &    7252.626473 &         2 &  0.093463 &    7252.626473 \\
+31          &      2 &  0.486937 &   30976.773514 &         2 &  0.089670 &   30976.773514 \\
+63          &      2 &  0.516468 &  127936.330987 &         2 &  0.087535 &  127936.330987 \\
+127         &      2 &  0.587847 &  519900.499494 &         2 &  0.113586 &  519900.499494 \\
+\bottomrule
+\end{tabular}
+
