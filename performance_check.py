@@ -405,8 +405,7 @@ def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGO
                 _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,opt_bin_exp)
                 with open(OUTPUT_FILE,'a') as out:
                     out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} shift {s} opt_bin_exp {opt_bin_exp} status {status} obj {obj+constant} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
-                print(f"Time : {timeit.default_timer() - start}")
-                time.sleep(2)
+                
 
 
 
