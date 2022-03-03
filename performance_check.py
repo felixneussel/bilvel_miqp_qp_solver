@@ -385,7 +385,7 @@ def get_hard_problems():
     hard_problems = all_names - easy_problems
     return list(hard_problems)
 
-def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OUTPUT_FILE):
+def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OUTPUT_FILE,num_of_seeds):
 
     for name in names:
         path = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
@@ -397,15 +397,17 @@ def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGO
         n_y = int(n_y)
         m_u = int(m_u)
         m_l = int(m_l)
-        problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
-        for s in SHIFTS:
-            problem_data,constant = shift_problem(problem_data,s)
-            for opt_bin_exp in [True,False]:
-                print(f"Solving {name} shifted by {s}, opt_bin_exp : {opt_bin_exp}")
-                _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,opt_bin_exp)
-                with open(OUTPUT_FILE,'a') as out:
-                    out.write(f'name {name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} shift {s} opt_bin_exp {opt_bin_exp} status {status} obj {obj+constant} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
-                
+        for seed in range(num_of_seeds):
+            H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l,seed)
+            problem_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+            for s in SHIFTS:
+                problem_data,constant = shift_problem(problem_data,s)
+                for opt_bin_exp in [True,False]:
+                    print(f"Solving {name} shifted by {s}, opt_bin_exp : {opt_bin_exp}")
+                    _,obj,runtime,times_in_sub,num_of_subs, status,gap = solve(problem_data,1e-5,np.infty,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,opt_bin_exp)
+                    with open(OUTPUT_FILE,'a') as out:
+                        out.write(f'name {name}__{seed} submode {SUBPROBLEM_MODE} algorithm {ALGORITHM} shift {s} opt_bin_exp {opt_bin_exp} status {status} obj {obj+constant} time {runtime} subtime {times_in_sub} subnum {num_of_subs} gap {gap}\n')
+                    
 
 
 
@@ -446,25 +448,12 @@ FINAL_TEST_DATA = {
     'problems' : ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
 }
 
+BINARY_EXP_TEST_DATA = {
+    'problems':['stein27-0.100000','enigma-0.100000','stein27-0.900000']
+}
+
 if __name__ == '__main__':
-    d = {'$n_I$':[],'$n_y$':[],'$m_l$':[]}
-    for p in FINAL_TEST_DATA["problems"]:
-        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = get_problem('Problem_Data.nosync/Sub_1000_Vars',p)
-        d['$n_I$'].append(int(n_I))
-        d['$n_y$'].append(int(n_y))
-        d['$m_l$'].append(int(m_l))
-
-    aggr = {}
-    for key in d:
-        aggr[key] = list(map(int,[
-            min(d[key]),
-            max(d[key]),
-            np.mean(np.array(d[key])),
-            np.median(np.array(d[key]))
-        ]))
-
-    df = pd.DataFrame(aggr,index=['Minimum','Maximum','Mean','Median'])
-    print(df.to_latex(escape=False))
+   test_optimized_binary_expansion(BINARY_EXP_TEST_DATA["problems"],[1,3,7],300,'remark_2','ST',1e5,'bin_opt_res.txt',3)
 
 
     

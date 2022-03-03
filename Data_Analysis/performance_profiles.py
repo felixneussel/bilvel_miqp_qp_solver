@@ -216,23 +216,3 @@ PROFILE_CONFIGS = [
     {'solvers' : ['MT','MT-K','MT-K-F','MT-K-F-W'],'submodes' : ['remark_2'],'select_option' : 'one'},
     {'solvers' : ['ST','ST-K','ST-K-C','ST-K-C-S'],'submodes' : ['remark_2'],'select_option' : 'one'}
 ]
-
-if __name__ == '__main__':
-    
-    d = {
-        's1':[1,1,1,np.infty],
-        's2':[2,3,4,5]
-    }
-    
-    r = performance_profile(d)
-    
-    plt.step(r['s1']['tau'],r['s1']['rho'],where='post',linestyle='--',alpha=0.9,label='$s_1$',linewidth=2)
-    plt.step(r['s2']['tau'],r['s2']['rho'],where='post',linestyle=':',alpha=0.9,label='$s_2$',linewidth=2)
-    plt.rcParams['text.usetex'] = True
-    plt.legend()
-    plt.xscale(LogScale(0,base=2))
-    plt.ylim([-0,1])
-    plt.xlim(left=1,right = 8)
-    plt.yticks([int(0),0.25,0.5,0.75,int(1)])
-    plt.xlabel(r"Factor $\tau$")
-    plt.savefig('Plots/perf_exmaple.png')
