@@ -147,13 +147,13 @@ def test_binary_optimization(n):
     m_l = 2
 
     #Input data
-    np.random.seed(99)
-    c_u = np.random.uniform(0,0,n_I)
-    d_u = np.random.uniform(0,0,n_y)
+    np.random.seed(200)
+    c_u = np.random.uniform(-10,10,n_I)
+    d_u = np.random.uniform(-0,0,n_y)
     d_l = np.random.uniform(-0,0,n_y)
-    H = np.random.normal(0,0.1,(n_I,n_I))
-    H = H@H
-    H = 2* np.diag(np.random.uniform(0.1,0.5,n_I))
+    H = np.random.normal(0,0.25,(n_I,n_I))
+    H = H.T@H
+    H = H + np.diag(np.random.uniform(0.5,2,n_I))
     G_u = 2*np.diag(np.random.uniform(0.1,0.5,n_y))
     G_l = 2*np.diag(np.random.uniform(0.1,0.5,n_y))
     
@@ -257,7 +257,7 @@ def test_reduction():
 
 
 if __name__ == "__main__":
-    test_binary_optimization(8)
+    test_binary_optimization(5)
     df = pd.read_pickle("MIPLIB_RESULTS/Testing/Bin_exp/Random_problem_multi_index.pkl")
     print(df)
     

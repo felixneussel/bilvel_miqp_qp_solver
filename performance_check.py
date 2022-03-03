@@ -447,7 +447,25 @@ FINAL_TEST_DATA = {
     'problems' : ["lseu-0.100000","enigma-0.900000","enigma-0.500000","stein45-0.100000","p0282-0.500000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000","p0282-0.900000"]
 }
 
+if __name__ == '__main__':
+    d = {'$n_I$':[],'$n_y$':[],'$m_l$':[]}
+    for p in FINAL_TEST_DATA["problems"]:
+        n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = get_problem('Problem_Data.nosync/Sub_1000_Vars',p)
+        d['$n_I$'].append(int(n_I))
+        d['$n_y$'].append(int(n_y))
+        d['$m_l$'].append(int(m_l))
 
+    aggr = {}
+    for key in d:
+        aggr[key] = list(map(int,[
+            min(d[key]),
+            max(d[key]),
+            np.mean(np.array(d[key])),
+            np.median(np.array(d[key]))
+        ]))
+
+    df = pd.DataFrame(aggr,index=['Minimum','Maximum','Mean','Median'])
+    print(df.to_latex(escape=False))
 
 
     
