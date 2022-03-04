@@ -453,7 +453,7 @@ BINARY_EXP_TEST_DATA = {
 }
 
 if __name__ == '__main__':
-   test_optimized_binary_expansion(BINARY_EXP_TEST_DATA["problems"],[1,3,7],300,'remark_2','ST',1e5,'bin_opt_res.txt',3)
+   test_optimized_binary_expansion(BINARY_EXP_TEST_DATA["problems"],[1,3,7,15,31,63,127,255,511,1024],300,'remark_2','ST',1e5,'bin_opt_res_2.txt',10)
 
 
     

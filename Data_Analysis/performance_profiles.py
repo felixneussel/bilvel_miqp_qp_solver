@@ -28,13 +28,13 @@ def create_dataframe(filepath,colnames,dtypes):
     Render pandas dataframe from data in txt file where each line represents one data point
     of the form property_1 {property_1} property_2 {property_2} ...
 
-    Input
+    ## Input
 
-    filepath: path of txt file
+    - filepath: path of txt file
 
-    colnames: list of column names of the df, needs to coincide with markers in txt file
+    - colnames: list of column names of the df, needs to coincide with markers in txt file
 
-    dtypes: list of data types of the columns
+    - dtypes: list of data types of the columns
     """
     dicts = []
     
@@ -216,3 +216,33 @@ PROFILE_CONFIGS = [
     {'solvers' : ['MT','MT-K','MT-K-F','MT-K-F-W'],'submodes' : ['remark_2'],'select_option' : 'one'},
     {'solvers' : ['ST','ST-K','ST-K-C','ST-K-C-S'],'submodes' : ['remark_2'],'select_option' : 'one'}
 ]
+
+if __name__ == '__main__':
+    d = {'time':[]}
+    index = []
+    with open('bin_opt_res.txt','r') as f:
+        for line in f:
+            line = line.split()
+            d['time'].append(float(line[line.index('time')+1]))
+            index.append((line[line.index('shift')+1],line[line.index('opt_bin_exp')+1]))
+    
+    index = pd.MultiIndex.from_tuples(index, names=['shift','opt_bin_exp'])
+    df = pd.DataFrame(d,index=index)
+    print(df)
+
+    d = {'1':{'True':[],'False':[]},'3':{'True':[],'False':[]},'7':{'True':[],'False':[]}}
+    for key in d:
+        for flag in d[key]:
+            d[key][flag].append(float(df.loc[key,flag].mean()))
+            d[key][flag].append(np.sqrt(float(df.loc[key,flag].var())))
+    
+
+    x = [1,3,7]
+    y = [d[str(key)]['False'][0] for key in x]
+    e = [d[str(key)]['False'][1] for key in x]
+    plt.errorbar(x, y, e, linestyle='None', marker='^',label='Standard',alpha=0.8)
+    y = [d[str(key)]['True'][0] for key in x]
+    e = [d[str(key)]['True'][1] for key in x]
+    plt.errorbar(x, y, e, linestyle='None', marker='^',label='Optimized',alpha=0.8)
+    plt.legend()
+    plt.show()
