@@ -217,7 +217,7 @@ PROFILE_CONFIGS = [
     {'solvers' : ['ST','ST-K','ST-K-C','ST-K-C-S'],'submodes' : ['remark_2'],'select_option' : 'one'}
 ]
 
-if __name__ == '__main__':
+def opt_bin_exp_plot():
     d = {'opt_time':[],'std_time':[]}
     index = []
     with open('bin_opt_res_2.txt','r') as f:
@@ -231,6 +231,8 @@ if __name__ == '__main__':
                 d['std_time'].append(float(line[line.index('time')+1]))    
     
     dist = 0.25
+    std_label = 'BE-STD'
+    opt_label = 'BE-OPT'
     df = pd.DataFrame(d,index=index)
     df.index.name = 'shift'
     df = df.sort_index()
@@ -239,36 +241,25 @@ if __name__ == '__main__':
     vars = df.groupby(['shift']).var()
     l_quantile = df.groupby(['shift']).quantile(q=0.5 - dist)
     u_quantile = df.groupby(['shift']).quantile(q=0.5 + dist)
-    
-    LB_opt = np.array(means['opt_time']) - 0.5*np.sqrt(np.array(vars['opt_time']))
-    UB_opt = np.array(means['opt_time']) + 0.5*np.sqrt(np.array(vars['opt_time']))
-
-    LB_std = np.array(means['std_time']) - 0.5*np.sqrt(np.array(vars['std_time']))
-    UB_std = np.array(means['std_time']) + 0.5*np.sqrt(np.array(vars['std_time']))
 
 
-    fig, ax = plt.subplots(1)
-    ax.plot(means.index,means['opt_time'],label='Optimized Mean')
-    ax.plot(medians.index,medians['opt_time'],label='Optimized Median')
-    ax.fill_between(vars.index, l_quantile['opt_time'], u_quantile['opt_time'], facecolor='yellow', alpha=0.5,
-                    label=f'Optimized {int(round((0.5-dist)*100,0))} % to {int(round((0.5+dist)*100,0))} % quantile range')
 
-    ax.plot(means.index,means['std_time'],label='Standard Mean')
-    ax.plot(medians.index,medians['std_time'],label='Standard Median')
-    ax.fill_between(vars.index, l_quantile['std_time'], u_quantile['std_time'], facecolor='blue', alpha=0.5,
-                    label=f'Standard {int(round((0.5-dist)*100,0))} % to {int(round((0.5+dist)*100,0))} % quantile range')
+    _, ax = plt.subplots(1)
+    ax.plot(means.index,means['opt_time'],label=f'{opt_label} mean',color='orange')
+    ax.plot(medians.index,medians['opt_time'],label=f'{opt_label} median',color='orange',linestyle=':')
+    ax.fill_between(vars.index, l_quantile['opt_time'], u_quantile['opt_time'], facecolor='orange', alpha=0.4,
+                    label=f'{opt_label} midspread')
+
+    ax.plot(means.index,means['std_time'],label=f'{std_label} mean',color='blue')
+    ax.plot(medians.index,medians['std_time'],label=f'{std_label} median',color='blue',linestyle=':')
+    ax.fill_between(vars.index, l_quantile['std_time'], u_quantile['std_time'], facecolor='blue', alpha=0.4,
+                    label=f'{std_label} midspread')
     ax.legend(loc='upper left')
 
-    # here we use the where argument to only fill the region where the
-    # walker is above the population 1 sigma boundary
-    #ax.fill_between(t, upper_bound, X, where=X > upper_bound, facecolor='blue',
-                   # alpha=0.5)
     ax.set_xlabel('Lower integer bound')
     ax.set_ylabel('Running time')
     ax.set_xscale(LogScale(axis=0,base=2))
-    #ax.grid()
+ 
     
-    """ plt.plot(df.index,df['opt_time'])
-    plt.plot(df.index,df['std_time'])
-    plt.xscale(LogScale(axis=0,base=2)) """
     plt.show()
+
