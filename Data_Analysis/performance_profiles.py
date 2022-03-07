@@ -229,13 +229,15 @@ def opt_bin_exp_plot():
                 index.append(int(line[line.index('shift')+1]))
             else:
                 d['std_time'].append(float(line[line.index('time')+1]))    
+
+    df = pd.DataFrame(d,index=index)
+    df.index.name = 'shift'
+    df = df.sort_index()
     
     dist = 0.25
     std_label = 'BE-STD'
     opt_label = 'BE-OPT'
-    df = pd.DataFrame(d,index=index)
-    df.index.name = 'shift'
-    df = df.sort_index()
+    
     means = df.groupby(['shift']).mean()
     medians = df.groupby(['shift']).median()
     vars = df.groupby(['shift']).var()
@@ -263,3 +265,42 @@ def opt_bin_exp_plot():
     
     plt.show()
 
+
+if __name__ == '__main__':
+    d = {'opt_time':[],'std_time':[]}
+    index = []
+    with open('bin_opt_res_2.txt','r') as f:
+        for line in f:
+            line = line.split()
+            opt = line[line.index('opt_bin_exp')+1]
+            if opt == 'True':
+                d['opt_time'].append(float(line[line.index('time')+1]))
+                index.append(int(line[line.index('shift')+1]))
+            else:
+                d['std_time'].append(float(line[line.index('time')+1]))
+
+    df = pd.DataFrame(d,index=index)
+    df.index.name = 'shift'
+    df = df.sort_index()
+
+    df = df.loc[[1]]
+
+    d = {'BE-OPT':df['opt_time'],'BE-STD':df['std_time']}
+    profiles = performance_profile(d)
+
+
+
+    max_tau = 1
+    
+    
+    plt.step(profiles['BE-OPT']['tau'],profiles['BE-OPT']['rho'],where='post',label='BE-OPT',linestyle='-',alpha=0.9,linewidth=2)
+    plt.step(profiles['BE-STD']['tau'],profiles['BE-STD']['rho'],where='post',label='BE-STD',linestyle='-',alpha=0.9,linewidth=2)
+  
+
+    plt.xscale(LogScale(0,base=2))
+    plt.ylim([-0,1])
+    plt.xlim(left=1,right = 4)
+    plt.rcParams['text.usetex'] = True
+    plt.xlabel(r"Factor $\tau$")
+    plt.legend(loc='lower right')
+    plt.savefig('Plots/bin_exp_perf_prof.png')
