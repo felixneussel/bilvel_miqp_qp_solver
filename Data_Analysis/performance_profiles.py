@@ -218,31 +218,57 @@ PROFILE_CONFIGS = [
 ]
 
 if __name__ == '__main__':
-    d = {'time':[]}
+    d = {'opt_time':[],'std_time':[]}
     index = []
-    with open('bin_opt_res.txt','r') as f:
+    with open('bin_opt_res_2.txt','r') as f:
         for line in f:
             line = line.split()
-            d['time'].append(float(line[line.index('time')+1]))
-            index.append((line[line.index('shift')+1],line[line.index('opt_bin_exp')+1]))
+            opt = line[line.index('opt_bin_exp')+1]
+            if opt == 'True':
+                d['opt_time'].append(float(line[line.index('time')+1]))
+                index.append(int(line[line.index('shift')+1]))
+            else:
+                d['std_time'].append(float(line[line.index('time')+1]))    
     
-    index = pd.MultiIndex.from_tuples(index, names=['shift','opt_bin_exp'])
+    dist = 0.25
     df = pd.DataFrame(d,index=index)
-    print(df)
-
-    d = {'1':{'True':[],'False':[]},'3':{'True':[],'False':[]},'7':{'True':[],'False':[]}}
-    for key in d:
-        for flag in d[key]:
-            d[key][flag].append(float(df.loc[key,flag].mean()))
-            d[key][flag].append(np.sqrt(float(df.loc[key,flag].var())))
+    df.index.name = 'shift'
+    df = df.sort_index()
+    means = df.groupby(['shift']).mean()
+    medians = df.groupby(['shift']).median()
+    vars = df.groupby(['shift']).var()
+    l_quantile = df.groupby(['shift']).quantile(q=0.5 - dist)
+    u_quantile = df.groupby(['shift']).quantile(q=0.5 + dist)
     
+    LB_opt = np.array(means['opt_time']) - 0.5*np.sqrt(np.array(vars['opt_time']))
+    UB_opt = np.array(means['opt_time']) + 0.5*np.sqrt(np.array(vars['opt_time']))
 
-    x = [1,3,7]
-    y = [d[str(key)]['False'][0] for key in x]
-    e = [d[str(key)]['False'][1] for key in x]
-    plt.errorbar(x, y, e, linestyle='None', marker='^',label='Standard',alpha=0.8)
-    y = [d[str(key)]['True'][0] for key in x]
-    e = [d[str(key)]['True'][1] for key in x]
-    plt.errorbar(x, y, e, linestyle='None', marker='^',label='Optimized',alpha=0.8)
-    plt.legend()
+    LB_std = np.array(means['std_time']) - 0.5*np.sqrt(np.array(vars['std_time']))
+    UB_std = np.array(means['std_time']) + 0.5*np.sqrt(np.array(vars['std_time']))
+
+
+    fig, ax = plt.subplots(1)
+    ax.plot(means.index,means['opt_time'],label='Optimized Mean')
+    ax.plot(medians.index,medians['opt_time'],label='Optimized Median')
+    ax.fill_between(vars.index, l_quantile['opt_time'], u_quantile['opt_time'], facecolor='yellow', alpha=0.5,
+                    label=f'Optimized {int(round((0.5-dist)*100,0))} % to {int(round((0.5+dist)*100,0))} % quantile range')
+
+    ax.plot(means.index,means['std_time'],label='Standard Mean')
+    ax.plot(medians.index,medians['std_time'],label='Standard Median')
+    ax.fill_between(vars.index, l_quantile['std_time'], u_quantile['std_time'], facecolor='blue', alpha=0.5,
+                    label=f'Standard {int(round((0.5-dist)*100,0))} % to {int(round((0.5+dist)*100,0))} % quantile range')
+    ax.legend(loc='upper left')
+
+    # here we use the where argument to only fill the region where the
+    # walker is above the population 1 sigma boundary
+    #ax.fill_between(t, upper_bound, X, where=X > upper_bound, facecolor='blue',
+                   # alpha=0.5)
+    ax.set_xlabel('Lower integer bound')
+    ax.set_ylabel('Running time')
+    ax.set_xscale(LogScale(axis=0,base=2))
+    #ax.grid()
+    
+    """ plt.plot(df.index,df['opt_time'])
+    plt.plot(df.index,df['std_time'])
+    plt.xscale(LogScale(axis=0,base=2)) """
     plt.show()
