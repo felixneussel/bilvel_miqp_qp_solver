@@ -1,4 +1,4 @@
-from re import S
+import re
 from numpy import NAN, NaN
 import pandas as pd
 import numpy as np
@@ -265,8 +265,7 @@ def opt_bin_exp_plot():
     
     plt.show()
 
-
-if __name__ == '__main__':
+def bin_exp_perf_profile():
     d = {'opt_time':[],'std_time':[]}
     index = []
     with open('bin_opt_res_2.txt','r') as f:
@@ -304,3 +303,51 @@ if __name__ == '__main__':
     plt.xlabel(r"Factor $\tau$")
     plt.legend(loc='lower right')
     plt.show()
+
+def get_att(line,name):
+    return line[line.index(name)+1]
+
+if __name__ == '__main__':
+    """ index = []
+    d = {}
+    with open('results.txt','r') as f:
+        for line in f:
+            line = line.split()
+            algo = get_att(line,'algorithm') 
+            if re.match(r'ST',algo) is None or get_att(line,'submode') == 'regular':
+                continue
+            try:
+                d[(-,)].append(get_att(line,'name'))
+            try:
+                d[(get_att(line,'algorithm'),'Status')].append(get_att(line,'status'))
+            except KeyError:
+                d[(get_att(line,'algorithm'),'Status')] = [get_att(line,'status')]
+            try:
+                d[(get_att(line,'algorithm'),'Running Time')].append(get_att(line,'time'))
+            except KeyError:
+                d[(get_att(line,'algorithm'),'Running Time')] = [get_att(line,'time')]
+            try:
+                d[(get_att(line,'algorithm'),'Objective')].append(get_att(line,'obj'))
+            except KeyError:
+                d[(get_att(line,'algorithm'),'Objective')] = [get_att(line,'obj')]
+
+    df = pd.DataFrame(d)
+    
+    print(df) """
+
+
+    df = get_test_data('results.txt')
+    d = []
+    for algo in ['ST','ST-K','ST-K-C','ST-K-C-S']:
+        st = df.loc[(algo,'remark_2')][['status','time','obj']]
+        st = st.rename(columns={'status':'Status','time':'Time','obj':'Objective'})
+        #st['Status'] = st['Status'].apply(status_to_string)
+        st.index.name = 'Instance'
+        st[['Time','Objective']] = st[['Time','Objective']].apply(lambda x: round(x,2))
+        st.columns = pd.MultiIndex.from_product([[algo],st.columns])
+        
+        d.append(st)
+    out = pd.merge(d[0],d[1],left_index=True,right_index=True)
+    out2 = pd.merge(d[2],d[3],left_index=True,right_index=True)
+    print(out.to_latex())
+    print(out2.to_latex())
