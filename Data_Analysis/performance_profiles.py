@@ -303,4 +303,4 @@ if __name__ == '__main__':
     plt.rcParams['text.usetex'] = True
     plt.xlabel(r"Factor $\tau$")
     plt.legend(loc='lower right')
-    plt.savefig('Plots/bin_exp_perf_prof.png')
+    plt.show()

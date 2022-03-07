@@ -453,8 +453,27 @@ BINARY_EXP_TEST_DATA = {
 }
 
 if __name__ == '__main__':
-   test_optimized_binary_expansion(BINARY_EXP_TEST_DATA["problems"],[1,3,7,15,31,63,127,255,511,1024],300,'remark_2','ST',1e5,'bin_opt_res_2.txt',10)
-
+    d = {
+        '$n_I$':[],
+        '$n_R$':[],
+        '$n_y$':[],
+        '$m_l$':[],
+        '$m_u$':[]
+        }
+    index = []
+    for p in sorted(FINAL_TEST_DATA["problems"]):
+        problem_data = get_problem('Problem_Data.nosync/Sub_1000_Vars',p)
+        n_I,n_R,n_y,m_u,m_l = problem_data[:5]
+        d["$n_I$"].append(int(n_I))
+        d["$n_R$"].append(int(n_R))
+        d["$n_y$"].append(int(n_y))
+        d["$m_u$"].append(int(m_u))
+        d["$m_l$"].append(int(m_l))
+        
+        index.append(p)
+    df = pd.DataFrame(d,index=index)
+    df.index.name = 'Instance'
+    print(df.to_latex(escape=False))
 
     
 
