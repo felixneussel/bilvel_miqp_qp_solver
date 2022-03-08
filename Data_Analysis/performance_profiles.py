@@ -308,46 +308,38 @@ def get_att(line,name):
     return line[line.index(name)+1]
 
 if __name__ == '__main__':
-    """ index = []
-    d = {}
-    with open('results.txt','r') as f:
+    d = {
+        ('Optimized','Status'):[],
+        ('Optimized','Time'):[],
+        ('Optimized','Objective'):[],
+        ('Standard','Status'):[],
+        ('Standard','Time'):[],
+        ('Standard','Objective'):[]
+        }
+    index = []
+    with open('bin_opt_res_2.txt','r') as f:
         for line in f:
             line = line.split()
-            algo = get_att(line,'algorithm') 
-            if re.match(r'ST',algo) is None or get_att(line,'submode') == 'regular':
+            opt = line[line.index('opt_bin_exp')+1]
+            shift = int(line[line.index('shift')+1])
+            if shift != 1:
                 continue
-            try:
-                d[(-,)].append(get_att(line,'name'))
-            try:
-                d[(get_att(line,'algorithm'),'Status')].append(get_att(line,'status'))
-            except KeyError:
-                d[(get_att(line,'algorithm'),'Status')] = [get_att(line,'status')]
-            try:
-                d[(get_att(line,'algorithm'),'Running Time')].append(get_att(line,'time'))
-            except KeyError:
-                d[(get_att(line,'algorithm'),'Running Time')] = [get_att(line,'time')]
-            try:
-                d[(get_att(line,'algorithm'),'Objective')].append(get_att(line,'obj'))
-            except KeyError:
-                d[(get_att(line,'algorithm'),'Objective')] = [get_att(line,'obj')]
-
-    df = pd.DataFrame(d)
-    
-    print(df) """
-
-
-    df = get_test_data('results.txt')
-    d = []
-    for algo in ['MT','MT-K','MT-K-F','MT-K-F-W']:
-        st = df.loc[(algo,'regular')][['status','time','obj']]
-        st = st.rename(columns={'status':'Status','time':'Time','obj':'Objective'})
-        st['Status'] = st['Status'].apply(status_to_string)
-        st.index.name = 'Instance'
-        st[['Time','Objective']] = st[['Time','Objective']].apply(lambda x: round(x,2))
-        st.columns = pd.MultiIndex.from_product([[algo],st.columns])
-        
-        d.append(st)
-    out = pd.merge(d[0],d[1],left_index=True,right_index=True)
-    out2 = pd.merge(d[2],d[3],left_index=True,right_index=True)
-    print(out.to_latex())
-    print(out2.to_latex())
+            if opt == 'True':
+                d[('Optimized','Status')].append(int(line[line.index('status')+1]))
+                d[('Optimized','Time')].append(float(line[line.index('time')+1]))
+                d[('Optimized','Objective')].append(float(line[line.index('obj')+1]))
+                name = line[line.index('name')+1].split('_')
+                instance,seed = name[0],name[2]
+                index.append((instance,seed))
+            else:
+                d[('Standard','Status')].append(int(line[line.index('status')+1]))
+                d[('Standard','Time')].append(float(line[line.index('time')+1]))
+                d[('Standard','Objective')].append(float(line[line.index('obj')+1]))
+    index = pd.MultiIndex.from_tuples(index,names=('Instance','Seed'))
+    df = pd.DataFrame(d,index=index)
+    df = df.apply(lambda x: round(x,2))
+    df[('Optimized','Status')] = df[('Optimized','Status')].apply(status_to_string)
+    df[('Standard','Status')] = df[('Standard','Status')].apply(status_to_string)
+    #df.index.name = 'Instance'
+    df = df.sort_index()
+    print(df.to_latex())
