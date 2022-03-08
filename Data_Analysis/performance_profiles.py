@@ -338,10 +338,10 @@ if __name__ == '__main__':
 
     df = get_test_data('results.txt')
     d = []
-    for algo in ['ST','ST-K','ST-K-C','ST-K-C-S']:
-        st = df.loc[(algo,'remark_2')][['status','time','obj']]
+    for algo in ['MT','MT-K','MT-K-F','MT-K-F-W']:
+        st = df.loc[(algo,'regular')][['status','time','obj']]
         st = st.rename(columns={'status':'Status','time':'Time','obj':'Objective'})
-        #st['Status'] = st['Status'].apply(status_to_string)
+        st['Status'] = st['Status'].apply(status_to_string)
         st.index.name = 'Instance'
         st[['Time','Objective']] = st[['Time','Objective']].apply(lambda x: round(x,2))
         st.columns = pd.MultiIndex.from_product([[algo],st.columns])
