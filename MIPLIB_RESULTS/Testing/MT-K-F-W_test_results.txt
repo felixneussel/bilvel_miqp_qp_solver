@@ -1,8 +1,0 @@
-Run algorithm MT-K-F-W submode remark_1 on 2022-01-26 14:45:06.209674
-name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_1 algorithm MT-K-F-W status 2 obj 2439.6731026907914 time 4.157557606 subtime 0.0047694450000008715 subnum 2 gap 23.19857380303756
-name stein45-0.900000 n_I 5 n_R 0 n_y 40 m_u 0 m_l 411 submode remark_1 algorithm MT-K-F-W status 2 obj 63.96338109499346 time 1.8002111439999995 subtime 0.40738933499999863 subnum 2 gap 1.5610038005828173
-name stein27-0.900000 n_I 3 n_R 0 n_y 24 m_u 0 m_l 166 submode remark_1 algorithm MT-K-F-W status 2 obj 40.91890025050122 time 0.666064553 subtime 0.24324169500000004 subnum 4 gap 2.0942581595520195
-Run algorithm ST-K-C-S submode remark_1 on 2022-01-26 14:45:12.900169
-name lseu-0.100000 n_I 81 n_R 0 n_y 8 m_u 0 m_l 44 submode remark_1 algorithm ST-K-C-S status 2 obj 2439.682706863559 time 3.5995573279999995 subtime 0.0062705270000016355 subnum 2 gap 0.0
-name stein45-0.900000 n_I 5 n_R 0 n_y 40 m_u 0 m_l 411 submode remark_1 algorithm ST-K-C-S status 2 obj 63.97529720994304 time 2.2585198369999997 subtime 0.9869068639999998 subnum 3 gap 0.0
-name stein27-0.900000 n_I 3 n_R 0 n_y 24 m_u 0 m_l 166 submode remark_1 algorithm ST-K-C-S status 2 obj 40.92337953473476 time 0.819913810000001 subtime 0.398124005999998 subnum 7 gap 0.0
