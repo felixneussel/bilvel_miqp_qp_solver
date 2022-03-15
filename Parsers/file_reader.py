@@ -1,3 +1,6 @@
+#
+#This file contains the function that reads bilevel problems from a .mps and a .aux file.
+#
 from pysmps import smps_loader as smps
 import numpy as np
 import re
@@ -6,13 +9,9 @@ import threading as th
 import multiprocessing as mp
 import time
 from concurrent import futures
-""" 
-from Solver_OOP.masterproblem import Master
-from Solver_OOP.subproblem import Sub
-from Solver_OOP.feasibility_problem import Feasibility
- """
+
 def mps_aux_reader(mps_path,aux_path):
-    name,objective_name,row_names,col_names,var_types,constr_types,c,A_in,rhs_names,rhs,bnd_names,bnd = smps.load_mps(mps_path)
+    name,_,_,_,_,constr_types,c,A_in,rhs_names,rhs,bnd_names,bnd = smps.load_mps(mps_path)
 
     N = -1
     M = -1
@@ -276,57 +275,6 @@ def mps_aux_reader(mps_path,aux_path):
 
 
 
-def run(mps_file):
-    aux_file = re.sub(r'mps','aux',mps_file)
-    name = re.sub(r'mps','',mps_file)
-    print(f'Trying to solve {name}')
-    mps_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+mps_file
-    aux_pa = '/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/'+aux_file
-    
-    n_I,n_R,n_y,m_u,m_l,c_u,d_u,A,B,a,int_lb,int_ub,d_l,C,D,b = mps_aux_reader(mps_pa,aux_pa)
-    #Input data
-    np.random.seed(3)
-    H = np.random.normal(loc = 1,size=(n_I+n_R,n_I+n_R))
-    H = H.T@H
-    G_u = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_u = G_u.T@G_u
-    G_l = np.random.normal(loc = 1,size=(n_y,n_y))
-    G_l = G_l.T@G_l  
-
-    m = MIQP_QP(n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b)
-    m.solve()
-    
-    with open('test_run2.txt','a') as out:
-        out.write(f'{name} n_I {n_I} n_R {n_R} n_y {n_y} m_u {m_u} m_l {m_l} solution ')
-        for key in m.bilevel_solution:
-            out.write(f'{key} {m.solution[key]} ')
-
-        out.write(f'obj {m.UB} time {m.runtime} iterations {m.iteration_counter}\n\n') 
-
-    print(f'{name} solved!')
-
-
-
-def stop_process_pool(executor):
-    for pid, process in executor._processes.items():
-        process.terminate()
-    executor.shutdown()
-
-if __name__ == '__main__':
-
-    
-   
-    for mps_file in os.listdir('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv'):
-        if re.match(r'.*\.mps$', mps_file) is not None:  
-            with futures.ProcessPoolExecutor() as e:
-                f = e.submit(run,mps_file)
-                try:
-                    a = f.result(timeout=10)
-                except futures._base.TimeoutError:
-                    stop_process_pool(e)
-                    print(f'problem {mps_file} exceeded time limit')
-                    with open('test_run2.txt','a') as out:
-                        out.write(f'{mps_file} timeout\n\n')
                     
                 
 
