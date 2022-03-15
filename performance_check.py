@@ -219,10 +219,10 @@ BINARY_EXP_TEST_DATA = {
     'problems':['stein27-0.100000','enigma-0.100000','stein27-0.900000']
 }
 
-REFACTOR_TEST_DATA = ["lseu-0.100000","enigma-0.900000","stein45-0.100000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
+REFACTOR_TEST_DATA = ["lseu-0.100000","enigma-0.900000","stein45-0.100000","stein27-0.100000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
 
 if __name__ == '__main__':
-    run_tests_final(REFACTOR_TEST_DATA,['ST-K-C-S'],['regular','remark_2'],'Results/refactor_check.txt')
+    run_tests_final(REFACTOR_TEST_DATA,['ST-K-C-S','MT-K-F-W'],['remark_2'],'Results/refactor_check.txt')
         
 
     

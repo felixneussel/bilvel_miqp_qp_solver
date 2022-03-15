@@ -68,6 +68,10 @@ def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm,
         raise ValueError(f"Algorithm {algorithm} is not a valid argument")
 
 def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
+    """
+    Solves either the subproblem or the feasibility problem if the subproblem is infeasible in the multi-tree approach
+    with subproblem mode regular.
+    """
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     sub.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
     sub.setParam(GRB.Param.NumericFocus,3)
@@ -104,6 +108,10 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
     return array(cp),solution, UB, False, time_in_sub
 
 def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter,start,time_limit):
+    """
+    Solves either the subproblem or the feasibility problem if the subproblem is infeasible in the multi-tree approach
+    with subproblem mode remark_2.
+    """
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParam(master))
     sub.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
     sub.setParam(GRB.Param.NumericFocus,3)
@@ -144,6 +152,10 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
 
 
 def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,start,time_limit):
+    """
+    Solves either the subproblem or the feasibility problem if the subproblem is infeasible in the single-tree approach
+    with subproblem mode regular.
+    """
     sub = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
     sub_start = default_timer()
     sub.setParam(GRB.Param.NumericFocus,3)
@@ -166,6 +178,10 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
     return array(cp),time_in_sub,s_val
 
 def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_data,start,time_limit):
+    """
+    Solves either the subproblem or the feasibility problem if the subproblem is infeasible in the single-tree approach
+    with subproblem mode remark_2.
+    """
     sub,y_solution = SETUP_SUB_FUNCTION(problem_data,meta_data,getX_IParamLazy(master))
     sub.setParam(GRB.Param.NumericFocus,3)
     sub.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
@@ -191,6 +207,9 @@ def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
     return array(cp),time_in_sub,s_val
 
 def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,early_termination, use_warmstart,big_M,optimized_binary_expansion):
+    """
+    Solves an MQCP-QP with a configuration of the multi-tree approach.
+    """
     check_dimensions(problem_data)
     start = default_timer()
     iteration_counter = 0
@@ -271,6 +290,9 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
 
 
 def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initial_ub,big_M,optimized_binary_expansion):
+    """
+    Solves an MQCP-QP with a configuration of the single-tree approach.
+    """
     start = default_timer()
     _,_,_,_,_,_,_,G_l,_,_,d_l,_,_,_,_,_,_,_,b = problem_data
     UB = infty

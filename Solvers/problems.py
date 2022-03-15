@@ -9,6 +9,10 @@ from re import match,compile, sub
 from operator import itemgetter
 
 def calc_r_bar(l,u):
+    """
+    Calculates the number of additional binary variables for the binary expansion
+    for each upper-level integer variable if the optimized binary expansion is used.
+    """
     if l >= 0 and u >= 0:
         return int(floor(log2(u - l)) + 1)
     elif l < 0 and u > 0:
@@ -19,12 +23,15 @@ def calc_r_bar(l,u):
         raise ValueError(f"Unexpected value for bounds. l = {l} , u = {u}")
 
 def setup_meta_data(problem_data,optimized_binary_expansion):
+    """
+    Generates index sets and coefficients for the binary expansion.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     if optimized_binary_expansion:
         r_bar = list(map(calc_r_bar,int_lb,int_ub))
     else:
         r_bar = (floor(log2(int_ub)) + ones(int_ub.shape)).astype(int)
-    jr = tuplelist([(a,b) for a in range(0,n_I) for b in range(0, r_bar[a])])#Caution, r_bar[a] was changed from r_bar[a-1]
+    jr = tuplelist([(a,b) for a in range(0,n_I) for b in range(0, r_bar[a])])
     non_binary_index_set = tuplelist([(a,b) for a in range(0,n_I) if int_lb[a] != 0 or int_ub[a] != 1 for b in range(0,r_bar[a])])
     I = tuplelist([a for a in range(0,n_I)])
     R = tuplelist([a for a in range(0,n_R)])
@@ -35,6 +42,9 @@ def setup_meta_data(problem_data,optimized_binary_expansion):
     return jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr, non_binary_index_set
 
 def setup_master(problem_data,meta_data,big_M,optimized_binary_expansion):
+    """
+    Creates a Gurobi model of the master problem.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = Model('Masterproblem')
     model.Params.LogToConsole = 0
@@ -43,6 +53,9 @@ def setup_master(problem_data,meta_data,big_M,optimized_binary_expansion):
     return mp_common(problem_data,meta_data,model,x_I,big_M,optimized_binary_expansion)
 
 def mp_common(problem_data,meta_data,model,x_I,big_M,optimized_binary_expansion):
+    """
+    Creates a Gurobi model for the master problem.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr, non_binary_index_set = meta_data
 
@@ -87,6 +100,12 @@ def mp_common(problem_data,meta_data,model,x_I,big_M,optimized_binary_expansion)
     return model,y.select(),dual.select(),w.select()
 
 def get_s_x_vector(x,s,jr):
+    """
+    Generates a dictionary of the binary variables for the linearization of the strong duality constraint.
+    This is required because we only need to introduce new binary variables s_jr if x_j is not already binary.
+    The function returns a dictionary of the additional binary variables s and the x_js that are already binary
+    with meaningful keys that can be used for setting up constraints.
+    """
     res = {}
     for j,r in jr:
         try:
@@ -95,16 +114,14 @@ def get_s_x_vector(x,s,jr):
             res[(j,r)] = x[j]
     return res
 
-def setup_st_master(problem_data,meta_data,big_M):
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    model = Model('Masterproblem')
-    model.Params.LogToConsole = 0
-    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
-    x_I = model.addVars(I, vtype=GRB.CONTINUOUS,lb=int_lb, ub=int_ub,name='x_I')
-    return mp_common(problem_data,meta_data,model,x_I,big_M)
+
 
 
 def getX_IParam(model):
+    """
+    Retrieves the solutions of the upper-level integer variables from a solved master problem
+    so that they can be used as parameters for the subproblem or the feasibility problem in the multi-tree approach.
+    """
     res = []
     for v in model.getVars():
         if match(r'^x_I',v.varName):
@@ -112,6 +129,10 @@ def getX_IParam(model):
     return array(res)
 
 def getX_IParamLazy(model):
+    """
+    Retrieves the solutions of the upper-level integer variables from a solved master problem
+    so that they can be used as parameters for the subproblem or the feasibility problem in the single-tree approach.
+    """
     res = []
     sol = model.cbGetSolution(model._x_I)
     for v in sol:
@@ -119,6 +140,10 @@ def getX_IParamLazy(model):
     return array(res)
 
 def getSParam(model):
+    """
+    Retrieves the solutions of the additional binary variables from the binary expansion from a solved master problem
+    so that they can be used as parameters for the subproblem or the feasibility problem in the single-tree approach.
+    """
     name_exp = compile(r'^s')
     index_exp = compile(r'(?<=\[)\d+(?=,)|(?<=,)\d+(?=\])')
     s = {}
@@ -131,35 +156,10 @@ def getSParam(model):
     return s
 
 
-
-
-
-
-
-def branch(model,int_vars,problem_data):
-    m1 = model
-    m2 = model
-    x_I_m1 = list(filter(lambda v: match(r'^x_I',v.varName),m1.getVars()))
-    x_I_m2 = list(filter(lambda v: match(r'^x_I',v.varName),m2.getVars()))
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    candidates = []
-    for i,var in enumerate(int_vars):
-        candidates.append((i,var,int_ub[i]-int_lb[i]))
-    candidates = sorted(candidates,key=itemgetter(2),reverse=True)
-    branch_index = 0
-    for c in candidates:
-        if not c[1].is_integer():
-            branch_index = c[0]
-            break
-    int_ub[branch_index] = floor(int_vars[branch_index])
-    int_lb[branch_index] = ceil(int_vars[branch_index])
-    for i,var in enumerate(x_I_m1):
-            var.setAttr('ub',int_ub[i])
-    for i,var in enumerate(x_I_m2):
-            var.setAttr('lb',int_lb[i])
-    return m1,m2
-
 def check_dimensions(problem_data):
+    """
+    Check if the all matrices and vectors fit the problem dimensions.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     if H.shape != (n_I+n_R,n_I+n_R):
         raise ValueError('Dimension of H is not n_I+n_R x n_I+n_R.')
@@ -193,6 +193,9 @@ def check_dimensions(problem_data):
         pass
 
 def optimize(model):
+    """
+    Optimizes a Gurobi Model and returns status, variables and objective value.
+    """
     model.optimize()
     status = model.status
     if status == GRB.OPTIMAL or status == GRB.SUBOPTIMAL or status == 15:
@@ -201,43 +204,38 @@ def optimize(model):
         return model.status, None, infty
 
 def getBinaryCoeffsArray(index_set):
+    """
+    Generates the coefficients 1,2,4 etc. for the binary expansion in the form of a numpy array.
+    """
     bi_c_arr = []
     for (j,r) in index_set:
         bi_c_arr.append(2**r)
     return array(bi_c_arr)
 
 def getBinaryCoeffsDict(index_set):
+    """
+    Generates the coefficients 1,2,4 etc. for the binary expansion in the form of a dictionary.
+    """
     bin_coeff = {}
     for (j,r) in index_set:
         bin_coeff[(j,r)] = 2**r
     return bin_coeff
 
-def removeBinaryExpansion(model):
-        constr = model.getConstrs()
-        filtered_cons = list(filter(lambda c: match(r'^binary expansion',c.ConstrName) is not None,constr))
-        for con in filtered_cons:
-            model.remove(con)
-        return model
-
-def removeMasterLinearizations(model,cut_counter):
-    constr = model.getConstrs()
-    for i in range(cut_counter):
-        model.remove(constr.pop())
-    return model
 
 def add_cut(problem_data,model,meta_data,y_var,dual_var,w_var,p,optimized_binary_expansion):
     """
     Takes a point \bar{y}, linearizes strong duality constraint at this point and adds the constraint to the model.
+    This function is used in the multi-tree approach.
     """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,non_binary_index_set = meta_data
     cut_point = p
-    #twoyTG = 2*cut_point.T @ G_l
+    
     yTGy = cut_point.T @ G_l @ cut_point
-    term1 = 2*cut_point.T @ G_l @ y_var #sum([twoyTG[i]*y_var(i)[0] for i in J])
-    term2 = d_l.T @ y_var #sum([d_l[i]*y_var(i)[0] for i in J])
-    term3 = -b.T @ dual_var #-sum([b[j]*dual_var(j)[0] for j in ll_constr])
-    term4 = bin_coeff_arr@w_var #w_var.prod(bin_coeff_dict)
+    term1 = 2*cut_point.T @ G_l @ y_var 
+    term2 = d_l.T @ y_var 
+    term3 = -b.T @ dual_var 
+    term4 = bin_coeff_arr@w_var 
     if optimized_binary_expansion:
         bin_exp_constant = int_lb.T @ C.T @ dual_var
     else:
@@ -247,6 +245,10 @@ def add_cut(problem_data,model,meta_data,y_var,dual_var,w_var,p,optimized_binary
     return model
 
 def add_lazy_constraint(cut_point,model):
+    """
+    Adds an outer approximation cut of the strong duality constraint to the model
+    as a Gurobi lazy constraint. This function is invoked during callbacks of the single-tree approach.
+    """
     _,_,_,_,_,_,_,_,_,_,_,_,_,_,int_lb,_,C,_,_ = model._problem_data
     yTGy = cut_point.T @ model._G_l @ cut_point
     term1 = 2*cut_point.T @ model._G_l @ model._y
@@ -260,20 +262,11 @@ def add_lazy_constraint(cut_point,model):
     model.cbLazy(term1+term2+term3+term4-yTGy + bin_exp_constant <= 0)
     return model
 
-def get_int_vars(vars):
-    if not vars:
-        return
-    int_vars = []
-    for v in vars:
-        if match(r'^x_I',v.varName):
-            int_vars.append(v.x)
-    return int_vars
-
-def is_int_feasible(vars):
-    is_int = list(map(lambda x: x.is_integer(),vars))
-    return all(is_int)
 
 def warmstart(model,solution):
+    """
+    Sets the start attribute of model variables according to a given solution to warmstart a problem.
+    """
     if solution == {}:
         return model
     variables = model.getVars()
@@ -282,7 +275,7 @@ def warmstart(model,solution):
             v_name = v.varName
             start = solution[v_name]
             v.setAttr(GRB.Attr.Start, start)
-        except KeyError:
+        except KeyError:#Generally not good style to handle exceptions like this, but this means that no start sol is available, so it cannot be set.
             continue
     model.update()
     return model
