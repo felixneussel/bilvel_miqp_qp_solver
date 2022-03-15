@@ -1,6 +1,6 @@
 from Solvers.multitree import solve
 from Solvers.benchmarks import optimize_benchmark
-from Parsers import file_reader
+from Solvers import file_reader
 import numpy as np
 from numpy import infty
 import re

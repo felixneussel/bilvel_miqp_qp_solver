@@ -3,7 +3,7 @@ import re
 import time
 import timeit
 from venv import create
-from Parsers.file_reader import mps_aux_reader
+from Solvers.file_reader import mps_aux_reader
 import numpy as np
 from numpy.linalg import norm
 from Solvers.multitree import solve

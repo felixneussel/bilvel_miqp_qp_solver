@@ -1,6 +1,6 @@
 import re
 import numpy as np
-from Parsers.file_reader import mps_aux_reader
+from Solvers.file_reader import mps_aux_reader
 from gurobipy import GRB
 from numpy import infty
 from Solvers.multitree import solve
