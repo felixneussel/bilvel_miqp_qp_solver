@@ -1,4 +1,6 @@
-
+#
+#This file contains the solvers for all multi-tree and single-tree based solution approaches.
+#
 from gurobipy import GRB
 from numpy import infty, array
 from re import match
@@ -12,6 +14,40 @@ import concurrent.futures as futures
 from Solvers.utils import stop_process_pool, time_remaining
 
 def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm,big_M,optimized_binary_expansion):
+    """
+    Solves an MIQP-QP with outer approximation multi-tree or single-tree solution approach from the paper
+    'Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems'
+    by Kleinert, Grimm and Schmidt.
+
+    # Parameters 
+
+    - problem_data : List of the problem specific dimensions, vectors and matrices 
+    n_I, n_R, n_y, m_u, m_l, H_u, G_u, G_l, c_u, d_u, d_l, A, B, a, x^-, x^+, C, D, b as specified in 
+    'Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems'
+    by Kleinert, Grimm and Schmidt.
+    - tol : Optimality tolerance, should not be smaller than 1e-4.
+    - iteration_limit : Maximal number of iterations.
+    - time_limit : Time limit in seconds.
+    - subproblem_mode : Method to aquire subproblem solutions. Can be set to 'regular', 'remark_1' and 'remark_2'. 
+    It is recommended to use 'remark_2' if the matrix G_l is strictly positive definite or else 'regular'.
+    - algorithm : The solution approach that should be used. Can be set to 'MT', 'MT-K', 'MT-K-F', 'MT-K-F-W',
+    'ST', 'ST-K', 'ST-K-C', 'ST-K-C-S'. It is recommended to use 'ST' for small problem instances.
+    - big_M : big_M value for upper and lower bounds in the binary-expansion-related constraints. It is recommended
+    to derive it from problem specific knowledge. 1e5 was used in a numerical study.
+    - optimized_binary_expansion : True if an enhanced version of binary expansion which allows for negative integer 
+    variables and reduces the number of additional variables should be used or else False. True is recommended.
+
+    # Returns
+
+    Tuple containing
+    - Dictionary with optimal values for variables.
+    - The optimal objective value.
+    - Runtime.
+    - Time spent for solving subproblems or feasibiltiy problems.
+    - Number of solved subproblems and feasibility problems.
+    - Optimization status code (see Gurobi Status Codes).
+    - Gap between upper bound and lower bound (not for 'MT-K-F' and 'MT-K-F-W').
+    """
     if algorithm == 'MT':
         return MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,False,False,False,big_M,optimized_binary_expansion)
     elif algorithm == 'MT-K':
@@ -54,7 +90,7 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
         sub_start = default_timer()
-        f_status,f_vars,f_obj = optimize(feas)
+        f_status,f_vars,_ = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
         if f_status == GRB.TIME_LIMIT:
@@ -92,7 +128,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
         sub_start = default_timer() 
-        f_status,f_vars,f_obj = optimize(feas)
+        f_status,f_vars,_ = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
         if f_status == GRB.TIME_LIMIT:
@@ -120,7 +156,7 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
         sub_start = default_timer()
-        f_status,f_vars,f_obj = optimize(feas)
+        _,f_vars,_ = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
     cp = []
@@ -268,10 +304,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     if initial_ub:
         UB = initial_incumbent + 1e6*tol
         master.setParam(GRB.Param.Cutoff, UB)
-        """ start_sol = {}
-        for v in initial_solution:
-            start_sol[v.varName] = v.x
-        master = warmstart(master,start_sol) """
+        master = warmstart(master,initial_solution)
     
         
     master.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
@@ -321,6 +354,10 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
     
 
 def newCut(model,where):
+    """
+    Callback function for Single-Tree solution approach. Adds an outer approximation cut of the strong duality constraint
+    when a new integer solution which improves upon the current best solution.
+    """
     if where == GRB.Callback.MIPSOL:
         current_obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
         incumbent = model._incumbent

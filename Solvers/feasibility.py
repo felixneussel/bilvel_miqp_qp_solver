@@ -1,3 +1,6 @@
+#
+#This file contains functions to set up the feasibility problem in different contexts.
+#
 from numpy import concatenate
 from gurobipy import Model, GRB 
 

@@ -1,3 +1,7 @@
+#
+#This file contains functions that are used to hand the KKT based and the strong duality based
+#benchmark approach to Gurobi.
+#
 from Solvers.problems import setup_meta_data, setup_master
 from gurobipy import GRB,tuplelist
 import gurobipy as gp

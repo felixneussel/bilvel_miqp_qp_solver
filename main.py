@@ -49,8 +49,8 @@ if __name__ == "__main__":
     tolerance = 1e-5
     iteration_limit = infty
     time_limit = 300
-    subproblem_mode = "remark_2"
-    algorithm = "MT"
+    subproblem_mode = "regular"
+    algorithm = "ST-K-C-S"
     big_m = 1e5
     optimized_binary_expansion = True
 

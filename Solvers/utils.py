@@ -1,3 +1,7 @@
+#
+#This file contains a functions that are required by the solver.
+#
+
 from timeit import default_timer
 
 def stop_process_pool(executor):

@@ -1,3 +1,6 @@
+#
+#This file contains function that are used to set up the subproblem in different contexts.
+#
 from numpy import concatenate,array
 from gurobipy import Model,GRB
 from scipy.linalg import block_diag
@@ -158,23 +161,3 @@ def setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param):
     model.setMObjective(Q=G_l/2, c = d_l, constant=0, xQ_L=y, xQ_R=y, xc=y, sense=GRB.MINIMIZE )
     model.addMConstr(A=D, x=y, sense='>', b=b - C@x_I_param, name="Lower Level Constraints" )
     return model
-
-""" def setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var):
-n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
-model = master.fixed()
-linear_vector = concatenate((d_l, - b, bin_coeff_arr))
-y_lam_w = y_var + dual_var + w_var
-model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y_var, xQ_R=y_var, xc=y_lam_w, name="Strong Duality Constraint" )
-return model """
-
-""" def setup_sub_st(problem_data,master,meta_data,y_var,dual_var,w_var):
-    model = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var)
-    #model = removeMasterLinearizations(model,cut_counter)
-    return model """
-
-""" def setup_sub_mt(problem_data,master,meta_data,y_var,dual_var,w_var):
-    model = setup_sub(problem_data,master,meta_data,y_var,dual_var,w_var)
-    #model = removeBinaryExpansion(model)
-    #model = removeMasterLinearizations(model,cut_counter)
-    return model """

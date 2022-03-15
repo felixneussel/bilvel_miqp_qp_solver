@@ -1,8 +1,6 @@
 import re
 import numpy as np
 from Parsers.file_reader import mps_aux_reader
-from Data_Analysis.method_comparison import run_test
-from Data_Analysis.method_comparison import create_dataframe
 from gurobipy import GRB
 from numpy import infty
 from Solvers.multitree import solve

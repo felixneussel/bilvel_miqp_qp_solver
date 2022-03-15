@@ -13,7 +13,6 @@ from datetime import datetime
 from Solvers.benchmarks import optimize_benchmark, setup_kkt_miqp, setup_sd_miqcpcp
 import signal
 import pandas as pd
-from Data_Analysis.performance_profiles import create_dataframe
 from testing import shift_problem
 
 
@@ -385,6 +384,17 @@ def get_hard_problems():
     hard_problems = all_names - easy_problems
     return list(hard_problems)
 
+def problem_data_from_npz(path):
+    problem = np.load(path)
+    problem_data = [problem[key] for key in problem]
+    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
+    n_I = int(n_I)
+    n_R = int(n_R)
+    n_y = int(n_y)
+    m_u = int(m_u)
+    m_l = int(m_l)
+    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
+
 def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGORITHM,BIG_M,OUTPUT_FILE,num_of_seeds):
 
     for name in names:
@@ -453,27 +463,8 @@ BINARY_EXP_TEST_DATA = {
 }
 
 if __name__ == '__main__':
-    d = {
-        '$n_I$':[],
-        '$n_R$':[],
-        '$n_y$':[],
-        '$m_l$':[],
-        '$m_u$':[]
-        }
-    index = []
-    for p in sorted(FINAL_TEST_DATA["problems"]):
-        problem_data = get_problem('Problem_Data.nosync/Sub_1000_Vars',p)
-        n_I,n_R,n_y,m_u,m_l = problem_data[:5]
-        d["$n_I$"].append(int(n_I))
-        d["$n_R$"].append(int(n_R))
-        d["$n_y$"].append(int(n_y))
-        d["$m_u$"].append(int(m_u))
-        d["$m_l$"].append(int(m_l))
+    run_tests_final(FINAL_TEST_DATA["problems"],['ST-K-C-S'],['remark_2'],'test_results.txt')
         
-        index.append(p)
-    df = pd.DataFrame(d,index=index)
-    df.index.name = 'Instance'
-    print(df.to_latex(escape=False))
 
     
 

@@ -1,4 +1,7 @@
-import enum
+#
+#This file contains functions that are related to setting up the master problem for the Gurobi solver 
+#and adding outer approximation cuts. It also contains some functions that are required by the solver generally.
+#
 from gurobipy import Model,GRB, tuplelist, quicksum
 from numpy import ones,log2,floor,ceil, concatenate, array, infty, zeros_like
 from scipy.linalg import block_diag
@@ -273,11 +276,15 @@ def is_int_feasible(vars):
 def warmstart(model,solution):
     if solution == {}:
         return model
-    for v in model.getVars():
+    variables = model.getVars()
+    for v in variables:
         try:
-            v.setAttr(GRB.Attr.Start, solution[v.varName])
+            v_name = v.varName
+            start = solution[v_name]
+            v.setAttr(GRB.Attr.Start, start)
         except KeyError:
             continue
+    model.update()
     return model
 
 
