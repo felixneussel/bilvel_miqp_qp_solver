@@ -189,6 +189,10 @@ def select(s,option):
         raise ValueError(f"'{option}' is not a valid option.")
 
 def mean_median_df(df,algo_submodes):
+    """
+    Creates a pandas dataframe that displays mean and median values for the runtimes, times spent for solving subproblems
+    and numbers of solved subproblems for the algorithm-subproblem-mode tuples specified.
+    """
     times_dict,subnum_dict,subtime_dict = get_run_times(df,algo_submodes,'all')
     d = {
         ('Running Time','Mean'):[],
