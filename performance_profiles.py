@@ -216,9 +216,12 @@ PROFILE_CONFIGS = [
 ]
 
 def opt_bin_exp_plot():
+    """
+    Plots means, medians and midspreads from the numerical study of the optimized binary expansion.
+    """
     d = {'opt_time':[],'std_time':[]}
     index = []
-    with open('bin_opt_res_2.txt','r') as f:
+    with open('Results/bin_opt_res_2.txt','r') as f:
         for line in f:
             line = line.split()
             opt = line[line.index('opt_bin_exp')+1]
@@ -264,9 +267,12 @@ def opt_bin_exp_plot():
     plt.show()
 
 def bin_exp_perf_profile():
+    """
+    Plots performance profiles of a solver with and without the optimized binary expansion.
+    """
     d = {'opt_time':[],'std_time':[]}
     index = []
-    with open('bin_opt_res_2.txt','r') as f:
+    with open('Results/bin_opt_res_2.txt','r') as f:
         for line in f:
             line = line.split()
             opt = line[line.index('opt_bin_exp')+1]
@@ -284,10 +290,6 @@ def bin_exp_perf_profile():
 
     d = {'BE-OPT':df['opt_time'],'BE-STD':df['std_time']}
     profiles = performance_profile(d)
-
-
-
-    max_tau = 1
     
     
     plt.step(profiles['BE-OPT']['tau'],profiles['BE-OPT']['rho'],where='post',label='BE-OPT',linestyle='-',alpha=0.9,linewidth=2)
@@ -315,7 +317,7 @@ if __name__ == '__main__':
         ('Standard','Objective'):[]
         }
     index = []
-    with open('bin_opt_res_2.txt','r') as f:
+    with open('Results/bin_opt_res_2.txt','r') as f:
         for line in f:
             line = line.split()
             opt = line[line.index('opt_bin_exp')+1]
@@ -341,3 +343,6 @@ if __name__ == '__main__':
     #df.index.name = 'Instance'
     df = df.sort_index()
     print(df.to_latex())
+
+    df = get_test_data('Results/results.txt')
+    print(mean_median_df(df,[('ST','remark_2'),('MT','regular')]))

@@ -140,7 +140,7 @@ def test_optimized_binary_expansion(names,SHIFTS,TIME_LIMIT,SUBPROBLEM_MODE,ALGO
     - num_of_seeds : Number of different seeds and thus different random terms for each Problem.
     """
     for name in names:
-        path = f"Problem_Data.nosync/Sub_1000_Vars/{name}.npz"
+        path = f"Problem_Data.nosync/{name}.npz"
         n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data_from_npz(path)
         for seed in range(num_of_seeds):
             H,G_u,G_l = quadraticTerms(n_I,n_R,n_y,c_u,d_u,d_l,seed)
@@ -170,7 +170,7 @@ def run_tests_final(problems,algos,submodes,file):
     - OUTPUT_FILE : Path of the file where the results should be stored.
     """
     for p in problems:
-        path = f"Problem_Data.nosync/Sub_1000_Vars/{p}.npz"
+        path = f"Problem_Data.nosync/{p}.npz"
         problem_data = problem_data_from_npz(path)
         for a in algos:
             if a in ['KKT-MIQP','SD-MIQCQP']:
@@ -221,8 +221,7 @@ BINARY_EXP_TEST_DATA = {
 
 REFACTOR_TEST_DATA = ["lseu-0.100000","enigma-0.900000","stein45-0.100000","stein27-0.100000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
 
-if __name__ == '__main__':
-    run_tests_final(REFACTOR_TEST_DATA,['ST-K-C-S','MT-K-F-W'],['remark_2'],'Results/refactor_check.txt')
+
         
 
     
