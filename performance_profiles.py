@@ -1,10 +1,8 @@
-import re
-from numpy import NAN, NaN
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.scale import LogScale
-from itertools import product
+
 
 ALPHA_OVERLAP = 0.9
 
