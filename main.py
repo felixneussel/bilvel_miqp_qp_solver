@@ -1,3 +1,6 @@
+#
+#This file can be used to solve a specific MIQP-QP.
+#
 from Solvers.multitree import solve
 from Solvers.benchmarks import optimize_benchmark
 from Solvers import file_reader

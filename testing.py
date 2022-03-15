@@ -85,49 +85,7 @@ def solve_problem(path):
     else:
         print('Problem infeasible')
 
-def shift_problem(problem_data,shift_by):
-    """
-    Shifts feasible set of problem away from zero by specified distance
 
-    Input:
-
-    path: file path of npz file with problem data
-
-    shift_by: Distance to shift problem from zero
-    """
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-
-    constant = 0.5*np.array([shift_by]*n_I).T @ H @ np.array([shift_by]*n_I) + 0.5*np.array([shift_by]*n_y).T @ G_u @ np.array([shift_by]*n_y) - c_u.T@np.array([shift_by]*n_I) - d_u.T@np.array([shift_by]*n_y)
-    a = a +  A @ np.array([shift_by]*n_I) + B @ np.array([shift_by]*n_y)
-    b = b + C @ np.array([shift_by]*n_I) + D @ np.array([shift_by]*n_y)
-    int_lb = int_lb + shift_by* np.ones(n_I)
-    int_ub = int_ub + shift_by * np.ones(n_I)
-    c_u = c_u - H@ np.array([shift_by]*n_I)
-    d_u = d_u - G_u @ np.array([shift_by]*n_y)
-    d_l = d_l - G_l @ np.array([shift_by]*n_y)
-
-    
-    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b], constant
-
-def shift_x(problem_data,shift_by):
-    """
-    Shifts x variables of problem away from zero by specified distance
-
-    Input:
-
-    path: file path of npz file with problem data
-
-    shift_by: Distance to shift problem from zero
-    """
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-
-    constant = 0.5*np.array([shift_by]*n_I).T @ H @ np.array([shift_by]*n_I)  - c_u.T@np.array([shift_by]*n_I)
-    a = a +  A @ np.array([shift_by]*n_I) 
-    b = b + C @ np.array([shift_by]*n_I) 
-    int_lb = int_lb + shift_by* np.ones(n_I)
-    int_ub = int_ub + shift_by * np.ones(n_I)
-    c_u = c_u - H@ np.array([shift_by]*n_I)
-    return [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b], constant
 
 
 def test_binary_optimization(n):

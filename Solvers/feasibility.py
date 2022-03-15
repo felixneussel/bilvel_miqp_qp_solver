@@ -5,6 +5,9 @@ from numpy import concatenate
 from gurobipy import Model, GRB 
 
 def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    """
+    Creates Gurobi Model of a feasibility problem.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
     model = master.fixed()
@@ -20,12 +23,18 @@ def setup_feas_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter
     return model
 
 def setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+    """
+    Creates Gurobi Model of a feasibility problem in the multi-tree approach.
+    """
     model = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
     #model = removeMasterLinearizations(model,cut_counter)
     #model = removeBinaryExpansion(model)
     return model
 
 def setup_feas_lazy(problem_data,meta_data,x_I_param,s_param):
+    """
+    Creates Gurobi Model of a feasibility problem in the single-tree approach.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,_ = meta_data
     x_I_param = x_I_param

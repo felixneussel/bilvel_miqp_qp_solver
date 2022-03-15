@@ -1,0 +1,102 @@
+algorithm ST submode regular name stein27-0.100000 status 2 time 0.5600118259999998 obj 37.68667589385526 gap 0.0 subtime 0.019680272999999637 subnum 6
+algorithm ST submode remark_2 name stein27-0.100000 status 2 time 0.6510309049999998 obj 37.68667589385526 gap 0.0 subtime 0.002925749999999283 subnum 5
+algorithm ST-K submode regular name stein27-0.100000 status 2 time 1.6833507159999996 obj 37.68667589385526 gap 0.0 subtime 0.013339505000000251 subnum 6
+algorithm ST-K submode remark_2 name stein27-0.100000 status 2 time 1.351157872 obj 37.68667589385526 gap 0.0 subtime 0.0018977460000009216 subnum 5
+algorithm ST-K-C submode regular name stein27-0.100000 status 2 time 1.8348730669999993 obj 37.68667589385526 gap 0.0 subtime 0.003899579000000486 subnum 4
+algorithm ST-K-C submode remark_2 name stein27-0.100000 status 2 time 0.9047950829999998 obj 37.68667589385526 gap 0.0 subtime 0.000513385999999727 subnum 4
+algorithm ST-K-C-S submode regular name stein27-0.100000 status 2 time 0.8654983989999998 obj 37.68667589385526 gap 0.0 subtime 0.0010025809999998359 subnum 1
+algorithm ST-K-C-S submode remark_2 name stein27-0.100000 status 2 time 0.6986908339999989 obj 37.68667589385526 gap 0.0 subtime 0.00013647200000121984 subnum 1
+algorithm MT submode regular name stein27-0.100000 status 2 time 0.3916686880000011 obj 37.68667589385526 gap 0.0 subtime 0.0005392610000001241 subnum 1
+algorithm MT submode remark_2 name stein27-0.100000 status 2 time 0.2839758379999999 obj 37.68667589385526 gap 0.0 subtime 0.00014156100000128902 subnum 1
+algorithm MT-K submode regular name stein27-0.100000 status 2 time 0.3383780139999999 obj 37.68667589385526 gap 0.0 subtime 0.0010361789999997484 subnum 1
+algorithm MT-K submode remark_2 name stein27-0.100000 status 2 time 0.3882726529999996 obj 37.68667589385526 gap 0.0 subtime 0.00011223599999965472 subnum 1
+algorithm MT-K-F submode regular name stein27-0.100000 status 2 time 0.34299283 obj 37.68667589385526 gap 0.0 subtime 0.0005267829999997531 subnum 1
+algorithm MT-K-F submode remark_2 name stein27-0.100000 status 2 time 0.441740094 obj 37.68667589385526 gap 0.0 subtime 0.00013821800000002327 subnum 1
+algorithm MT-K-F-W submode regular name stein27-0.100000 status 2 time 0.45818576499999963 obj 37.68667589385526 gap 0.0 subtime 0.0010987440000000959 subnum 1
+algorithm MT-K-F-W submode remark_2 name stein27-0.100000 status 2 time 0.4647750629999994 obj 37.68667589385526 gap 0.0 subtime 0.0002239480000003624 subnum 1
+algorithm KKT-MIQP submode - name stein27-0.100000 status 2 time 0.17289018630981445 obj 37.68667589385526 gap 0.0 subtime -1 subnum -1
+algorithm SD-MIQCQP submode - name stein27-0.100000 status 2 time 0.07452893257141113 obj 37.68667589385526 gap 0.0 subtime -1 subnum -1
+algorithm ST submode regular name enigma-0.100000 status 2 time 2.4091365829999987 obj 309.13254356966155 gap 0.0 subtime 0.0007210840000020369 subnum 1
+algorithm ST submode remark_2 name enigma-0.100000 status 2 time 2.5730861839999974 obj 309.13254356966155 gap 0.0 subtime 0.00017761199999810628 subnum 1
+algorithm ST-K submode regular name enigma-0.100000 status 2 time 2.388006526999998 obj 309.13254356966155 gap 0.0 subtime 0.0007432959999995603 subnum 1
+algorithm ST-K submode remark_2 name enigma-0.100000 status 2 time 2.5400498360000014 obj 309.13254356966155 gap 0.0 subtime 0.00023048100000266913 subnum 1
+algorithm ST-K-C submode regular name enigma-0.100000 status 2 time 4.4632372700000005 obj 309.13254356966155 gap 0.0 subtime 0.0013284899999987942 subnum 2
+algorithm ST-K-C submode remark_2 name enigma-0.100000 status 2 time 4.464640839999998 obj 309.13254356966155 gap 0.0 subtime 0.00038669999999285665 subnum 2
+algorithm ST-K-C-S submode regular name enigma-0.100000 status 2 time 4.356453393999999 obj 309.13254356966155 gap 0.0 subtime 0.0006456400000018903 subnum 1
+algorithm ST-K-C-S submode remark_2 name enigma-0.100000 status 2 time 4.934518151000006 obj 309.13254356966155 gap 0.0 subtime 0.00011056299999978592 subnum 1
+algorithm MT submode regular name enigma-0.100000 status 2 time 4.174505228000001 obj 309.13254356966155 gap 0.0 subtime 0.0007320829999954981 subnum 1
+algorithm MT submode remark_2 name enigma-0.100000 status 2 time 3.4625072190000026 obj 309.13254356966155 gap 0.0 subtime 0.00016347700000096665 subnum 1
+algorithm MT-K submode regular name enigma-0.100000 status 2 time 3.3556926000000047 obj 309.13254356966155 gap 0.0 subtime 0.0008159550000002014 subnum 1
+algorithm MT-K submode remark_2 name enigma-0.100000 status 2 time 3.237681036000005 obj 309.13254356966155 gap 0.0 subtime 0.0002399629999985109 subnum 1
+algorithm MT-K-F submode regular name enigma-0.100000 status 2 time 6.590231309999993 obj 309.13254356966155 gap 0.0 subtime 0.0007787029999946071 subnum 1
+algorithm MT-K-F submode remark_2 name enigma-0.100000 status 2 time 4.8269973590000035 obj 309.13254356966155 gap 0.0 subtime 0.0002572739999919804 subnum 1
+algorithm MT-K-F-W submode regular name enigma-0.100000 status 2 time 5.02565131499999 obj 309.13254356966155 gap 0.0 subtime 0.0010450739999896541 subnum 1
+algorithm MT-K-F-W submode remark_2 name enigma-0.100000 status 2 time 6.573427224 obj 309.13254356966155 gap 0.0 subtime 0.00042999000000065735 subnum 1
+algorithm KKT-MIQP submode - name enigma-0.100000 status 2 time 1.5112011432647705 obj 309.13254356966155 gap 0.0 subtime -1 subnum -1
+algorithm SD-MIQCQP submode - name enigma-0.100000 status 2 time 2.4892969131469727 obj 309.13254356966155 gap 0.0 subtime -1 subnum -1
+algorithm ST submode regular name stein27-0.900000 status 2 time 0.3861655589999913 obj 40.923448586812164 gap 0.0 subtime 0.11332648100000142 subnum 6
+algorithm ST submode remark_2 name stein27-0.900000 status 2 time 0.29537128200000495 obj 40.92344858681207 gap 0.0 subtime 0.0010497609999902124 subnum 6
+algorithm ST-K submode regular name stein27-0.900000 status 2 time 0.4213753660000066 obj 40.923448586812164 gap 0.0 subtime 0.12162181799999416 subnum 5
+algorithm ST-K submode remark_2 name stein27-0.900000 status 2 time 0.23320964000001254 obj 40.92344858681207 gap 0.0 subtime 0.000647606000001133 subnum 5
+algorithm ST-K-C submode regular name stein27-0.900000 status 2 time 0.9710058539999977 obj 40.92344858681212 gap 0.0 subtime 0.18583329300003015 subnum 7
+algorithm ST-K-C submode remark_2 name stein27-0.900000 status 2 time 0.7634485469999959 obj 40.923448586811936 gap 0.0 subtime 0.0016522130000282687 subnum 7
+algorithm ST-K-C-S submode regular name stein27-0.900000 status 2 time 0.9819796679999939 obj 40.92344858681212 gap 0.0 subtime 0.19618705999998554 subnum 6
+algorithm ST-K-C-S submode remark_2 name stein27-0.900000 status 2 time 0.8211212900000078 obj 40.92344858573941 gap 0.0 subtime 0.005114643000027286 subnum 5
+algorithm MT submode regular name stein27-0.900000 status 2 time 0.9602732430000032 obj 40.92344855392832 gap -3.2883804124139715e-08 subtime 0.14366393099999186 subnum 6
+algorithm MT submode remark_2 name stein27-0.900000 status 2 time 0.7996147979999932 obj 40.92344858573939 gap -1.072550048775156e-09 subtime 0.0010661409999954685 subnum 6
+algorithm MT-K submode regular name stein27-0.900000 status 2 time 0.7889577689999925 obj 40.92344855392832 gap -3.2883804124139715e-08 subtime 0.11839750700001161 subnum 5
+algorithm MT-K submode remark_2 name stein27-0.900000 status 2 time 0.721571019999999 obj 40.92344858573939 gap -1.0725429433477984e-09 subtime 0.0012546200000116414 subnum 5
+algorithm MT-K-F submode regular name stein27-0.900000 status 2 time 0.8275380940000048 obj 40.92344855392832 gap 2.0996639159679447 subtime 0.1561075949999946 subnum 4
+algorithm MT-K-F submode remark_2 name stein27-0.900000 status 2 time 0.46457962799999564 obj 40.92344858573939 gap 2.0996636361605923 subtime 0.0006277130000000852 subnum 4
+algorithm MT-K-F-W submode regular name stein27-0.900000 status 2 time 0.8023837810000032 obj 40.92344855392832 gap 2.0996639159679447 subtime 0.14989700900000003 subnum 4
+algorithm MT-K-F-W submode remark_2 name stein27-0.900000 status 2 time 0.5105089369999973 obj 40.92344858573939 gap 2.0996636361605923 subtime 0.0006319379999979446 subnum 4
+algorithm KKT-MIQP submode - name stein27-0.900000 status 9 time 300.0019807815552 obj inf gap inf subtime -1 subnum -1
+algorithm SD-MIQCQP submode - name stein27-0.900000 status 2 time 0.3047921657562256 obj 40.923440561575255 gap 9.022668957451062e-05 subtime -1 subnum -1
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 51.9152701316322 time 0.875192379 subtime 0.007102595999999739 subnum 6 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 51.9152701316322 time 0.7978981909999998 subtime 0.0003799100000003719 subnum 3 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -47.44244029089509 time 0.5202194050000002 subtime 0.0008016479999999326 subnum 6 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -47.44244029089509 time 0.8829563739999999 subtime 0.0008524599999999438 subnum 5 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 35.73314211470582 time 0.4791846099999999 subtime 0.001300243000001089 subnum 9 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 35.73314211470582 time 1.0039611750000006 subtime 0.0017867930000008414 subnum 8 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj 3.7503835599796957 time 0.807928682 subtime 0.0018463640000003778 subnum 8 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj 3.7503835599796957 time 1.4480143520000004 subtime 0.0012822280000008845 subnum 6 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 351.8786823590299 time 2.9466581740000004 subtime 0.00038762700000027905 subnum 2 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 351.8786823590299 time 6.497002916000001 subtime 0.00029260099999994793 subnum 2 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -4333.206220533306 time 1.6578076619999997 subtime 0.0001400239999966857 subnum 1 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -4333.206220533306 time 3.7362606980000024 subtime 0.0002600039999975934 subnum 2 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 321.3133073680792 time 1.7867906090000005 subtime 0.00047132100000268906 subnum 3 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 321.3133073680792 time 3.980470725 subtime 0.0003390129999978342 subnum 3 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -4860.605726609225 time 2.0926489040000007 subtime 0.00020496900000210871 subnum 1 gap 2.2491380905830225e-05
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -4860.605726609225 time 3.662074436000001 subtime 0.0006356700000083038 subnum 4 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 56.61361762081782 time 0.2691010449999993 subtime 0.001302103000000443 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 56.6136176208189 time 0.31846639300000135 subtime 0.0014281630000070322 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -20.822133283756557 time 0.4366949300000016 subtime 0.0018002089999953341 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -20.822133283756557 time 0.3149812910000023 subtime 0.0013458079999963957 subnum 9 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 34.25116539342201 time 0.20958811999999938 subtime 0.0007394059999867864 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 34.25116539342378 time 0.39092133999999845 subtime 0.003884172999995883 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -18.642831300592434 time 0.21751009999999837 subtime 0.0008118580000058273 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -18.642831300592434 time 0.28006703799999855 subtime 0.000700087000005567 subnum 5 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 51.91527013163224 time 0.7214620510000002 subtime 0.001155424000000016 subnum 7 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 51.91527013163224 time 0.7009934820000001 subtime 0.000453437000000001 subnum 3 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -48.583800035333525 time 0.3756291150000002 subtime 0.0008362729999999985 subnum 6 gap 0.0
+name stein27-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -48.583800035333525 time 1.022843103 subtime 0.0011193359999994712 subnum 5 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 35.73314211470583 time 0.7553504569999996 subtime 0.0015250270000004562 subnum 8 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 35.73314211470583 time 1.337450123 subtime 0.0014009760000011084 subnum 9 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj 2.1210731351336563 time 0.8270435279999999 subtime 0.0011231810000005282 subnum 8 gap 0.0
+name stein27-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj 2.1210731351336563 time 1.0639051259999999 subtime 0.0009103919999988719 subnum 6 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 351.87868235905717 time 4.691615344000001 subtime 0.0003314159999980859 subnum 2 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 351.87868235905717 time 5.367826656999998 subtime 0.0003047609999988765 subnum 2 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -4334.313838277521 time 1.8133665139999984 subtime 0.00010833099999985052 subnum 1 gap 0.0
+name enigma-0.100000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -4334.313838277521 time 4.048449873999999 subtime 0.0002833860000031052 subnum 2 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 321.3133073680774 time 2.189551223999999 subtime 0.00023725500000182365 subnum 2 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 321.3133073680774 time 5.679632425000001 subtime 0.0005306909999980292 subnum 3 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj -4870.5899089289305 time 2.1425880010000036 subtime 0.00042830799999649116 subnum 2 gap 0.0
+name enigma-0.100000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj -4870.5899089289305 time 4.212776050000002 subtime 0.0004757190000006517 subnum 3 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 56.61361762081995 time 0.4618320540000056 subtime 0.0021172810000038567 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 56.61361762082014 time 0.9278266350000024 subtime 0.0033017469999876425 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj 58.06062238297809 time 0.3939972929999982 subtime 0.001664896000008298 subnum 9 gap 0.0
+name stein27-0.900000__0 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj 58.06062238297809 time 0.5185205490000016 subtime 0.0020760290000083614 subnum 9 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp True status 2 obj 34.25116636977579 time 0.23611092699999858 subtime 0.0008613739999887571 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 1 opt_bin_exp False status 2 obj 34.2511663697746 time 0.2689884300000003 subtime 0.0008483249999997611 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp True status 2 obj 34.497550558762185 time 0.277944226999999 subtime 0.0008895469999998795 subnum 5 gap 0.0
+name stein27-0.900000__1 submode remark_2 algorithm ST shift 3 opt_bin_exp False status 2 obj 34.497550558762185 time 0.4308400450000036 subtime 0.0008773990000108256 subnum 5 gap 0.0

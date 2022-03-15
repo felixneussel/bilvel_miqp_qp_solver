@@ -9,6 +9,9 @@ from numpy import concatenate,diag,array,identity,infty
 from scipy.linalg import block_diag
 
 def setup_kkt_miqp(problem_data,M):
+    """
+    Creates the Gurobi model of the KKT-based reformulation of a specific MIQP-QP.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     model = gp.Model("KKT-MIQP")
     model.Params.LogToConsole = 0
@@ -43,6 +46,9 @@ def setup_kkt_miqp(problem_data,M):
 
 
 def setup_sd_miqcpcp(problem_data,big_M,optimized_binary_expansion):
+    """
+    Creates the Gurobi model of the strong-duality-based reformulation of a specific MIQP-QP.
+    """
     _,_,_,_,_,_,_,G_l,_,_,d_l,_,_,_,_,_,_,_,b = problem_data
     meta_data = setup_meta_data(problem_data,optimized_binary_expansion)
     _,_,_,_,_,_,bin_coeff_arr, _ = meta_data
@@ -54,6 +60,21 @@ def setup_sd_miqcpcp(problem_data,big_M,optimized_binary_expansion):
     return model
 
 def optimize_benchmark(approach,time_limit,problem_data,big_M,optimized_binary_expansion):
+    """
+    Solves an MIQP-QP with one of the benchmark approaches.
+
+    # Parameters
+
+    - approach : benchmark approach to be used, can be set to 'KKT-MIQP' or 'SD-MIQCQP'.
+    - time_limit : Time limit in seconds.
+    - problem_data : List of the problem specific dimensions, vectors and matrices 
+    n_I, n_R, n_y, m_u, m_l, H_u, G_u, G_l, c_u, d_u, d_l, A, B, a, x^-, x^+, C, D, b as specified in 
+    'Outer approximation techniques for the global opimization of mixed-integer quadratic bilevel problems'
+    by Kleinert, Grimm and Schmidt.
+    - big_M : Big-M values for upper and lower bounds.
+    - optimized_binary_expansion : True if an enhanced version of binary expansion which allows for negative integer 
+    variables and reduces the number of additional variables should be used or else False. True is recommended.
+    """
     if approach == "KKT-MIQP":
         model = setup_kkt_miqp(problem_data,big_M)
     elif approach == "SD-MIQCQP":

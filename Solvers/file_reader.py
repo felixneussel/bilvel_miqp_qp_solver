@@ -11,6 +11,34 @@ import time
 from concurrent import futures
 
 def mps_aux_reader(mps_path,aux_path):
+    """
+    Reads an MILP-LP from a .mps and a .aux file.
+
+    # Parameters
+
+    - mps_path:  Path of the .mps file.
+    - aux_path : Path of the .aux file.
+
+    # Returns
+
+    Tuple containing
+    - n_I : The number of upper-level integer variables.
+    - n_R : The number of upper-level continuous variables.
+    - n_y : The number of lower-level variables.
+    - m_u : The number of upper-level constraints.
+    - m_l : The number of lower-level constraints.
+    - c_u : Linear coefficient vector for upper-level variables in the upper-level objective function.
+    - d_u : Linear coefficient vector for lower-level variables in the upper-level objective function.
+    - A : Upper-level-variable's upper-level constraint matrix.
+    - B : Lower-level variable's upper-level constraint matrix.
+    - a : Upper-level right-hand-side constraint vector.
+    - int_lb : Lower-Bound vector of upper-level integer variables.
+    - int_ub : Upper-Bound vector of upper-level integer variables.
+    - d_l : Linear coefficient vector for lower-level variables in the lower-level objective function.
+    - C : Upper-level-variable's lower-level constraint matrix.
+    - D : Lower-level variable's lower-level constraint matrix.
+    - b : Lower-level right-hand-side constraint vector.
+    """
     name,_,_,_,_,constr_types,c,A_in,rhs_names,rhs,bnd_names,bnd = smps.load_mps(mps_path)
 
     N = -1
