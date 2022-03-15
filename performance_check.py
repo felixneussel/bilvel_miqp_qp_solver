@@ -4,7 +4,7 @@
 from Solvers.file_reader import mps_aux_reader
 import numpy as np
 from numpy.linalg import norm
-from Solvers.multitree import solve
+from Solvers.multitree import MT, solve
 import traceback
 from Solvers.benchmarks import optimize_benchmark
 
@@ -219,8 +219,10 @@ BINARY_EXP_TEST_DATA = {
     'problems':['stein27-0.100000','enigma-0.100000','stein27-0.900000']
 }
 
+REFACTOR_TEST_DATA = ["lseu-0.100000","enigma-0.900000","stein45-0.100000","stein27-0.100000","p0201-0.900000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
+
 if __name__ == '__main__':
-    test_optimized_binary_expansion(BINARY_EXP_TEST_DATA["problems"],[1,3],300,'remark_2','ST',1e5,'Results/refactor_check.txt',2)
+    run_tests_final(REFACTOR_TEST_DATA,['ST-K-C-S'],['regular','remark_2'],'Results/refactor_check.txt')
         
 
     

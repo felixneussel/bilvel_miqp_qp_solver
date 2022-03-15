@@ -11,40 +11,40 @@ import re
 
 if __name__ == "__main__":
     #Number of Integer upper-level variables
-    n_I = 1
+    n_I = 2
     #Number of Continuous upper-level variables
     n_R = 0
     #Number of lower-level variables
     n_y = 1
     #Number of upper level constraints
-    m_u = 0
+    m_u = 2
     #Number of lower level constaints
     m_l = 2
 
     #Objective matrices
-    H = np.array([[2]])
+    H = np.array([[2,0],[0,2]])
     G_u = np.array([[2]])
     G_l = np.array([[2]])
 
     #objective vectors
-    c_u = np.array([-3/2])
+    c_u = np.array([0,0])
     d_u = np.array([0])
-    d_l = np.array([-2])
+    d_l = np.array([-1.142])
 
 
     #Leader Constraints
-    A = np.zeros((m_u,n_I))
-    B = np.zeros((m_u,n_y))
-    a = np.array([])
+    A = np.array([[1,0],[0,1]])
+    B = np.array([[-0.3786],[-0.2458]])
+    a = np.array([0,0])
 
-    int_lb = np.array([0])
-    int_ub = np.array([1])
+    int_lb = np.array([0,2])
+    int_ub = np.array([1,6])
 
 
     #Follower Constraints
-    C = np.array([[0],[2]])
+    C = np.array([[0,0],[0,0]])
     D = np.array([[1],[-1]])
-    b = np.array([0,0])
+    b = np.array([0,-1])
 
     input_data = [n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c_u,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b]
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     iteration_limit = infty
     time_limit = 300
     subproblem_mode = "regular"
-    algorithm = "ST-K-C-S"
+    algorithm = "ST"
     big_m = 1e5
     optimized_binary_expansion = True
 

@@ -3,13 +3,14 @@
 #
 from numpy import concatenate
 from gurobipy import Model, GRB 
+from Solvers.problems import get_s_x_vector
 
-def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
+def setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     """
     Creates Gurobi Model of a feasibility problem.
     """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
+    _,_,_,_,_,_,bin_coeff_arr,_ = meta_data
     model = master.fixed()
     #set new Objective
     linear_vector = concatenate((d_l, - b, bin_coeff_arr))
@@ -17,19 +18,6 @@ def setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
     model.setMObjective(Q=G_l,c=linear_vector,constant=0,xQ_L=y_var,xQ_R=y_var,xc=y_lam_w,sense=GRB.MINIMIZE)
     return model
 
-def setup_feas_st(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
-    model = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
-    #model = removeMasterLinearizations(model,cut_counter)
-    return model
-
-def setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter):
-    """
-    Creates Gurobi Model of a feasibility problem in the multi-tree approach.
-    """
-    model = setup_feas(problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter)
-    #model = removeMasterLinearizations(model,cut_counter)
-    #model = removeBinaryExpansion(model)
-    return model
 
 def setup_feas_lazy(problem_data,meta_data,x_I_param,s_param):
     """
@@ -39,6 +27,7 @@ def setup_feas_lazy(problem_data,meta_data,x_I_param,s_param):
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,_ = meta_data
     x_I_param = x_I_param
     s_param = s_param
+    s_x_vector = get_s_x_vector(x_I_param,s_param,jr)
     model = Model('Feasiblity-Problem')
     model.Params.LogToConsole = 0
     #add variables
@@ -62,5 +51,5 @@ def setup_feas_lazy(problem_data,meta_data,x_I_param,s_param):
     y_lambda = dual.select() + y.select()
     model.addMConstr(A=GD,x=y_lambda,sense='=',b=d_l)
     #set strong duality linearization constraint
-    model.addConstrs((w[j,r] == s_param[j,r]*sum([C[i,j]*dual[i] for i in ll_constr]) for j,r in jr), 'binary_expansion')
+    model.addConstrs((w[j,r] == s_x_vector[(j,r)]*sum([C[i,j]*dual[i] for i in ll_constr]) for j,r in jr), 'binary_expansion')
     return model
