@@ -1,78 +1,42 @@
+#
+#This file contains functions related to the analysis of numerical results. Mean and Median running times can be computed.
+#Performance profiles can be plotted.
+#
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.scale import LogScale
 
 
-ALPHA_OVERLAP = 0.9
 
-PLOT_DESIGN = {
-    'KKT-MIQP -':{'label':'KKT-MIQP','linestyle':'-','alpha':ALPHA_OVERLAP},
-    'SD-MIQCQP -':{'label':'SD-MIQCQP','linestyle':':','alpha':ALPHA_OVERLAP},
-    'MT remark_2':{'label':'MT','linestyle':'-','alpha':ALPHA_OVERLAP},
-    'MT-K remark_2':{'label':'MT-K','linestyle':':','alpha':ALPHA_OVERLAP},
-    'MT-K-F remark_2':{'label':'MT-K-F','linestyle':'--','alpha':ALPHA_OVERLAP},
-    'MT-K-F-W remark_2':{'label':'MT-K-F-W','linestyle':'-.','alpha':ALPHA_OVERLAP},
-    'ST remark_2':{'label':'ST','linestyle':'-','alpha':ALPHA_OVERLAP},
-    'ST-K remark_2':{'label':'ST-K','linestyle':':','alpha':ALPHA_OVERLAP},
-    'ST-K-C remark_2':{'label':'ST-K-C','linestyle':'--','alpha':ALPHA_OVERLAP},
-    'ST-K-C-S remark_2':{'label':'ST-K-C-S','linestyle':'-.','alpha':ALPHA_OVERLAP},
-    'ST regular':{'label':'ST-STD','linestyle':':','alpha':ALPHA_OVERLAP},
-    'MT-K-F-W regular':{'label':'MT-STD','linestyle':':','alpha':ALPHA_OVERLAP}
-}
-
-def create_dataframe(filepath,colnames,dtypes):
+def plot_performance_profile(df,solvers,select_option):
     """
-    Render pandas dataframe from data in txt file where each line represents one data point
-    of the form property_1 {property_1} property_2 {property_2} ...
+    Plots performance profiles.
 
-    ## Input
+    # Parameters 
 
-    - filepath: path of txt file
-
-    - colnames: list of column names of the df, needs to coincide with markers in txt file
-
-    - dtypes: list of data types of the columns
+    - df : Data Frame containing the test results
+    - solvers : List of tuples where each tuple represents an algorithm-submode combination that should be plotted.
+    - select_option : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solvers could solve.
     """
-    dicts = []
+    st = get_run_times(df,solvers,select_option)
+    profiles = performance_profile(st[0])
+
+    max_tau = 1
     
-    with open(filepath,"r") as file:
-        for line in file:
-            line = line.split()
-            if len(line)==0:
-                continue
-            if line[0] == "Run":
-                d = {}
-                for name in colnames:
-                    d[name] = []
-                dicts.append(d)
-            if line[0] != "name":
-                continue
-            for cn,dt in zip(colnames,dtypes):
-                ind = line.index(cn)+1
-                entry = dt(line[ind])
-                dicts[-1][cn].append(entry)
+    for solver in profiles:
+        plt.step(profiles[solver]['tau'],profiles[solver]['rho'],where='post',label=solver,linestyle='--',alpha=0.9,linewidth=2)
+        if max(profiles[solver]['tau']) > max_tau:
+            max_tau = max(profiles[solver]['tau'])
 
-    return list(map(lambda x: pd.DataFrame(x),dicts))
+    plt.xscale(LogScale(0,base=2))
+    plt.ylim([-0,1])
+    plt.xlim(left=1,right = max_tau)
+    plt.rcParams['text.usetex'] = True
+    plt.xlabel(r"Factor $\tau$")
+    plt.legend()
+    plt.show()
 
-    
-
-def latex_table_times_obj(df):
-    df["status"] = df["status"].map(status_to_string)
-    df["obj"] = df["obj"].map(lambda x: round(x,2))
-    df["time"] = df["time"].map(lambda x: round(x,2))
-    df = df.drop(['gap','subtime','subnum'],axis = 1)
-    df = df.rename({"problem":"Instance","status":"Status","time":"Time","obj":"Objective"},axis=1)
-    table = df.to_latex()
-    with open('LaTex.txt',"w") as out:
-        out.write(table)
-
-def status_to_string(x):
-    """
-    Maps Gurobi status codes to a meaningful text.
-    """
-    d = {2:"Optimal",9:"Limit",6 : "Cutoff",3:"Infeasible"}
-    return d[x]
 
 def performance_profile(d):
     """
@@ -151,6 +115,10 @@ def get_test_data(file):
 
 
 def rho_of_tau(tau,ratios):
+    """
+    Calculates the percentage of instances (y-axis) for which the performance ratio of
+    approach s is within a factor tau of the best possible ratio.
+    """
     n = len(ratios)
     return sum(a <= tau for a in ratios) / n
 
@@ -255,12 +223,6 @@ def mean_median_df(df,algo_submodes):
         d[('Time in subproblems','Median')].append(round(np.median(subtime_dict[key]),m))
     return pd.DataFrame(d,index=algo_submodes)
 
-PROFILE_CONFIGS = [
-    {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'none'},
-    {'solvers' : ['KKT-MIQP','SD-MIQCQP'],'submodes' : ['-'],'select_option' : 'all'},
-    {'solvers' : ['MT','MT-K','MT-K-F','MT-K-F-W'],'submodes' : ['remark_2'],'select_option' : 'one'},
-    {'solvers' : ['ST','ST-K','ST-K-C','ST-K-C-S'],'submodes' : ['remark_2'],'select_option' : 'one'}
-]
 
 def opt_bin_exp_plot():
     """
@@ -313,7 +275,7 @@ def opt_bin_exp_plot():
     
     plt.show()
 
-def bin_exp_perf_profile():
+def bin_exp_perf_profile(shift):
     """
     Plots performance profiles of a solver with and without the optimized binary expansion.
     """
@@ -333,7 +295,7 @@ def bin_exp_perf_profile():
     df.index.name = 'shift'
     df = df.sort_index()
 
-    df = df.loc[[1]]
+    df = df.loc[[shift]]
 
     d = {'BE-OPT':df['opt_time'],'BE-STD':df['std_time']}
     profiles = performance_profile(d)
@@ -345,7 +307,7 @@ def bin_exp_perf_profile():
 
     plt.xscale(LogScale(0,base=2))
     plt.ylim([-0,1])
-    plt.xlim(left=1,right = 4)
+    plt.xlim(left=1,right = 16)
     plt.rcParams['text.usetex'] = True
     plt.xlabel(r"Factor $\tau$")
     plt.legend(loc='lower right')
@@ -355,41 +317,6 @@ def get_att(line,name):
     return line[line.index(name)+1]
 
 if __name__ == '__main__':
-    d = {
-        ('Optimized','Status'):[],
-        ('Optimized','Time'):[],
-        ('Optimized','Objective'):[],
-        ('Standard','Status'):[],
-        ('Standard','Time'):[],
-        ('Standard','Objective'):[]
-        }
-    index = []
-    with open('Results/bin_opt_res_2.txt','r') as f:
-        for line in f:
-            line = line.split()
-            opt = line[line.index('opt_bin_exp')+1]
-            shift = int(line[line.index('shift')+1])
-            if shift != 1:
-                continue
-            if opt == 'True':
-                d[('Optimized','Status')].append(int(line[line.index('status')+1]))
-                d[('Optimized','Time')].append(float(line[line.index('time')+1]))
-                d[('Optimized','Objective')].append(float(line[line.index('obj')+1]))
-                name = line[line.index('name')+1].split('_')
-                instance,seed = name[0],name[2]
-                index.append((instance,seed))
-            else:
-                d[('Standard','Status')].append(int(line[line.index('status')+1]))
-                d[('Standard','Time')].append(float(line[line.index('time')+1]))
-                d[('Standard','Objective')].append(float(line[line.index('obj')+1]))
-    index = pd.MultiIndex.from_tuples(index,names=('Instance','Seed'))
-    df = pd.DataFrame(d,index=index)
-    df = df.apply(lambda x: round(x,2))
-    df[('Optimized','Status')] = df[('Optimized','Status')].apply(status_to_string)
-    df[('Standard','Status')] = df[('Standard','Status')].apply(status_to_string)
-    #df.index.name = 'Instance'
-    df = df.sort_index()
-    print(df.to_latex())
-
     df = get_test_data('Results/results.txt')
-    print(mean_median_df(df,[('ST','remark_2'),('MT','regular')]))
+    print(mean_median_df(df,[('ST','remark_2'),('MT-K-F-W','remark_2'),('SD-MIQCQP','-')]))
+    plot_performance_profile(df, [('ST','remark_2'),('MT-K-F-W','remark_2'),('SD-MIQCQP','-')],'one')
