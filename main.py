@@ -2,7 +2,6 @@
 #This file can be used to solve a specific MIQP-QP.
 #
 from Solvers.multitree import solve
-from Solvers.file_reader import mps_aux_reader
 import numpy as np
 from numpy import infty
 import re
@@ -74,6 +73,3 @@ if __name__ == "__main__":
     else:
         print('Problem infeasible')
 
-
-    data = mps_aux_reader('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.mps','/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.aux')
-    

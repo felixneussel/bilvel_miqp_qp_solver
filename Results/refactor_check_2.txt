@@ -349,3 +349,12 @@ algorithm ST-K-C-S submode remark_2 name enigma-0.100000 status 2 time 5.5169647
 algorithm ST-K-C-S submode regular name stein27-0.900000 status 2 time 0.7199743280000028 obj 40.92344858681212 gap 0.0 subtime 0.172435648000004 subnum 6
 algorithm ST-K-C-S submode remark_1 name stein27-0.900000 status 2 time 0.777601863000001 obj 40.923379534734764 gap 0.0 subtime 0.23605517300000756 subnum 5
 algorithm ST-K-C-S submode remark_2 name stein27-0.900000 status 2 time 0.5806658869999985 obj 40.92344858573941 gap 0.0 subtime 0.0011261130000050912 subnum 5
+algorithm ST-K-C-S submode regular name stein27-0.100000 status 2 time 0.9730705510000001 obj 37.68667589385526 gap 0.0 subtime 0.0009592819999999502 subnum 1
+algorithm ST-K-C-S submode remark_1 name stein27-0.100000 status 2 time 0.6936320610000002 obj 37.68667589385526 gap 0.0 subtime 0.00059188400000032 subnum 1
+algorithm ST-K-C-S submode remark_2 name stein27-0.100000 status 2 time 0.6353617360000001 obj 37.68667589385526 gap 0.0 subtime 0.0001941159999998554 subnum 1
+algorithm ST-K-C-S submode regular name enigma-0.100000 status 2 time 6.034950678 obj 309.13254356966155 gap 0.0 subtime 0.0006947639999985711 subnum 1
+algorithm ST-K-C-S submode remark_1 name enigma-0.100000 status 2 time 5.561636731999998 obj 309.13254356966155 gap 0.0 subtime 0.00044100000000035777 subnum 1
+algorithm ST-K-C-S submode remark_2 name enigma-0.100000 status 2 time 6.4078377369999995 obj 309.13254356966155 gap 0.0 subtime 0.009714347999999262 subnum 1
+algorithm ST-K-C-S submode regular name stein27-0.900000 status 2 time 0.6240871470000009 obj 40.92344858681212 gap 0.0 subtime 0.13140197799999598 subnum 6
+algorithm ST-K-C-S submode remark_1 name stein27-0.900000 status 2 time 0.8620034340000018 obj 40.923379534734764 gap 0.0 subtime 0.38646065200000024 subnum 5
+algorithm ST-K-C-S submode remark_2 name stein27-0.900000 status 2 time 0.2930738340000012 obj 40.92344858573941 gap 0.0 subtime 0.0008707500000042501 subnum 5

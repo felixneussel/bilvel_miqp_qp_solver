@@ -4,7 +4,7 @@
 from Solvers.file_reader import mps_aux_reader
 import numpy as np
 from numpy.linalg import norm
-from Solvers.multitree import MT, solve
+from Solvers.multitree import solve
 import traceback
 from Solvers.benchmarks import optimize_benchmark
 
