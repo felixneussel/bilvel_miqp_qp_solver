@@ -320,3 +320,5 @@ if __name__ == '__main__':
     df = get_test_data('Results/results.txt')
     print(mean_median_df(df,[('ST','remark_2'),('MT-K-F-W','remark_2'),('SD-MIQCQP','-')]))
     plot_performance_profile(df, [('ST','remark_2'),('MT-K-F-W','remark_2'),('SD-MIQCQP','-')],'one')
+    #bin_exp_perf_profile(1)
+    #opt_bin_exp_plot()
