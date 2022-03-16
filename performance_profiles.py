@@ -68,12 +68,24 @@ def latex_table_times_obj(df):
         out.write(table)
 
 def status_to_string(x):
+    """
+    Maps Gurobi status codes to a meaningful text.
+    """
     d = {2:"Optimal",9:"Limit",6 : "Cutoff",3:"Infeasible"}
     return d[x]
 
 def performance_profile(d):
     """
-    Dict has form {solver1 : [time for p1, time for p2 ...], solver2:[time for p1, time for p2]} and time is inf if s did not solve p
+    Creates performance profile data.
+
+    # Parameters
+
+    - d : dictionary of form {solver1 : [time for p1, time for p2 ...], solver2:[time for p1, time for p2]} and time is inf if s did not solve p.
+
+    # Returns
+
+    - result, a dictionary of the form {solver1 : {tau : [tau1, tau2, ...], rho : [rho1, rho2, ...]}, ...}, for each solver,
+    the plot of the performance profile can be created with plt.step(result[solver][tau], result[solver][rho], where = 'post')
     """
     times = [d[key] for key in d]
     minimal_times = [min(*a) for a in zip(*times)]
@@ -99,6 +111,9 @@ def performance_profile(d):
     return result
 
 def get_test_data(file):
+    """
+    Creates a pandas data frame of test results from a .txt file containing the the test results.
+    """
     d = {}
     algo = []
     submode = []
@@ -141,12 +156,21 @@ def rho_of_tau(tau,ratios):
 
 def get_run_times(df,algos_submodes,option):
     """
-    ## Input:
+    Returns runtimes, numbers of subproblems and times spent in subproblems of solution approaches for all instances or
+    the ones that could be solved by at least one solution approach or by all solution approaches from a Data Frame.
 
-    - df : pd Dataframe with test data
-    - algos : Algorithms of which times should be retrieved
-    - submodes: Submodes of which times should be retrieved
-    - option : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solver could solve
+    # Parameters:
+
+    - df : pd Dataframe with test data.
+    - algos_submodes : List of tuples where each tuple represents an algorithm-submode combination that should be tested.
+    - option : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solvers could solve.
+
+    # Returns
+
+    Tuple containing
+    - times_dict : Dictionary containing the runtimes of each solution approach in the form {solver1 : [time for p1, time for p2 ...], solver2:[time for p1, time for p2]} and time is inf if s did not solve p
+    - subnum_dict : Dictionary containing the numbers of solved subproblems of each solution approach in the form {solver1 : [number of subproblems for p1, number of subproblems for p2 ...], solver2:[number of subproblems for p1, number of subproblems for p2]}
+    - times_dict : Dictionary containing the times spent for subproblems of each solution approach in the form {solver1 : [time in subproblems for p1, time in subproblems for p2 ...], solver2:[time in subproblems for p1, time in subproblems for p2]}
     """
     d = {}
     for a_s in algos_submodes:
@@ -160,6 +184,22 @@ def get_run_times(df,algos_submodes,option):
 
 
 def select_problems(d,option):
+    """
+    Returns runtimes, numbers of subproblems and times spent in subproblems of solution approaches for all instances or
+    the ones that could be solved by at least one solution approach or by all solution approaches from a dictionary.
+
+    # Parameters:
+
+    - d : dictionary of the form {solver1 : {times : [t for p1, t for p2, ...], status : [s for p1, ...], subnum : [number of subproblems for p1, ...], subtime : [time in subproblems for p1, ...]}, solver2 : {...},... }
+    - option : selection criteria: 'none', 'one' : only instances that at least one solver could solve, 'all' : only instances that all solvers could solve.
+
+    # Returns
+
+    Tuple containing
+    - times_dict : Dictionary containing the runtimes of each solution approach in the form {solver1 : [time for p1, time for p2 ...], solver2:[time for p1, time for p2]} and time is inf if s did not solve p
+    - subnum_dict : Dictionary containing the numbers of solved subproblems of each solution approach in the form {solver1 : [number of subproblems for p1, number of subproblems for p2 ...], solver2:[number of subproblems for p1, number of subproblems for p2]}
+    - times_dict : Dictionary containing the times spent for subproblems of each solution approach in the form {solver1 : [time in subproblems for p1, time in subproblems for p2 ...], solver2:[time in subproblems for p1, time in subproblems for p2]}
+    """
     times = []
     for solver in d:
         d[solver]['times'] = list(map(lambda t,s : t if s == 2 else np.infty, d[solver]['times'],d[solver]['status']))
@@ -179,6 +219,9 @@ def select_problems(d,option):
     return times_dict,subnum_dict,subtime_dict
 
 def select(s,option):
+    """
+    Checks if one problem instance was solved by at least one or all solution approaches.
+    """
     if option == 'one':
             return  s != tuple([np.infty]*len(s))
     elif option == 'all':

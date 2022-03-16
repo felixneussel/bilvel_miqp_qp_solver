@@ -11,7 +11,7 @@ from Solvers.feasibility import setup_feas_lazy,setup_feas_mt
 from bisect import bisect
 from operator import itemgetter
 import concurrent.futures as futures
-from Solvers.utils import stop_process_pool, time_remaining
+from Solvers.utils import time_remaining
 
 def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm,big_M,optimized_binary_expansion):
     """
