@@ -7,6 +7,9 @@ from scipy.linalg import block_diag
 from Solvers.problems import optimize
 
 def setup_sub_as_fixed_nonconvex_reform(problem_data,meta_data,x_I_param):
+    """
+    Creates a Gurobi model of the nonconvex single-level reformulation (10) which is convex in this case because x_I is fixed.
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,non_binary_index_set = meta_data
     model = Model('Subproblem')
@@ -44,53 +47,13 @@ def setup_sub_as_fixed_nonconvex_reform(problem_data,meta_data,x_I_param):
     model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y.select(), xQ_R=y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
     return model
 
-
-def setup_sub_st_lazy(problem_data,meta_data,x_I_param,s_param):
-    n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
-    jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr = meta_data
-    x_I_param = x_I_param
-    s_param = s_param
-    model = Model('Subproblem')
-    model.Params.LogToConsole = 0
-    #add variables
-    x_R = model.addVars(R, vtype=GRB.CONTINUOUS,name='x_R')
-    y = model.addVars(J, vtype=GRB.CONTINUOUS,name='y')
-    dual = model.addVars(ll_constr,vtype=GRB.CONTINUOUS, lb=0,name='lambda')
-    w = model.addVars(jr,vtype=GRB.CONTINUOUS, name="w")
-    #set objective
-    #Slice H into quadrants corresponding to terms with x_I, x_R or and x_I - x_R-mixed-term
-    H_II = H[:n_I,:n_I]
-    H_RR = H[n_I:,n_I:]
-    H_IR = H[:n_I,n_I:]
-    #slice c into vectors corresponding to x_I and x_R
-    c_I = c[:n_I]
-    c_R = c[n_I:]
-
-    quad_matrix = block_diag(H_RR,G_u)
-    lin_vec = concatenate((c_R.T+x_I_param.T@H_IR,d_u.T)).T
-    constant_term = 0.5*x_I_param@H_II@x_I_param + c_I@x_I_param
-    vars = x_R.select() + y.select()
-    model.setMObjective(Q=quad_matrix/2,c=lin_vec,constant=constant_term,xQ_L=vars,xQ_R=vars,xc=vars,sense=GRB.MINIMIZE)
-    #set P-constraint
-    A_I = A[:,:n_I]
-    A_R = A[:,n_I:]
-    AB = concatenate((A_R,B),1)
-    primalvars = x_R.select() + y.select()
-    model.addMConstr(A=AB,x=primalvars,sense='>=',b=a-A_I@x_I_param)
-    model.addMConstr(A=D,x=y.select(),sense='>=',b=b - C@x_I_param)
-    #set dual feasibility constriant
-    GD = concatenate((D.T,-G_l),1)
-    y_lambda = dual.select() + y.select()
-    model.addMConstr(A=GD,x=y_lambda,sense='=',b=d_l)
-    #set strong duality linearization constraint
-    model.addConstrs((w[j,r] == s_param[j,r]*sum([C[i,j]*dual[i] for i in ll_constr]) for j,r in jr), 'binary_expansion')
-    #set strong duality constraint
-    linear_vector = concatenate((d_l, - b, bin_coeff_arr))
-    y_lam_w = y.select() + dual.select() + w.select()
-    model.addMQConstr(Q = G_l, c = linear_vector, sense="<", rhs=0, xQ_L=y.select(), xQ_R=y.select(), xc=y_lam_w, name="Strong Duality Constraint" )
-    return model
+ 
 
 def setup_sub_rem_1(problem_data,meta_data,x_I_param):
+    """
+    Creates a Gurobi model of the optimal value reformulation of the subproblem (23).
+    (Remark 1)
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,_ = meta_data
     lower = setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param)
@@ -125,6 +88,10 @@ def setup_sub_rem_1(problem_data,meta_data,x_I_param):
     return model
 
 def setup_sub_rem_2(problem_data,meta_data,x_I_param):
+    """
+    Creates a Gurobi model of the upper level problem with fixed x_I and fixed y which is achieved by solving the parametric lower level solution.
+    (Remark 2)
+    """
     n_I,n_R,n_y,m_u,m_l,H,G_u,G_l,c,d_u,d_l,A,B,a,int_lb,int_ub,C,D,b = problem_data
     jr,I,R,J,ll_constr,bin_coeff_dict,bin_coeff_arr,_ = meta_data
     model = Model('Subproblem')
@@ -155,6 +122,9 @@ def setup_sub_rem_2(problem_data,meta_data,x_I_param):
     return model, y_param
 
 def setup_lower(n_y,m_l,G_l,d_l,C,D,b,x_I_param):
+    """
+    Creates a Gurobi model of the parametric lower level problem.
+    """
     model = Model('Lower_Level')
     model.Params.LogToConsole = 0
     y = model.addMVar(shape=n_y,vtype = GRB.CONTINUOUS,name = 'y')

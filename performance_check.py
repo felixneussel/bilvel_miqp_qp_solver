@@ -222,4 +222,4 @@ BINARY_EXP_TEST_DATA = {
 REFACTOR_TEST_DATA = ["lseu-0.100000","enigma-0.900000","stein45-0.100000","stein27-0.100000","p0033-0.100000","lseu-0.900000","stein45-0.500000","enigma-0.100000","p0033-0.500000","stein27-0.500000","stein27-0.900000","p0033-0.900000","lseu-0.500000","stein45-0.900000"]
 
 if __name__ == '__main__':
-    run_tests_final(FINAL_TEST_DATA["problems"],FINAL_TEST_DATA["algos"],FINAL_TEST_DATA["submodes"],'Results/refactor_check_2.txt')
+    run_tests_final(BINARY_EXP_TEST_DATA["problems"],['ST-K-C-S','MT-K-F-W'],['regular','remark_1','remark_2'],'Results/refactor_check_2.txt')

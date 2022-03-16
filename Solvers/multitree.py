@@ -6,11 +6,8 @@ from numpy import infty, array
 from re import match
 from timeit import default_timer
 from Solvers.problems import check_dimensions, getSParam, getX_IParamLazy, setup_master, setup_meta_data ,optimize,  add_cut, setup_meta_data, check_dimensions,getX_IParam, warmstart,add_lazy_constraint
-from Solvers.subproblem import setup_sub_rem_1,setup_sub_rem_2,setup_sub_as_fixed_nonconvex_reform,setup_sub_st_lazy
+from Solvers.subproblem import setup_sub_rem_1,setup_sub_rem_2,setup_sub_as_fixed_nonconvex_reform
 from Solvers.feasibility import setup_feas_lazy,setup_feas_mt
-from bisect import bisect
-from operator import itemgetter
-import concurrent.futures as futures
 from Solvers.utils import time_remaining
 
 def solve(problem_data,tol,iteration_limit,time_limit,subproblem_mode,algorithm,big_M,optimized_binary_expansion):
@@ -99,8 +96,7 @@ def solve_subproblem_regular(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,
         next_cut = f_vars
         if f_status == GRB.TIME_LIMIT:
             return array([]),solution,UB,True, time_in_sub
-    #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
-    #problem as constraint to masterproblem
+    #Point at which strong duality constrinat is linearized
     cp = []
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
@@ -119,7 +115,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
-    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:#subproblem feasible           
+    if s_status == GRB.OPTIMAL or s_status == GRB.SUBOPTIMAL:   #subproblem feasible           
         if s_val < UB:
             for v in s_vars:
                 solution[v.varName] = v.x
@@ -131,7 +127,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
             UB = s_val
         if s_status == GRB.TIME_LIMIT:
             return array([cp]),solution,UB,True,time_in_sub
-    else:#Subproblem infeasible
+    else:   #Subproblem infeasible
         feas = setup_feas_mt(problem_data,master,meta_data,y_var,dual_var,w_var,iteration_counter)
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,max(time_limit - (default_timer()-start),0))
@@ -141,8 +137,7 @@ def solve_subproblem_remark_2(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data
         next_cut = f_vars
         if f_status == GRB.TIME_LIMIT:
             return array([]),solution,UB,True, time_in_sub
-        #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
-        #problem as constraint to masterproblem
+        #Point at which strong duality constrinat is linearized
         cp = []
         for var in next_cut:
             if match(r'^y',var.varName) is not None:
@@ -163,7 +158,7 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     next_cut = s_vars
-    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]:#subproblem infeasible           
+    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL,GRB.TIME_LIMIT]: #subproblem infeasible           
         feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
@@ -171,6 +166,7 @@ def solve_subproblem_regular_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_da
         _,f_vars,_ = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
+    #Point at which strong duality constrinat is linearized
     cp = []
     for var in next_cut:
         if match(r'^y',var.varName) is not None:
@@ -189,7 +185,7 @@ def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
     s_status,s_vars,s_val = optimize(sub)
     time_in_sub = default_timer() - sub_start
     cp = y_solution
-    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:#subproblem infeasible           
+    if s_status not in [GRB.OPTIMAL,GRB.SUBOPTIMAL]:    #subproblem infeasible           
         feas = setup_feas_lazy(problem_data,meta_data,getX_IParamLazy(master),getSParam(master))
         feas.setParam(GRB.Param.NumericFocus,3)
         feas.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
@@ -197,8 +193,7 @@ def solve_subproblem_remark_2_lazy(SETUP_SUB_FUNCTION,problem_data,master,meta_d
         f_status,f_vars,f_obj = optimize(feas)
         time_in_sub = default_timer() - sub_start
         next_cut = f_vars
-        #Add Linearization of Strong Duality Constraint at solution of sub or feasibility
-        #problem as constraint to masterproblem
+        #Point at which strong duality constrinat is linearized
         cp = []
         for var in next_cut:
             if match(r'^y',var.varName) is not None:
@@ -225,7 +220,7 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
     gap = infty
     if subproblem_mode == 'regular':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular
-        SETUP_SUB_FUNCTION = setup_sub_as_fixed_nonconvex_reform#setup_sub_mt
+        SETUP_SUB_FUNCTION = setup_sub_as_fixed_nonconvex_reform
     elif subproblem_mode == 'remark_1':
         SOLVE_SUB_FUNCTION = solve_subproblem_regular
         SETUP_SUB_FUNCTION = setup_sub_rem_1

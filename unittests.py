@@ -1,5 +1,8 @@
+#
+#This file was used to perform tests for the development of the data analysis tools.
+#
 import unittest
-from performance_profiles import performance_profile,rho_of_tau,select_problems, select
+from performance_profiles import rho_of_tau,select_problems, select
 import numpy as np
 
 class TestPerformance(unittest.TestCase):
