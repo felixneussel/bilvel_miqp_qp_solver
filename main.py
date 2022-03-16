@@ -2,8 +2,7 @@
 #This file can be used to solve a specific MIQP-QP.
 #
 from Solvers.multitree import solve
-from Solvers.benchmarks import optimize_benchmark
-from Solvers import file_reader
+from Solvers.file_reader import mps_aux_reader
 import numpy as np
 from numpy import infty
 import re
@@ -34,7 +33,7 @@ if __name__ == "__main__":
 
     #Leader Constraints
     A = np.array([[1,0],[0,1]])
-    B = np.array([[-0.3786],[-0.2458]])
+    B = np.array([[-0.459],[-0.297]])
     a = np.array([0,0])
 
     int_lb = np.array([0,2])
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     iteration_limit = infty
     time_limit = 300
     subproblem_mode = "regular"
-    algorithm = "ST"
+    algorithm = "ST-K-C-S"  
     big_m = 1e5
     optimized_binary_expansion = True
 
@@ -74,3 +73,7 @@ if __name__ == "__main__":
         print('Runtime : ',runtime, 's')
     else:
         print('Problem infeasible')
+
+
+    data = mps_aux_reader('/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.mps','/Users/felixneussel/Documents/Uni/Vertiefung/Bachelorarbeit/Problemdata/data_for_MPB_paper/miplib3conv/stein45-0.100000.aux')
+    

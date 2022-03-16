@@ -230,39 +230,43 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
     else:
         raise ValueError('Keyword argument subproblem_mode must be "regular", "remark_1" or "remark_2"')
     termination = False
-    while not termination:#LB + tol < UB and iteration_counter < iteration_limit and not TIME_LIMIT_EXCEEDED:
-        #Solve Masterproblem
+    while not termination:
         if early_termination and iteration_counter > 0:
             master.setParam(GRB.Param.BestObjStop, UB-5*tol)
             master.setParam(GRB.Param.Cutoff, UB-tol)
         if use_warmstart:
             master = warmstart(master,solution)
+        
         master.setParam(GRB.Param.TimeLimit,time_remaining(start,time_limit))
         master.setParam(GRB.Param.NumericFocus,3)
         master.setParam(GRB.Param.IntFeasTol,1e-9)
+
+        #Solve Masterproblem
         m_status,m_vars,m_val = optimize(master)
 
+        #Termination criterion when early termination is used (MT-K-F and MT-K-F-W)
         if m_status == GRB.CUTOFF and early_termination:
             termination = True
             continue
         
         if m_status not in [GRB.OPTIMAL,15,GRB.TIME_LIMIT]:
             return None,None,default_timer() - start,time_in_subs,num_of_subs, 4,gap
-            #termination = True
         else:
             LB = m_val
         if m_status == GRB.TIME_LIMIT:
             TIME_LIMIT_EXCEEDED = True
             return solution,UB,default_timer() - start,time_in_subs,num_of_subs, GRB.TIME_LIMIT,gap
+        #Solve subproblem or feasibilty problem is subproblem is unsolvable
         cut_point,solution,UB, TIME_LIMIT_EXCEEDED,time_in_sub = SOLVE_SUB_FUNCTION(SETUP_SUB_FUNCTION,UB,solution,m_vars,problem_data,master,meta_data,y_var,dual_var,w_var,cut_counter,start,time_limit)
         time_in_subs += time_in_sub
         num_of_subs += 1
         gap = UB - LB
         if TIME_LIMIT_EXCEEDED:
             continue
-        
+        #Add linearization of the strong duality constraint
         master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,cut_point,optimized_binary_expansion)
         cut_counter += 1
+        #Additional Kelley cuts
         if kelley_cuts:
             y_p = []
             for v in m_vars:
@@ -272,7 +276,12 @@ def MT(problem_data,tol,iteration_limit,time_limit,subproblem_mode,kelley_cuts,e
             master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,y_p,optimized_binary_expansion)
             cut_counter += 1
         iteration_counter += 1
+        #For the case when MT is called from ST-K-C(-S) for getting an initial bilevel feasible solution.
+        #Thus, MT must run until a bilevel feasible solution is found.
+        if iteration_limit == 1 and solution == {}:
+            iteration_counter = 0
 
+        #Termination criterion if early termination is not used (MT and MT-K)
         if not early_termination and (LB + tol >= UB or iteration_counter >= iteration_limit or TIME_LIMIT_EXCEEDED):
             termination = True
     stop = default_timer()
@@ -319,7 +328,7 @@ def ST(problem_data,tol,time_limit,subproblem_mode,kelley_cuts,initial_cut,initi
         master = add_cut(problem_data,master,meta_data,y_var,dual_var,w_var,array(y_p),optimized_binary_expansion)
         cut_counter += 1
     if initial_ub:
-        UB = initial_incumbent + 1e6*tol
+        UB = initial_incumbent + 1e6*tol    
         master.setParam(GRB.Param.Cutoff, UB)
         master = warmstart(master,initial_solution)
     
@@ -380,7 +389,7 @@ def newCut(model,where):
         incumbent = model._incumbent
         if model._kelley:
             model._kelley_cut_points.append(array(model.cbGetSolution(model._y)))
-        if current_obj < incumbent:#Best Objective is updated immediately, so if current_obj is better than imcumbent, it is best objective
+        if current_obj < incumbent:
             cut_point, time_in_sub,sub_obj = model._SOLVE_SUB_FUNCTION(model._SETUP_SUB_FUNCTION,model._problem_data,model,model._meta_data,model._start,model._time_limit)
             model._time_in_subs += time_in_sub
             model._num_of_subs += 1
